@@ -1,4 +1,5 @@
 import 'package:barbart/constants.dart';
+import 'package:barbart/pages/events/data.dart';
 import 'package:flutter/cupertino.dart';
 
 abstract class AbstractPageComponent {
@@ -6,5 +7,5 @@ abstract class AbstractPageComponent {
   Icon get icon;
   dynamic get logo;
 
-  static Color backgroundColor = kPrimaryColor;
+  static Color backgroundColor = background_color;
 }

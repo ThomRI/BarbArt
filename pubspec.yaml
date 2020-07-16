@@ -53,6 +53,7 @@ flutter:
     - assets/header_background_sd.png
     - assets/logo_clipped.png
     - assets/header_background_raw.png
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

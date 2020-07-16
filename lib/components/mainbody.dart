@@ -1,6 +1,6 @@
 import 'package:barbart/components/Sliver/headerpagesliver.dart';
 import 'package:barbart/pages/clubs/clubspage.dart';
-import 'package:barbart/pages/events/eventspage.dart';
+import 'package:barbart/pages/events/eventspage_2.dart';
 import 'package:barbart/pages/home/homepage.dart';
 import 'package:barbart/pages/music/musicpage.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +13,7 @@ class MainBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return HeaderPageSliver(
-      pagesList: [HomePage(), EventsPage(), MusicPage(), ClubsPage()],
+      pagesList: [HomePage(), EventsPage2(), MusicPage(), ClubsPage()],
 
       onPageChanged: (int index) {
         if(index == 0)  return SliverActions.ExpandAndStay;

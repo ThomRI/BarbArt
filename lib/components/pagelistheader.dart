@@ -1,17 +1,22 @@
+import 'package:barbart/components/AbstractPageComponent.dart';
+import 'package:barbart/components/ControlledCarousel.dart';
+import 'package:barbart/pages/clubs/clubspage.dart';
 import 'package:barbart/pages/events/eventspage.dart';
 import 'package:barbart/pages/home/homepage.dart';
 import 'package:barbart/pages/music/musicpage.dart';
+import 'package:barbart/screens/settings/settingsscreen.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../constants.dart';
+import '../utils.dart';
 
 class PageListHeader extends StatelessWidget {
 
-  _PageList pageListWidget = new _PageList();
-  _PageList get getPageListWidget => pageListWidget;
+  List pagesList;
 
-  List pagesList = [HomePage(), EventsPage(), MusicPage()];
+  PageListHeader({Key key, this.pagesList}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -20,33 +25,49 @@ class PageListHeader extends StatelessWidget {
         clipper: _MainClipper(),
 
         child: Container(
-          child: Column(
+          child: Stack(
             children: <Widget>[
-              /* ### LOGO ### */
-              Container(
-                child: Center(
-                  child: Image(
-                    image: AssetImage("assets/logo.png"),
-                    width: 150,
-                    height: 150,
+              Positioned(
+                right: 0,
+                child: IconButton(
+                  alignment: Alignment.topRight,
+                  icon: Icon(Icons.settings, color: Colors.white),
+                  onPressed: () {
+                    Navigator.of(context).pushNamed('/settings');
+                  },
+                ),
+              ),
+
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Container(
+                    margin: EdgeInsets.only(top: dp(context, 10)),
+                    child: ControlledCarousel(
+                      enabled: true,
+                      itemList: pagesList.map((page) => Container(
+                        child: page.logo,
+                      )).toList(),
+                    ),
                   ),
                 ),
               ),
             ],
           ),
-
           decoration: BoxDecoration(
-            color: kPrimaryColor,
+            image:  DecorationImage(
+              image: AssetImage("assets/header_background_raw.png"),
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ),
 
       decoration: BoxDecoration(
-        color: kBackgroundColor,
+        color: AbstractPageComponent.backgroundColor,
       ),
     );
   }
-
 }
 
 class _MainClipper extends CustomClipper<Path> {
@@ -54,8 +75,8 @@ class _MainClipper extends CustomClipper<Path> {
   Path getClip(Size size) {
     var path = new Path();
 
-    path.lineTo(0, size.height);
-    path.quadraticBezierTo(size.width / 2, size.height - 20, size.width, size.height);
+    path.lineTo(0, size.height - kDefaultCurveShift);
+    path.quadraticBezierTo(size.width / 2, size.height, size.width, size.height - kDefaultCurveShift);
     path.lineTo(size.width, 0);
 
     path.close();
@@ -66,18 +87,26 @@ class _MainClipper extends CustomClipper<Path> {
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
-class _PageList extends StatefulWidget {
+class PageList extends StatefulWidget {
   final double m_height = 30;
   double get height => m_height;
 
+  final Function onSelectionChanged;
+  final List pagesList;
+
+  PageList({Key key, this.onSelectionChanged, this.pagesList}) : super(key: key);
+
   @override
-  _PageListState createState() => new _PageListState();
+  PageListState createState() => new PageListState();
 }
 
-class _PageListState extends State<_PageList> {
-  int selectedIndex = 0;
+class PageListState extends State<PageList> {
+  int selectedIndex = 0,
+      displayIndex = 0;
 
-  List pagesList = [HomePage(), EventsPage(), MusicPage()];
+  final itemSize = 20.0;
+
+  ScrollController scrollController = new ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -87,32 +116,41 @@ class _PageListState extends State<_PageList> {
       margin: EdgeInsets.only(bottom: 20),
 
       child: ListView.builder(
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
+        controller: scrollController,
         scrollDirection: Axis.horizontal,
-        itemCount: pagesList.length,
+        itemCount: widget.pagesList.length,
         itemBuilder: (context, index) => GestureDetector( // LIST BUILDER HERE
           onTap: () {
             setState(() {
               selectedIndex = index;
             });
+
+            widget.onSelectionChanged();
           },
           child: Container( // CLICKABLE ITEM CONTAINER
             alignment: Alignment.center,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[ // ITEM CONTENT HERE
-                pagesList[index].icon,
+                widget.pagesList[index].icon,
 
-                Text(
-                    pagesList[index].name,
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                // Uncomment to show page name
+                Visibility(
+                  visible: (selectedIndex == index),
+                  child: Text(
+                      widget.pagesList[index].name,
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                  ),
                 ),
               ],
             ),
-            margin: EdgeInsets.symmetric(horizontal: kDefaultPadding),
+            margin: EdgeInsets.symmetric(horizontal: dp(context, kDefaultPadding / 6)),
             padding: EdgeInsets.symmetric(horizontal: kDefaultPadding),
 
             decoration: BoxDecoration(
-              color: index == selectedIndex ? Colors.white.withOpacity(0.4) : Colors.transparent,
+              color: index == displayIndex ? Colors.white.withOpacity(0.4) : Colors.transparent,
               borderRadius: BorderRadius.circular(6),
             ),
 
@@ -121,8 +159,4 @@ class _PageListState extends State<_PageList> {
       ),
     );
   }
-
-}
-Container _buildPagesList() {
-
 }

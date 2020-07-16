@@ -3,7 +3,7 @@ import 'package:barbart/pages/home/homepage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'components/mainbody.dart';
+import '../components/mainbody.dart';
 
 class MainScreen extends StatelessWidget {
   MainScreen({Key key}) : super(key: key);
@@ -13,7 +13,7 @@ class MainScreen extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         //backgroundColor: kPrimaryColor,
-        appBar: _buildAppBar(),
+        //appBar: _buildAppBar(),
         body: MainBody(),
       ),
     );

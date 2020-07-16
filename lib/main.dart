@@ -1,8 +1,9 @@
 import 'package:barbart/constants.dart';
+import 'package:barbart/screens/settings/settingsscreen.dart';
 import 'package:flutter/material.dart';
 
 import 'pages/home/homepage.dart';
-import 'mainscreen.dart';
+import 'screens/mainscreen.dart';
 import 'pages/music/musicpage.dart';
 
 void main() {
@@ -14,13 +15,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: "Barb'Art",
       theme: ThemeData(
         primaryColor: kPrimaryColor,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
 
-      home: MainScreen()
+      routes: {
+        '/' : (context) => MainScreen(),
+        '/settings' : (context) => SettingsScreen(),
+      },
 
     );
   }

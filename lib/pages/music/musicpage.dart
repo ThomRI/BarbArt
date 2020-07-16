@@ -19,5 +19,8 @@ class MusicPage extends StatelessWidget implements AbstractPageComponent {
   @override
   Icon get icon => Icon(Icons.music_note, color: Colors.white);
 
+  @override
+  Icon get logo => Icon(Icons.music_note, color: Colors.white, size: 100);
+
 
 }

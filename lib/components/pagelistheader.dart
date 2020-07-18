@@ -37,6 +37,15 @@ class PageListHeader extends StatelessWidget {
                   },
                 ),
               ),
+              Positioned(
+                child: IconButton(
+                  alignment: Alignment.topLeft,
+                  icon: Icon(Icons.person, color: Colors.white),
+                  onPressed: () {
+                    Navigator.of(context).pushNamed('/profile');
+                  },
+                ),
+              ),
 
               Positioned.fill(
                 child: Align(

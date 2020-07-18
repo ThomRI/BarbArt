@@ -1,9 +1,9 @@
 import 'package:barbart/constants.dart';
 
-import 'myClipper.dart';
+import '../myClipper.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'data.dart';
+import '../data.dart';
 
 class DetailsScreen extends MaterialPageRoute<Null> {
   final String titleString;

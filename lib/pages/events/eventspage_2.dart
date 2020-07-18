@@ -2,8 +2,8 @@ import 'package:barbart/components/AbstractPageComponent.dart';
 import 'package:barbart/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'gridViewDays.dart';
-import 'data.dart';
+import 'gridViewEvent.dart';
+import '../data.dart';
 
 class EventsPage2 extends StatelessWidget implements AbstractPageComponent {
   EventsPage2({Key key}) : super(key: key);

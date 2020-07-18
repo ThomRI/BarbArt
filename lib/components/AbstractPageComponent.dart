@@ -1,5 +1,5 @@
 import 'package:barbart/constants.dart';
-import 'package:barbart/pages/events/data.dart';
+import 'file:///C:/Users/chpau/AndroidStudioProjects/BarbArtv2/lib/pages/data.dart';
 import 'package:flutter/cupertino.dart';
 
 abstract class AbstractPageComponent {

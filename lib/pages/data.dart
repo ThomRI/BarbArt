@@ -20,6 +20,97 @@ List<BoxShadow> shadowBox = [
 
 final String lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam at diam vel massa hendrerit blandit nec quis mauris. Maecenas rutrum tellus non erat congue dapibus. Etiam vel urna dapibus tellus vestibulum mollis. Morbi volutpat ligula dolor, ac vestibulum eros tempus quis. Nunc semper, nunc ut laoreet maximus, risus metus rutrum ex, vel ultricies libero lacus eget est. Pellentesque vel dapibus velit. Etiam quis est non risus egestas pellentesque. Vestibulum eu quam nec dolor aliquet iaculis et ut purus. Aenean ac bibendum metus, nec dictum lorem. Sed quis tellus iaculis, consequat magna sit amet, mattis erat. Ut et sem ac erat rhoncus blandit. Vestibulum eu nisl quis tellus finibus ullamcorper. Suspendisse vitae venenatis nunc. In tristique dapibus risus at maximus. Phasellus pharetra fringilla euismod. Phasellus in augue eros. Nunc vitae rutrum diam. Morbi tincidunt sagittis dolor, at ultrices tortor imperdiet dignissim. Sed id tortor eget lacus suscipit suscipit. Fusce suscipit metus non varius blandit. Ut fermentum leo vestibulum congue imperdiet. Duis dictum dui id mollis efficitur. Ut auctor nulla velit, eu pretium arcu placerat eget.";
 
+final Map<int, Map<String, String>> clubs = {
+  1: {
+    'name': 'Event 1',
+    'club': 'Cuisine',
+    'date': 'lundi 03/10',
+    'time': '18h-22h',
+    'image': 'assets/images/event.png',
+    'description': lorem
+  },
+  2: {
+    'name': 'Event 2',
+    'club': 'Cuisine',
+    'date': 'lundi 03/10',
+    'time': '19h-23h15',
+    'image': 'assets/images/event2.png',
+    'description': lorem
+  },
+  3: {
+    'name': 'Event 3',
+    'club': 'Photo',
+    'date': 'lundi 03/10',
+    'time': '21h-00h30',
+    'image': 'assets/images/event.png',
+    'description': lorem
+  },
+  4: {
+    'name': 'Event 4',
+    'club': 'Cinéma',
+    'date': 'lundi 03/10',
+    'time': '20h30-22h45',
+    'image': 'assets/images/event4.png',
+    'description': lorem
+  },
+  5: {
+    'name': 'Event 5',
+    'club': 'Photo',
+    'date': 'jeudi 06/10',
+    'time': '18h-22h',
+    'image': 'assets/images/event2.png',
+    'description': lorem
+  },
+  6: {
+    'name': 'Event 6',
+    'club': 'Cuisine',
+    'date': 'jeudi 06/10',
+    'time': '17h-22h15',
+    'image': 'assets/images/event.png',
+    'description': lorem
+  },
+  7: {
+    'name': 'Event 7',
+    'club': 'Cuisine',
+    'date': 'jeudi 06/10',
+    'time': '14h-17h',
+    'image': 'assets/images/event4.png',
+    'description': lorem
+  },
+  8: {
+    'name': 'Event 8',
+    'date': 'jeudi 06/10',
+    'time': '23h-3h30',
+    'image': 'assets/images/event2.png',
+    'description': lorem
+  },
+  9: {
+    'name': 'Event 9',
+    'club': 'Photo',
+    'date': 'jeudi 06/10',
+    'time': '20h-23h45',
+    'image': 'assets/images/event.png',
+    'description': lorem
+  },
+  10: {
+    'name': 'Event 10',
+    'club': 'Cinéma',
+    'date': 'samedi 08/10',
+    'time': '13h-22h',
+    'image': 'assets/images/event4.png',
+    'description': lorem
+  },
+  11: {
+    'name': 'Event 11',
+    'club': 'Cuisine',
+    'date': 'samedi 08/10',
+    'time': '19h-23h45',
+    'image': 'assets/images/event2.png',
+    'description': lorem
+  },
+};
+
+
 final Map<int, Map<String, String>> events = {
   1: {
     'name': 'Event 1',

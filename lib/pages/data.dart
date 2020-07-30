@@ -26,6 +26,9 @@ final Map<int, Map<String, String>> clubs = {
     'club': 'Cuisine',
     'date': 'lundi 03/10',
     'time': '18h-22h',
+    'location': 'F103',
+    'numberOfSeatsTotal': '35',
+    'numberOfSeatsLeft': '12',
     'image': 'assets/images/event.png',
     'description': lorem
   },
@@ -34,6 +37,9 @@ final Map<int, Map<String, String>> clubs = {
     'club': 'Cuisine',
     'date': 'lundi 03/10',
     'time': '19h-23h15',
+    'location': 'F103',
+    'numberOfSeatsTotal': '35',
+    'numberOfSeatsLeft': '12',
     'image': 'assets/images/event2.png',
     'description': lorem
   },
@@ -42,6 +48,9 @@ final Map<int, Map<String, String>> clubs = {
     'club': 'Photo',
     'date': 'lundi 03/10',
     'time': '21h-00h30',
+    'location': 'F103',
+    'numberOfSeatsTotal': '35',
+    'numberOfSeatsLeft': '12',
     'image': 'assets/images/event.png',
     'description': lorem
   },
@@ -50,6 +59,9 @@ final Map<int, Map<String, String>> clubs = {
     'club': 'Cinéma',
     'date': 'lundi 03/10',
     'time': '20h30-22h45',
+    'location': 'F103',
+    'numberOfSeatsTotal': '35',
+    'numberOfSeatsLeft': '12',
     'image': 'assets/images/event4.png',
     'description': lorem
   },
@@ -58,6 +70,9 @@ final Map<int, Map<String, String>> clubs = {
     'club': 'Photo',
     'date': 'jeudi 06/10',
     'time': '18h-22h',
+    'location': 'F103',
+    'numberOfSeatsTotal': '35',
+    'numberOfSeatsLeft': '12',
     'image': 'assets/images/event2.png',
     'description': lorem
   },
@@ -66,6 +81,9 @@ final Map<int, Map<String, String>> clubs = {
     'club': 'Cuisine',
     'date': 'jeudi 06/10',
     'time': '17h-22h15',
+    'location': 'F103',
+    'numberOfSeatsTotal': '35',
+    'numberOfSeatsLeft': '12',
     'image': 'assets/images/event.png',
     'description': lorem
   },
@@ -74,6 +92,9 @@ final Map<int, Map<String, String>> clubs = {
     'club': 'Cuisine',
     'date': 'jeudi 06/10',
     'time': '14h-17h',
+    'location': 'F103',
+    'numberOfSeatsTotal': '35',
+    'numberOfSeatsLeft': '12',
     'image': 'assets/images/event4.png',
     'description': lorem
   },
@@ -81,6 +102,9 @@ final Map<int, Map<String, String>> clubs = {
     'name': 'Event 8',
     'date': 'jeudi 06/10',
     'time': '23h-3h30',
+    'location': 'F103',
+    'numberOfSeatsTotal': '35',
+    'numberOfSeatsLeft': '12',
     'image': 'assets/images/event2.png',
     'description': lorem
   },
@@ -89,6 +113,9 @@ final Map<int, Map<String, String>> clubs = {
     'club': 'Photo',
     'date': 'jeudi 06/10',
     'time': '20h-23h45',
+    'location': 'F103',
+    'numberOfSeatsTotal': '35',
+    'numberOfSeatsLeft': '12',
     'image': 'assets/images/event.png',
     'description': lorem
   },
@@ -97,6 +124,9 @@ final Map<int, Map<String, String>> clubs = {
     'club': 'Cinéma',
     'date': 'samedi 08/10',
     'time': '13h-22h',
+    'location': 'F103',
+    'numberOfSeatsTotal': '35',
+    'numberOfSeatsLeft': '12',
     'image': 'assets/images/event4.png',
     'description': lorem
   },
@@ -105,6 +135,9 @@ final Map<int, Map<String, String>> clubs = {
     'club': 'Cuisine',
     'date': 'samedi 08/10',
     'time': '19h-23h45',
+    'location': 'F103',
+    'numberOfSeatsTotal': '35',
+    'numberOfSeatsLeft': '12',
     'image': 'assets/images/event2.png',
     'description': lorem
   },

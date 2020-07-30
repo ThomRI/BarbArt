@@ -4,22 +4,28 @@ import '../data.dart';
 import'./detailsScreenClub.dart';
 
 
-class GridViewDays extends StatelessWidget {
+class GridViewClubs extends StatelessWidget {
   final List<String> clubNameEvent;
   final List<String> clubName;
   final List<String> clubDate;
   final List<String> clubTime;
+  final List<String> clubLocation;
+  final List<String> clubSeatsTotal;
+  final List<String> clubSeatsLeft;
   final List<String> clubImage;
   final List<String> clubDescription;
 
-  const GridViewDays(
+  const GridViewClubs(
       {Key key,
         this.clubNameEvent,
         this.clubName,
         this.clubDate,
         this.clubImage,
         this.clubTime,
-        this.clubDescription})
+        this.clubLocation,
+        this.clubSeatsTotal,
+        this.clubSeatsLeft,
+        this.clubDescription,})
       : super(key: key);
 
   @override
@@ -34,12 +40,18 @@ class GridViewDays extends StatelessWidget {
       final List<String> _clubNameEventOfThisDay = <String>[];
       final List<String> _clubNameOfThisDay = <String>[];
       final List<String> _clubTimeOfThisDay = <String>[];
+      final List<String> _clubLocationOfThisDay = <String>[];
+      final List<String> _clubSeatsTotalOfThisDay = <String>[];
+      final List<String> _clubSeatsLeftOfThisDay = <String>[];
       final List<String> _clubImageOfThisDay = <String>[];
       final List<String> _clubDescriptionOfThisDay = <String>[];
       do {
         _clubNameEventOfThisDay.add(clubNameEvent[i]);
         _clubNameOfThisDay.add(clubName[i]);
         _clubTimeOfThisDay.add(clubTime[i]);
+        _clubLocationOfThisDay.add(clubLocation[i]);
+        _clubSeatsTotalOfThisDay.add(clubSeatsTotal[i]);
+        _clubSeatsLeftOfThisDay.add(clubSeatsLeft[i]);
         _clubImageOfThisDay.add(clubImage[i]);
         _clubDescriptionOfThisDay.add(clubDescription[i]);
         i += 1;
@@ -106,6 +118,9 @@ class GridViewDays extends StatelessWidget {
                             clubImage: _clubImageOfThisDay,
                             clubDay: day,
                             clubTime: _clubTimeOfThisDay,
+                            clubLocation: _clubLocationOfThisDay,
+                            clubSeatsTotal: _clubSeatsTotalOfThisDay,
+                            clubSeatsLeft: _clubSeatsLeftOfThisDay,
                             clubDescription: _clubDescriptionOfThisDay,
                           ),
                           //margin: EdgeInsets.all(10),
@@ -150,6 +165,9 @@ class GridViewClub extends StatelessWidget {
   final List<String> clubName;
   final String clubDay;
   final List<String> clubTime;
+  final List<String> clubLocation;
+  final List<String> clubSeatsTotal;
+  final List<String> clubSeatsLeft;
   final List<String> clubImage;
   final List<String> clubDescription;
 
@@ -159,6 +177,9 @@ class GridViewClub extends StatelessWidget {
       this.clubName,
       this.clubDay,
       this.clubTime,
+      this.clubLocation,
+      this.clubSeatsTotal,
+      this.clubSeatsLeft,
       this.clubImage,
       this.clubDescription})
       : super(key: key);
@@ -174,8 +195,8 @@ class GridViewClub extends StatelessWidget {
           onTap: () {
             Navigator.push(
                 context,
-                DetailsScreen(clubNameEvent[i], clubName[i], clubDay, clubTime[i],
-                    clubImage[i], clubDescription[i]));
+                DetailsScreenClub(clubNameEvent[i], clubName[i], clubDay, clubTime[i], clubLocation[i], clubSeatsTotal[i],
+                    clubSeatsLeft[i], clubImage[i], clubDescription[i]));
           },
           child: Container(
             alignment: Alignment.center,

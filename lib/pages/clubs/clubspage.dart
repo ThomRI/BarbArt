@@ -24,7 +24,7 @@ class ClubsPage extends StatefulWidget implements AbstractPageComponent{
 
   State<StatefulWidget> createState() => _ClubPageState();
 
-  
+
 }
 
 class _ClubPageState extends State<ClubsPage> {
@@ -33,22 +33,28 @@ class _ClubPageState extends State<ClubsPage> {
   var _clubName = <String>[];
   var _clubDate = <String>[];
   var _clubTime = <String>[];
+  var _clubLocation = <String>[];
+  var _clubSeatsTotal = <String>[];
+  var _clubSeatsLeft = <String>[];
   var _clubImage = <String>[];
   var _clubDescription = <String>[];
-  var initialValues;
-  var _selectedClubs = new List<String>();
-  var _initialValuesModified = false;
-  var selectedValues;
+  var _initialValuesString;
+  var initialSelectedClubsList;
+  var firstTime = true;
 
-  final valuesToPopulate = {
+  final valuesInPrefs = {
     1 : "Cuisine",
     2 : "Cinéma",
     3 : "Photo",
   };
 
+  var valuesToPopulate = {
+    "Cuisine" : false,
+    "Cinéma" : false,
+    "Photo" : false,
+  };
+
   void getInitialValues() async{
-    var _initialValuesString = new List<String>();
-    initialValues = new List<int>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getStringList('initialValues')!= null){
       _initialValuesString = prefs.getStringList('initialValues');
@@ -56,17 +62,8 @@ class _ClubPageState extends State<ClubsPage> {
     else {
       prefs.setStringList('initialValues', new List<String>());
     }
-
     for(String x in _initialValuesString.toList()){
-      initialValues.add(int.parse(x));
-    }
-  }
-
-  List <MultiSelectDialogItem<int>> multiItem = List();
-
-  void populateMultiSelect(){
-    for(int v in valuesToPopulate.keys){
-      multiItem.add(MultiSelectDialogItem(v, valuesToPopulate[v]));
+      valuesToPopulate[valuesInPrefs[int.parse(x)]]= true;
     }
   }
 
@@ -75,6 +72,9 @@ class _ClubPageState extends State<ClubsPage> {
     _clubName = <String>[];
     _clubDate = <String>[];
     _clubTime = <String>[];
+    _clubLocation = <String>[];
+    _clubSeatsTotal = <String>[];
+    _clubSeatsLeft = <String>[];
     _clubImage = <String>[];
     _clubDescription = <String>[];
     for (int clubId = 1; clubId < clubs.length + 1; clubId++) {
@@ -84,65 +84,115 @@ class _ClubPageState extends State<ClubsPage> {
         _clubName.add(dictClub['club']);
         _clubDate.add(dictClub['date']);
         _clubTime.add(dictClub['time']);
+        _clubLocation.add(dictClub['location']);
+        _clubSeatsTotal.add(dictClub['numberOfSeatsTotal']);
+        _clubSeatsLeft.add(dictClub['numberOfSeatsLeft']);
         _clubImage.add(dictClub['image']);
         _clubDescription.add(dictClub['description']);
       }
     }
   }
 
-  void _showMultiSelect(BuildContext context) async {
-    multiItem = [];
-    if (_initialValuesModified){
-      initialValues = selectedValues.toList();
-    } else {
-      getInitialValues();
-    }
-    populateMultiSelect();
-    final items = multiItem;
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    selectedValues = await showDialog<Set<int>>(
-      context: context,
-      builder: (BuildContext context) {
-        return MultiSelectDialog(
-          items: items,
-          initialSelectedValues: initialValues.toSet(),
-        );
-      },
-    );
-
-    setState((){
-      _initialValuesModified = true;
-      final _selectedValuesInt = selectedValues.toList();
-      _selectedClubs = new List<String>();
-      for (int x in _selectedValuesInt){
-        _selectedClubs.add(valuesToPopulate[x]);
-      }
-    });
-  }
-
-  @override
-  void initState() {
-    _showMultiSelect(context);
-    super.initState();
-  }
+  var _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
 
-    populateClubLists(_selectedClubs);
+    if (firstTime){
+      getInitialValues();
+      firstTime = false;
+    }
+
+    List<Widget> childrenDrawer = new List<Widget>();
+    List<String> selectedClubsList = new List<String>();
+    for (int index = 0; index < valuesToPopulate.length; index++){
+      if (valuesToPopulate[valuesToPopulate.keys.toList()[index]]){
+        selectedClubsList.add(valuesToPopulate.keys.toList()[index]);
+      }
+
+      childrenDrawer.add(
+          Container(
+            child: FlatButton(
+              child: Column(
+                children: <Widget>[
+                  ColorFiltered(
+                  colorFilter: ColorFilter.mode((valuesToPopulate[valuesToPopulate.keys.toList()[index]]) ? Colors.transparent : Colors.black, BlendMode.color),
+                  child: Container(
+                    width: 80,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        fit: BoxFit.contain,
+                        image: AssetImage('assets/images/event2.png'),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    //padding: EdgeInsets.only(left: 10),
+                    child:Text(valuesToPopulate.keys.toList()[index], style: TextStyle(fontSize: 10, color: Colors.grey),)
+                  ),
+                ],
+              ),
+              onPressed: () {setState(() {
+                valuesToPopulate[valuesToPopulate.keys.toList()[index]] = !valuesToPopulate[valuesToPopulate.keys.toList()[index]];
+              });},
+            ),
+          )
+
+      );
+    }
+
+    populateClubLists(selectedClubsList);
 
     return Scaffold(
-      backgroundColor: AbstractPageComponent.backgroundColor,
+      key: _scaffoldKey,
+      //backgroundColor: AbstractPageComponent.backgroundColor,
+      endDrawer: Drawer(
+        child: Column(
+          children: <Widget>[
+            Container(
+              margin: EdgeInsets.only(top:65, bottom: 10),
+              //color: Colors.blue,
+              padding: EdgeInsets.all(30),
+              child: Center(
+                child: Text("Clubs", style: TextStyle(fontSize: 30),),
+              ),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.black, width: 3, style: BorderStyle.solid)),
+              ),
+            ),
+            Container(
+              //color: Colors.red,
+              height: 500,
+              margin: EdgeInsets.all(10),
+              child: GridView.count(
+              primary: false,
+              crossAxisCount: 3,
+              crossAxisSpacing: 5,
+              mainAxisSpacing: 5,
+              childAspectRatio: 0.7,
+              //padding: EdgeInsets.only(top: 50),
+              children: childrenDrawer,
+              scrollDirection: Axis.vertical,
+              ),
+            ),
+          ],
+        ),
+      ),
       body: Stack(
         children: <Widget>[
           Container(
             padding: const EdgeInsets.only(top: 70, bottom: 30),
             child: Container(
-              child: GridViewDays(
+              child: GridViewClubs(
                 clubNameEvent: _clubNameEvent,
                 clubName: _clubName,
                 clubDate: _clubDate,
                 clubTime: _clubTime,
+                clubLocation: _clubLocation,
+                clubSeatsTotal: _clubSeatsTotal,
+                clubSeatsLeft: _clubSeatsLeft,
                 clubImage: _clubImage,
                 clubDescription: _clubDescription,
               ),
@@ -151,11 +201,11 @@ class _ClubPageState extends State<ClubsPage> {
           Container(
             alignment: Alignment.topRight,
             padding: const EdgeInsets.only(top: 75, bottom: 30, right: 10),
-            child: RaisedButton(
+            child: IconButton(
               color: kPrimaryColor,
-              child: Text("Clubs",
-                  style: TextStyle(color: Colors.white,),),
-              onPressed: () => _showMultiSelect(context),
+              icon: Icon(Icons.apps),
+              onPressed: (){
+                _scaffoldKey.currentState.openEndDrawer();},
             ),
           ),
         ],

@@ -161,7 +161,7 @@ class _ListViewDetailsState extends State<ListViewDetails>{
                 },
               ),
               Text(
-                '${(going)? 'J\'y vais' : 'Je n\'y vais pas'}',
+                '${(going)? 'going' : 'not going'}',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 20,

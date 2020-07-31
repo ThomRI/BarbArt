@@ -1,6 +1,7 @@
 import 'package:barbart/constants.dart';
 import 'package:barbart/screens/settings/settingsscreen.dart';
 import 'package:barbart/screens/profile/profileScreen.dart';
+import 'package:barbart/screens/login/loginscreen.dart';
 import 'package:flutter/material.dart';
 
 import 'pages/home/homepage.dart';
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/' : (context) => MainScreen(),
         '/settings' : (context) => SettingsScreen(),
+        '/login' : (context) => LoginScreen(),
         '/profile' : (context) => ProfileScreen(),
       },
 

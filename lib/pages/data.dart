@@ -10,6 +10,12 @@ Color gradient_color = Color(0x6663F0E8);
 Color gradient_color_light = Color(0x1163F0E8);
 Color gradient_color_dark = Color(0xFF63F0E8);
 
+final allClubDict = {
+  1 : "Cuisine",
+  2 : "Cinéma",
+  3 : "Photo"
+};
+
 List<BoxShadow> shadowBox = [
   BoxShadow(
     color: Colors.grey[300],

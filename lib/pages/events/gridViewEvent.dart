@@ -4,20 +4,22 @@ import '../data.dart';
 import 'detailsScreenEvent.dart';
 
 
-class GridViewDays extends StatelessWidget {
+class GridViewDaysEvent extends StatelessWidget {
   final List<String> eventName;
   final List<String> eventDate;
   final List<String> eventTime;
+  final List<String> eventLocation;
+  final List<String> eventPeopleGoing;
   final List<String> eventImage;
   final List<String> eventDescription;
 
-  const GridViewDays(
+  const GridViewDaysEvent(
       {Key key,
         this.eventName,
         this.eventDate,
         this.eventImage,
         this.eventTime,
-        this.eventDescription})
+        this.eventDescription, this.eventLocation, this.eventPeopleGoing})
       : super(key: key);
 
   @override
@@ -31,11 +33,15 @@ class GridViewDays extends StatelessWidget {
       String day = eventDate[i];
       final List<String> _eventNameOfThisDay = <String>[];
       final List<String> _eventTimeOfThisDay = <String>[];
+      final List<String> _eventLocationOfThisDay = <String>[];
+      final List<String> _eventPeopleGoingOfThisDay = <String>[];
       final List<String> _eventImageOfThisDay = <String>[];
       final List<String> _eventDescriptionOfThisDay = <String>[];
       do {
         _eventNameOfThisDay.add(eventName[i]);
         _eventTimeOfThisDay.add(eventTime[i]);
+        _eventLocationOfThisDay.add(eventLocation[i]);
+        _eventPeopleGoingOfThisDay.add(eventPeopleGoing[i]);
         _eventImageOfThisDay.add(eventImage[i]);
         _eventDescriptionOfThisDay.add(eventDescription[i]);
         i += 1;
@@ -101,6 +107,8 @@ class GridViewDays extends StatelessWidget {
                             eventImage: _eventImageOfThisDay,
                             eventDay: day,
                             eventTime: _eventTimeOfThisDay,
+                            eventLocation: _eventLocationOfThisDay,
+                            eventPeopleGoing: _eventPeopleGoingOfThisDay,
                             eventDescription: _eventDescriptionOfThisDay,
                           ),
                           //margin: EdgeInsets.all(10),
@@ -144,6 +152,8 @@ class GridViewEvent extends StatelessWidget {
   final List<String> eventName;
   final String eventDay;
   final List<String> eventTime;
+  final List<String> eventLocation;
+  final List<String> eventPeopleGoing;
   final List<String> eventImage;
   final List<String> eventDescription;
 
@@ -153,7 +163,7 @@ class GridViewEvent extends StatelessWidget {
       this.eventDay,
       this.eventTime,
       this.eventImage,
-      this.eventDescription})
+      this.eventDescription, this.eventLocation, this.eventPeopleGoing})
       : super(key: key);
 
   @override
@@ -167,7 +177,7 @@ class GridViewEvent extends StatelessWidget {
           onTap: () {
             Navigator.push(
                 context,
-                DetailsScreen(eventName[i], eventDay, eventTime[i],
+                DetailsScreenEvent(eventName[i], eventDay, eventTime[i], eventLocation[i], eventPeopleGoing[i],
                     eventImage[i], eventDescription[i]));
           },
           child: Container(

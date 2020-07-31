@@ -149,6 +149,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 1',
     'date': 'lundi 03/10',
     'time': '18h-22h',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event.png',
     'description': lorem
   },
@@ -156,6 +158,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 2',
     'date': 'lundi 03/10',
     'time': '19h-23h15',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event2.png',
     'description': lorem
   },
@@ -163,6 +167,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 3',
     'date': 'lundi 03/10',
     'time': '21h-00h30',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event.png',
     'description': lorem
   },
@@ -170,6 +176,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 4',
     'date': 'lundi 03/10',
     'time': '20h30-22h45',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event4.png',
     'description': lorem
   },
@@ -177,6 +185,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 5',
     'date': 'jeudi 06/10',
     'time': '18h-22h',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event2.png',
     'description': lorem
   },
@@ -184,6 +194,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 6',
     'date': 'jeudi 06/10',
     'time': '17h-22h15',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event.png',
     'description': lorem
   },
@@ -191,6 +203,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 7',
     'date': 'jeudi 06/10',
     'time': '14h-17h',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event4.png',
     'description': lorem
   },
@@ -198,6 +212,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 8',
     'date': 'jeudi 06/10',
     'time': '23h-3h30',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event2.png',
     'description': lorem
   },
@@ -205,6 +221,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 9',
     'date': 'jeudi 06/10',
     'time': '20h-23h45',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event.png',
     'description': lorem
   },
@@ -212,6 +230,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 10',
     'date': 'samedi 08/10',
     'time': '13h-22h',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event4.png',
     'description': lorem
   },
@@ -219,6 +239,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 11',
     'date': 'samedi 08/10',
     'time': '19h-23h45',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event2.png',
     'description': lorem
   },
@@ -226,6 +248,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 12',
     'date': 'mardi 04/11',
     'time': '18h-22h',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event.png',
     'description': lorem
   },
@@ -233,6 +257,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 13',
     'date': 'mardi 04/11',
     'time': '19h-23h15',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event2.png',
     'description': lorem
   },
@@ -240,6 +266,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 14',
     'date': 'mardi 04/11',
     'time': '21h-00h30',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event.png',
     'description': lorem
   },
@@ -247,6 +275,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 15',
     'date': 'mardi 04/11',
     'time': '20h30-22h45',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event4.png',
     'description': lorem
   },
@@ -254,6 +284,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 16',
     'date': 'mercredi 05/11',
     'time': '18h-22h',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event2.png',
     'description': lorem
   },
@@ -261,6 +293,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 17',
     'date': 'mercredi 05/11',
     'time': '17h-22h15',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event.png',
     'description': lorem
   },
@@ -268,6 +302,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 18',
     'date': 'mercredi 05/11',
     'time': '14h-17h',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event4.png',
     'description': lorem
   },
@@ -275,6 +311,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 19',
     'date': 'mercredi 05/11',
     'time': '23h-3h30',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event2.png',
     'description': lorem
   },
@@ -282,6 +320,8 @@ final Map<int, Map<String, String>> events = {
     'name': 'Event 20',
     'date': 'mercredi 05/11',
     'time': '20h-23h45',
+    'location': 'Meudeuh',
+    'numberOfPeopleGoing': '75',
     'image': 'assets/images/event.png',
     'description': lorem
   },

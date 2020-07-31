@@ -16,6 +16,8 @@ class EventsPage2 extends StatelessWidget implements AbstractPageComponent {
     final _eventName = <String>[];
     final _eventDate = <String>[];
     final _eventTime = <String>[];
+    final _eventLocation = <String>[];
+    final _eventPeopleGoing = <String>[];
     final _eventImage = <String>[];
     final _eventDescription = <String>[];
 
@@ -24,6 +26,8 @@ class EventsPage2 extends StatelessWidget implements AbstractPageComponent {
       _eventName.add(dict_event['name']);
       _eventDate.add(dict_event['date']);
       _eventTime.add(dict_event['time']);
+      _eventLocation.add(dict_event['location']);
+      _eventPeopleGoing.add(dict_event['numberOfPeopleGoing']);
       _eventImage.add(dict_event['image']);
       _eventDescription.add(dict_event['description']);
     }
@@ -35,10 +39,12 @@ class EventsPage2 extends StatelessWidget implements AbstractPageComponent {
           Container(
             padding: const EdgeInsets.only(top: 70, bottom: 30),
             child: Container(
-              child: GridViewDays(
+              child: GridViewDaysEvent(
                 eventName: _eventName,
                 eventDate: _eventDate,
                 eventTime: _eventTime,
+                eventLocation: _eventLocation,
+                eventPeopleGoing: _eventPeopleGoing,
                 eventImage: _eventImage,
                 eventDescription: _eventDescription,
               ),

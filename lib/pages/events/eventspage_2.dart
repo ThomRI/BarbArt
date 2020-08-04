@@ -10,26 +10,23 @@ class EventsPage2 extends StatelessWidget implements AbstractPageComponent {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    const double factor = 0.09;
+    MediaQueryData deviceInfo = MediaQuery.of(context);
+    final size = deviceInfo.size;
+    final orientation = deviceInfo.orientation;
+    final dPRatio = deviceInfo.devicePixelRatio;
 
-    final _eventName = <String>[];
-    final _eventDate = <String>[];
-    final _eventTime = <String>[];
-    final _eventLocation = <String>[];
-    final _eventPeopleGoing = <String>[];
-    final _eventImage = <String>[];
-    final _eventDescription = <String>[];
+    //print('${size.aspectRatio} # ${size.width} # ${size.height} # ${orientation.index} # $dPRatio');
 
-    for (int event_id = 1; event_id < events.length + 1; event_id++) {
-      Map<String, String> dict_event = events[event_id];
-      _eventName.add(dict_event['name']);
-      _eventDate.add(dict_event['date']);
-      _eventTime.add(dict_event['time']);
-      _eventLocation.add(dict_event['location']);
-      _eventPeopleGoing.add(dict_event['numberOfPeopleGoing']);
-      _eventImage.add(dict_event['image']);
-      _eventDescription.add(dict_event['description']);
+    final _eventDates = Map<String, List<int>>();
+    String date;
+
+    for (int eventId = 1; eventId < events.length + 1; eventId++) {
+      date = events[eventId]['date'];
+      if (_eventDates.containsKey(date)) {
+        _eventDates[date].add(eventId);
+      } else {
+        _eventDates.addAll({date: [eventId]});
+      }
     }
 
     return Scaffold(
@@ -39,14 +36,8 @@ class EventsPage2 extends StatelessWidget implements AbstractPageComponent {
           Container(
             padding: const EdgeInsets.only(top: 70, bottom: 30),
             child: Container(
-              child: GridViewDaysEvent(
-                eventName: _eventName,
-                eventDate: _eventDate,
-                eventTime: _eventTime,
-                eventLocation: _eventLocation,
-                eventPeopleGoing: _eventPeopleGoing,
-                eventImage: _eventImage,
-                eventDescription: _eventDescription,
+              child: ListViewDaysEvent(
+                eventDates:_eventDates,
               ),
             ),
           ),

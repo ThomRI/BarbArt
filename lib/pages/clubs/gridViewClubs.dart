@@ -3,62 +3,24 @@ import 'package:flutter/material.dart';
 import '../data.dart';
 import'./detailsScreenClub.dart';
 
+class ListViewDaysClubs extends StatelessWidget {
+  final Map<String, List<int>> eventDates;
 
-class GridViewClubs extends StatelessWidget {
-  final List<String> clubNameEvent;
-  final List<String> clubName;
-  final List<String> clubDate;
-  final List<String> clubTime;
-  final List<String> clubLocation;
-  final List<String> clubSeatsTotal;
-  final List<String> clubSeatsLeft;
-  final List<String> clubImage;
-  final List<String> clubDescription;
-
-  const GridViewClubs(
-      {Key key,
-        this.clubNameEvent,
-        this.clubName,
-        this.clubDate,
-        this.clubImage,
-        this.clubTime,
-        this.clubLocation,
-        this.clubSeatsTotal,
-        this.clubSeatsLeft,
-        this.clubDescription,})
-      : super(key: key);
+  const ListViewDaysClubs(
+      {Key key, this.eventDates}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+
     final size = MediaQuery.of(context).size;
-    final children = <Widget>[];
 
-    int i = 0;
+    return (ListView.builder(
 
-    while (i < clubDate.length) {
-      String day = clubDate[i];
-      final List<String> _clubNameEventOfThisDay = <String>[];
-      final List<String> _clubNameOfThisDay = <String>[];
-      final List<String> _clubTimeOfThisDay = <String>[];
-      final List<String> _clubLocationOfThisDay = <String>[];
-      final List<String> _clubSeatsTotalOfThisDay = <String>[];
-      final List<String> _clubSeatsLeftOfThisDay = <String>[];
-      final List<String> _clubImageOfThisDay = <String>[];
-      final List<String> _clubDescriptionOfThisDay = <String>[];
-      do {
-        _clubNameEventOfThisDay.add(clubNameEvent[i]);
-        _clubNameOfThisDay.add(clubName[i]);
-        _clubTimeOfThisDay.add(clubTime[i]);
-        _clubLocationOfThisDay.add(clubLocation[i]);
-        _clubSeatsTotalOfThisDay.add(clubSeatsTotal[i]);
-        _clubSeatsLeftOfThisDay.add(clubSeatsLeft[i]);
-        _clubImageOfThisDay.add(clubImage[i]);
-        _clubDescriptionOfThisDay.add(clubDescription[i]);
-        i += 1;
-      } while (i < clubDate.length && clubDate[i].split(",")[0] == day);
+      itemCount: eventDates.keys.length,
 
-      children.add(
-        Container(
+      itemBuilder: (BuildContext context, int index){
+        String day = eventDates.keys.toList()[index];
+        return Container(
           padding: EdgeInsets.only(top: 10),
           child: Stack(
             children: <Widget>[
@@ -83,7 +45,7 @@ class GridViewClubs extends StatelessWidget {
                                 style: BorderStyle.solid,
                               ),
                             ),*/
-                            child:Icon(Icons.calendar_today),
+                            child:Icon(Icons.calendar_today, color: kPrimaryColor,),
                           ),
                           Container(
                             width: size.width*2/3,
@@ -113,15 +75,8 @@ class GridViewClubs extends StatelessWidget {
                           //color: Colors.green,
                           height: 170,
                           child: GridViewClub(
-                            clubNameEvent: _clubNameEventOfThisDay,
-                            clubName: _clubNameOfThisDay,
-                            clubImage: _clubImageOfThisDay,
-                            clubDay: day,
-                            clubTime: _clubTimeOfThisDay,
-                            clubLocation: _clubLocationOfThisDay,
-                            clubSeatsTotal: _clubSeatsTotalOfThisDay,
-                            clubSeatsLeft: _clubSeatsLeftOfThisDay,
-                            clubDescription: _clubDescriptionOfThisDay,
+                            day : day,
+                            eventsIdsOfThisDay: eventDates[day],
                           ),
                           //margin: EdgeInsets.all(10),
                           padding:
@@ -135,7 +90,7 @@ class GridViewClubs extends StatelessWidget {
                           child: Icon(
                             Icons.arrow_right,
                             color: primary_color_dark,
-                            size: (_clubNameOfThisDay.length >= 3) ? 85 : 0,
+                            size: (eventDates[day].length >= 3) ? 85 : 0,
                           ),
                         ),
                       ],
@@ -145,58 +100,60 @@ class GridViewClubs extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      );
-    }
-
-    return (ListView(
-      children: children,
+        );
+      },
     ));
   }
 }
 
-
-
-
-
-
 class GridViewClub extends StatelessWidget {
-  final List<String> clubNameEvent;
-  final List<String> clubName;
-  final String clubDay;
-  final List<String> clubTime;
-  final List<String> clubLocation;
-  final List<String> clubSeatsTotal;
-  final List<String> clubSeatsLeft;
-  final List<String> clubImage;
-  final List<String> clubDescription;
+
+  final List<int> eventsIdsOfThisDay;
+  final String day;
 
   const GridViewClub(
-      {Key key,
-      this.clubNameEvent,
-      this.clubName,
-      this.clubDay,
-      this.clubTime,
-      this.clubLocation,
-      this.clubSeatsTotal,
-      this.clubSeatsLeft,
-      this.clubImage,
-      this.clubDescription})
-      : super(key: key);
+      {Key key, this.eventsIdsOfThisDay, this.day}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
 
-    final children = <Widget>[];
-    for (var i = 0; i < clubName.length; i++) {
-      children.add(
-        GestureDetector(
+    String _clubName, _eventName, _eventTime, _eventLocation, _eventSeatsTotal,
+        _eventSeatsLeft, _eventImage, _eventDescription;
+
+    return (GridView.builder(
+      primary: false,
+      scrollDirection: Axis.horizontal,
+
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 1,
+        mainAxisSpacing: 10,
+      ),
+
+      itemCount: eventsIdsOfThisDay.length,
+
+      itemBuilder: (BuildContext context, int i){
+        Map<String, String> dictEvent = clubs[eventsIdsOfThisDay[i]];
+        _clubName = dictEvent['club'];
+        _eventName = dictEvent['name'];
+        _eventTime = dictEvent['time'];
+        _eventImage = dictEvent['image'];
+
+        return GestureDetector(
+
           onTap: () {
+            Map<String, String> dictEvent = clubs[eventsIdsOfThisDay[i]];
+            _eventName = dictEvent['name'];
+            _clubName = dictEvent['club'];
+            _eventTime = dictEvent['time'];
+            _eventLocation = dictEvent['location'];
+            _eventSeatsTotal = dictEvent['numberOfSeatsTotal'];
+            _eventSeatsLeft = dictEvent['numberOfSeatsLeft'];
+            _eventImage = dictEvent['image'];
+            _eventDescription = dictEvent['description'];
             Navigator.push(
                 context,
-                DetailsScreenClub(clubNameEvent[i], clubName[i], clubDay, clubTime[i], clubLocation[i], clubSeatsTotal[i],
-                    clubSeatsLeft[i], clubImage[i], clubDescription[i]));
+                DetailsScreenClub(_eventName, _clubName ,day, _eventTime, _eventLocation, _eventSeatsTotal,
+                    _eventSeatsLeft, _eventImage, _eventDescription));
           },
           child: Container(
             alignment: Alignment.center,
@@ -217,7 +174,7 @@ class GridViewClub extends StatelessWidget {
                       ),
                       image: DecorationImage(
                         fit: BoxFit.cover,
-                        image: AssetImage(clubImage[i]),
+                        image: AssetImage(_eventImage),
                       ),
                     ),
                   ),
@@ -227,7 +184,7 @@ class GridViewClub extends StatelessWidget {
                   child: RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                      text: ' ${clubName[i]} \n',
+                      text: ' $_clubName \n',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontStyle: FontStyle.italic,
@@ -237,14 +194,14 @@ class GridViewClub extends StatelessWidget {
                       ),
                       children: <TextSpan>[
                         TextSpan(
-                          text: ' ${clubNameEvent[i]} \n',
+                          text: ' $_eventName \n',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.normal,
                           ),
                         ),
                         TextSpan(
-                          text: ' ${clubTime[i]} ',
+                          text: ' $_eventTime ',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.normal,
@@ -257,17 +214,8 @@ class GridViewClub extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      );
-    }
-
-    return (GridView.count(
-      primary: false,
-      scrollDirection: Axis.horizontal,
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
-      crossAxisCount: 1,
-      children: children,
+        );
+      },
     ));
   }
 }

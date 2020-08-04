@@ -4,51 +4,27 @@ import '../data.dart';
 import 'detailsScreenEvent.dart';
 
 
-class GridViewDaysEvent extends StatelessWidget {
-  final List<String> eventName;
-  final List<String> eventDate;
-  final List<String> eventTime;
-  final List<String> eventLocation;
-  final List<String> eventPeopleGoing;
-  final List<String> eventImage;
-  final List<String> eventDescription;
+class ListViewDaysEvent extends StatelessWidget {
+  final Map<String, List<int>> eventDates;
 
-  const GridViewDaysEvent(
-      {Key key,
-        this.eventName,
-        this.eventDate,
-        this.eventImage,
-        this.eventTime,
-        this.eventDescription, this.eventLocation, this.eventPeopleGoing})
-      : super(key: key);
+  const ListViewDaysEvent(
+      {Key key, this.eventDates}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final children = <Widget>[];
 
-    int i = 0;
+    MediaQueryData deviceInfo = MediaQuery.of(context);
+    final size = deviceInfo.size;
+    final orientation = deviceInfo.orientation;
+    final dPRatio = deviceInfo.devicePixelRatio;
 
-    while (i < eventDate.length) {
-      String day = eventDate[i];
-      final List<String> _eventNameOfThisDay = <String>[];
-      final List<String> _eventTimeOfThisDay = <String>[];
-      final List<String> _eventLocationOfThisDay = <String>[];
-      final List<String> _eventPeopleGoingOfThisDay = <String>[];
-      final List<String> _eventImageOfThisDay = <String>[];
-      final List<String> _eventDescriptionOfThisDay = <String>[];
-      do {
-        _eventNameOfThisDay.add(eventName[i]);
-        _eventTimeOfThisDay.add(eventTime[i]);
-        _eventLocationOfThisDay.add(eventLocation[i]);
-        _eventPeopleGoingOfThisDay.add(eventPeopleGoing[i]);
-        _eventImageOfThisDay.add(eventImage[i]);
-        _eventDescriptionOfThisDay.add(eventDescription[i]);
-        i += 1;
-      } while (i < eventDate.length && eventDate[i].split(",")[0] == day);
+    return (ListView.builder(
 
-      children.add(
-        Container(
+      itemCount: eventDates.keys.length,
+
+      itemBuilder: (BuildContext context, int index){
+        String day = eventDates.keys.toList()[index];
+        return Container(
           padding: EdgeInsets.only(top: 10),
           child: Stack(
             children: <Widget>[
@@ -103,13 +79,8 @@ class GridViewDaysEvent extends StatelessWidget {
                           //color: Colors.green,
                           height: 170,
                           child: GridViewEvent(
-                            eventName: _eventNameOfThisDay,
-                            eventImage: _eventImageOfThisDay,
-                            eventDay: day,
-                            eventTime: _eventTimeOfThisDay,
-                            eventLocation: _eventLocationOfThisDay,
-                            eventPeopleGoing: _eventPeopleGoingOfThisDay,
-                            eventDescription: _eventDescriptionOfThisDay,
+                            day : day,
+                            eventsIdsOfThisDay: eventDates[day],
                           ),
                           //margin: EdgeInsets.all(10),
                           padding:
@@ -123,7 +94,7 @@ class GridViewDaysEvent extends StatelessWidget {
                           child: Icon(
                             Icons.arrow_right,
                             color: primary_color_dark,
-                            size: (_eventNameOfThisDay.length >= 3) ? 85 : 0,
+                            size: (eventDates[day].length >= 3) ? 85 : 0,
                           ),
                         ),
                       ],
@@ -133,52 +104,57 @@ class GridViewDaysEvent extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      );
-    }
-
-    return (ListView(
-      children: children,
+        );
+      },
     ));
   }
 }
 
-
-
-
-
-
 class GridViewEvent extends StatelessWidget {
-  final List<String> eventName;
-  final String eventDay;
-  final List<String> eventTime;
-  final List<String> eventLocation;
-  final List<String> eventPeopleGoing;
-  final List<String> eventImage;
-  final List<String> eventDescription;
+
+  final List<int> eventsIdsOfThisDay;
+  final String day;
 
   const GridViewEvent(
-      {Key key,
-      this.eventName,
-      this.eventDay,
-      this.eventTime,
-      this.eventImage,
-      this.eventDescription, this.eventLocation, this.eventPeopleGoing})
-      : super(key: key);
+      {Key key, this.eventsIdsOfThisDay, this.day}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
 
-    final children = <Widget>[];
-    for (var i = 0; i < eventName.length; i++) {
-      children.add(
-        GestureDetector(
+    String _eventName, _eventTime, _eventLocation, _eventPeopleGoing,
+    _eventImage, _eventDescription;
+
+    return (GridView.builder(
+      primary: false,
+      scrollDirection: Axis.horizontal,
+
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 1,
+        mainAxisSpacing: 10,
+      ),
+
+      itemCount: eventsIdsOfThisDay.length,
+
+      itemBuilder: (BuildContext context, int i){
+        Map<String, String> dictEvent = events[eventsIdsOfThisDay[i]];
+        _eventName = dictEvent['name'];
+        _eventTime = dictEvent['time'];
+        _eventImage = dictEvent['image'];
+
+        return GestureDetector(
+
           onTap: () {
+            Map<String, String> dictEvent = events[eventsIdsOfThisDay[i]];
+            _eventName = dictEvent['name'];
+            _eventTime = dictEvent['time'];
+            _eventLocation = dictEvent['location'];
+            _eventPeopleGoing = dictEvent['numberOfPeopleGoing'];
+            _eventImage = dictEvent['image'];
+            _eventDescription = dictEvent['description'];
             Navigator.push(
                 context,
-                DetailsScreenEvent(eventName[i], eventDay, eventTime[i], eventLocation[i], eventPeopleGoing[i],
-                    eventImage[i], eventDescription[i]));
+                DetailsScreenEvent(_eventName, day, _eventTime, _eventLocation, _eventPeopleGoing,
+                    _eventImage, _eventDescription));
           },
           child: Container(
             alignment: Alignment.center,
@@ -199,7 +175,7 @@ class GridViewEvent extends StatelessWidget {
                       ),
                       image: DecorationImage(
                         fit: BoxFit.cover,
-                        image: AssetImage(eventImage[i]),
+                        image: AssetImage(_eventImage),
                       ),
                     ),
                   ),
@@ -209,7 +185,7 @@ class GridViewEvent extends StatelessWidget {
                   child: RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                      text: ' ${eventName[i]} \n',
+                      text: ' $_eventName \n',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
@@ -218,7 +194,7 @@ class GridViewEvent extends StatelessWidget {
                       ),
                       children: <TextSpan>[
                         TextSpan(
-                          text: ' ${eventTime[i]} ',
+                          text: ' $_eventTime ',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.normal,
@@ -231,17 +207,8 @@ class GridViewEvent extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      );
-    }
-
-    return (GridView.count(
-      primary: false,
-      scrollDirection: Axis.horizontal,
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
-      crossAxisCount: 1,
-      children: children,
+        );
+      },
     ));
   }
 }

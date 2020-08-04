@@ -29,15 +29,7 @@ class ClubsPage extends StatefulWidget implements AbstractPageComponent{
 
 class _ClubPageState extends State<ClubsPage> {
 
-  var _clubNameEvent = <String>[];
-  var _clubName = <String>[];
-  var _clubDate = <String>[];
-  var _clubTime = <String>[];
-  var _clubLocation = <String>[];
-  var _clubSeatsTotal = <String>[];
-  var _clubSeatsLeft = <String>[];
-  var _clubImage = <String>[];
-  var _clubDescription = <String>[];
+  var _eventClubsDates = Map<String, List<int>>();
   var _initialValuesString;
   var initialSelectedClubsList;
   var firstTime = true;
@@ -67,28 +59,26 @@ class _ClubPageState extends State<ClubsPage> {
     }
   }
 
-  void populateClubLists(List<String> selectedClubsList){
-    _clubNameEvent = <String>[];
-    _clubName = <String>[];
-    _clubDate = <String>[];
-    _clubTime = <String>[];
-    _clubLocation = <String>[];
-    _clubSeatsTotal = <String>[];
-    _clubSeatsLeft = <String>[];
-    _clubImage = <String>[];
-    _clubDescription = <String>[];
-    for (int clubId = 1; clubId < clubs.length + 1; clubId++) {
-      Map<String, String> dictClub = clubs[clubId];
-      if(selectedClubsList.contains(dictClub['club'])){
-        _clubNameEvent.add(dictClub['name']);
-        _clubName.add(dictClub['club']);
-        _clubDate.add(dictClub['date']);
-        _clubTime.add(dictClub['time']);
-        _clubLocation.add(dictClub['location']);
-        _clubSeatsTotal.add(dictClub['numberOfSeatsTotal']);
-        _clubSeatsLeft.add(dictClub['numberOfSeatsLeft']);
-        _clubImage.add(dictClub['image']);
-        _clubDescription.add(dictClub['description']);
+  void populateClubLists(){
+
+    List<String> selectedClubsList = new List<String>();
+
+    for (int index = 0; index < valuesToPopulate.length; index++){
+      if (valuesToPopulate[valuesToPopulate.keys.toList()[index]]){
+        selectedClubsList.add(valuesToPopulate.keys.toList()[index]);
+      }
+    }
+
+    String date;
+    _eventClubsDates = Map<String, List<int>>();
+    for (int eventId = 1; eventId < clubs.length + 1; eventId++) {
+      date = clubs[eventId]['date'];
+      if(selectedClubsList.contains(clubs[eventId]['club'])){
+        if (_eventClubsDates.containsKey(date)) {
+          _eventClubsDates[date].add(eventId);
+        } else {
+          _eventClubsDates.addAll({date: [eventId]});
+        }
       }
     }
   }
@@ -103,47 +93,7 @@ class _ClubPageState extends State<ClubsPage> {
       firstTime = false;
     }
 
-    List<Widget> childrenDrawer = new List<Widget>();
-    List<String> selectedClubsList = new List<String>();
-    for (int index = 0; index < valuesToPopulate.length; index++){
-      if (valuesToPopulate[valuesToPopulate.keys.toList()[index]]){
-        selectedClubsList.add(valuesToPopulate.keys.toList()[index]);
-      }
-
-      childrenDrawer.add(
-          Container(
-            child: FlatButton(
-              child: Column(
-                children: <Widget>[
-                  ColorFiltered(
-                  colorFilter: ColorFilter.mode((valuesToPopulate[valuesToPopulate.keys.toList()[index]]) ? Colors.transparent : Colors.black, BlendMode.color),
-                  child: Container(
-                    width: 80,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        fit: BoxFit.contain,
-                        image: AssetImage('assets/images/event2.png'),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    //padding: EdgeInsets.only(left: 10),
-                    child:Text(valuesToPopulate.keys.toList()[index], style: TextStyle(fontSize: 10, color: Colors.grey),)
-                  ),
-                ],
-              ),
-              onPressed: () {setState(() {
-                valuesToPopulate[valuesToPopulate.keys.toList()[index]] = !valuesToPopulate[valuesToPopulate.keys.toList()[index]];
-              });},
-            ),
-          )
-
-      );
-    }
-
-    populateClubLists(selectedClubsList);
+    populateClubLists();
 
     return Scaffold(
       key: _scaffoldKey,
@@ -166,15 +116,47 @@ class _ClubPageState extends State<ClubsPage> {
               //color: Colors.red,
               height: 500,
               margin: EdgeInsets.all(10),
-              child: GridView.count(
-              primary: false,
-              crossAxisCount: 3,
-              crossAxisSpacing: 5,
-              mainAxisSpacing: 5,
-              childAspectRatio: 0.7,
-              //padding: EdgeInsets.only(top: 50),
-              children: childrenDrawer,
-              scrollDirection: Axis.vertical,
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 5,
+                  mainAxisSpacing: 5,
+                  childAspectRatio: 0.7,
+                  //padding: EdgeInsets.only(top: 50),
+                  ),
+                itemCount: valuesToPopulate.length,
+                itemBuilder: (BuildContext context, int index){
+                  return Container(
+                    child: FlatButton(
+                      child: Column(
+                        children: <Widget>[
+                          ColorFiltered(
+                            colorFilter: ColorFilter.mode((valuesToPopulate[valuesToPopulate.keys.toList()[index]]) ? Colors.transparent : Colors.black, BlendMode.color),
+                            child: Container(
+                              width: 80,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  fit: BoxFit.contain,
+                                  image: AssetImage('assets/images/event2.png'),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            //padding: EdgeInsets.only(left: 10),
+                              child:Text(valuesToPopulate.keys.toList()[index], style: TextStyle(fontSize: 10, color: Colors.grey),)
+                          ),
+                        ],
+                      ),
+                      onPressed: () {setState(() {
+                        valuesToPopulate[valuesToPopulate.keys.toList()[index]] = !valuesToPopulate[valuesToPopulate.keys.toList()[index]];
+                      });},
+                    ),
+                  );
+                },
+                scrollDirection: Axis.vertical,
+
               ),
             ),
           ],
@@ -185,16 +167,8 @@ class _ClubPageState extends State<ClubsPage> {
           Container(
             padding: const EdgeInsets.only(top: 70, bottom: 30),
             child: Container(
-              child: GridViewClubs(
-                clubNameEvent: _clubNameEvent,
-                clubName: _clubName,
-                clubDate: _clubDate,
-                clubTime: _clubTime,
-                clubLocation: _clubLocation,
-                clubSeatsTotal: _clubSeatsTotal,
-                clubSeatsLeft: _clubSeatsLeft,
-                clubImage: _clubImage,
-                clubDescription: _clubDescription,
+              child: ListViewDaysClubs(
+                eventDates: _eventClubsDates,
               ),
             ),
           ),

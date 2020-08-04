@@ -99,7 +99,7 @@ class _ClubPageState extends State<ClubsPage> {
       key: _scaffoldKey,
       //backgroundColor: AbstractPageComponent.backgroundColor,
       endDrawer: Drawer(
-        child: Column(
+        child: ListView(
           children: <Widget>[
             Container(
               margin: EdgeInsets.only(top:65, bottom: 10),
@@ -114,7 +114,7 @@ class _ClubPageState extends State<ClubsPage> {
             ),
             Container(
               //color: Colors.red,
-              height: 500,
+              height: MediaQuery.of(context).size.height - 300,
               margin: EdgeInsets.all(10),
               child: GridView.builder(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

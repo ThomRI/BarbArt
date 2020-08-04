@@ -108,30 +108,27 @@ class _ListViewDetailsState extends State<ListViewDetails>{
 
       Container(
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
-            Expanded(
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Icon(Icons.place),
-                    Text(' ${widget.locationString.substring(0, 1).toUpperCase()
-                        + widget.locationString.substring(1)} ',style: TextStyle(
-                      fontSize: 20,))
-                  ]
-              ),
+            Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Icon(Icons.place),
+                  Text(' ${widget.locationString.substring(0, 1).toUpperCase()
+                      + widget.locationString.substring(1)} ',style: TextStyle(
+                    fontSize: 20,))
+                ]
             ),
-            Expanded(
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Icon(Icons.check_circle, color: Colors.green,),
-                    Container(
-                      child: Text('${int.parse(widget.peopleGoing) + ((going) ? 1 : 0)}', style: TextStyle(
-                        fontSize: 20,)),
-                      padding: EdgeInsets.all(5),
-                    ),
-                  ]
-              ),
+            Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Icon(Icons.check_circle, color: Colors.green,),
+                  Container(
+                    child: Text('${int.parse(widget.peopleGoing) + ((going) ? 1 : 0)}', style: TextStyle(
+                      fontSize: 20,)),
+                    padding: EdgeInsets.all(5),
+                  ),
+                ]
             ),
           ],
         ),

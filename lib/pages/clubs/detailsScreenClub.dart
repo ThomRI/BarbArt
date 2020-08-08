@@ -5,7 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../data.dart';
 
-class DetailsScreenClub extends MaterialPageRoute<Null> {
+class DetailsScreenClub extends StatelessWidget {
   final String titleString;
   final String clubString;
   final String dayString;
@@ -18,20 +18,20 @@ class DetailsScreenClub extends MaterialPageRoute<Null> {
 
   DetailsScreenClub(this.titleString, this.clubString, this.dayString, this.timeString,
       this.locationString, this.seatsTotalString, this.seatsLeftString, this.imagePath, this.description)
-      : super(builder: (BuildContext context) {
+      : super();
 
-          var going = false;
-
-          return Scaffold(
-            backgroundColor: background_color,
-            appBar: AppBar(
-              title: Text(titleString),
-            ),
-            body: Center(
-              child: ListViewDetails(titleString, clubString, dayString, timeString, locationString, seatsTotalString, seatsLeftString, imagePath, description)
-            ),
-          );
-        });
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: background_color,
+      appBar: AppBar(
+        title: Text(titleString),
+      ),
+      body: Center(
+          child: ListViewDetails(titleString, clubString, dayString, timeString, locationString, seatsTotalString, seatsLeftString, imagePath, description)
+      ),
+    );
+  }
 }
 
 class ListViewDetails extends StatefulWidget{

@@ -152,8 +152,8 @@ class GridViewClub extends StatelessWidget {
             _eventDescription = dictEvent['description'];
             Navigator.push(
                 context,
-                DetailsScreenClub(_eventName, _clubName ,day, _eventTime, _eventLocation, _eventSeatsTotal,
-                    _eventSeatsLeft, _eventImage, _eventDescription));
+                MaterialPageRoute(builder: (context) => DetailsScreenClub(_eventName, _clubName ,day, _eventTime, _eventLocation, _eventSeatsTotal,
+                    _eventSeatsLeft, _eventImage, _eventDescription)));
           },
           child: Container(
             alignment: Alignment.center,

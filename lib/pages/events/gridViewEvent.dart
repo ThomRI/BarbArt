@@ -153,8 +153,8 @@ class GridViewEvent extends StatelessWidget {
             _eventDescription = dictEvent['description'];
             Navigator.push(
                 context,
-                DetailsScreenEvent(_eventName, day, _eventTime, _eventLocation, _eventPeopleGoing,
-                    _eventImage, _eventDescription));
+                MaterialPageRoute(builder: (context) => DetailsScreenEvent(_eventName, day, _eventTime, _eventLocation, _eventPeopleGoing,
+                    _eventImage, _eventDescription)));
           },
           child: Container(
             alignment: Alignment.center,

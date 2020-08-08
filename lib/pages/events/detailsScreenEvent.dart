@@ -5,7 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../data.dart';
 
-class DetailsScreenEvent extends MaterialPageRoute<Null> {
+class DetailsScreenEvent extends StatelessWidget {
   final String eventString;
   final String dayString;
   final String timeString;
@@ -16,9 +16,10 @@ class DetailsScreenEvent extends MaterialPageRoute<Null> {
 
   DetailsScreenEvent(this.eventString, this.dayString, this.timeString,
       this.locationString, this.peopleGoing, this.imagePath, this.description)
-      : super(builder: (BuildContext context) {
+      : super();
 
-    var going = false;
+  @override
+  Widget build(BuildContext context) {
 
     return Scaffold(
       backgroundColor: background_color,
@@ -29,7 +30,7 @@ class DetailsScreenEvent extends MaterialPageRoute<Null> {
           child: ListViewDetails(eventString, dayString, timeString, locationString, peopleGoing, imagePath, description)
       ),
     );
-  });
+  }
 }
 
 class ListViewDetails extends StatefulWidget{

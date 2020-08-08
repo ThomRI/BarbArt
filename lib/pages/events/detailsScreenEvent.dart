@@ -60,16 +60,19 @@ class _ListViewDetailsState extends State<ListViewDetails>{
   @override
   Widget build(BuildContext context) {
     return ListView(children: <Widget>[
-      ClipPath(
-        clipper: MyClipper(),
-        child: Container(
-          width: MediaQuery.of(context).size.width,
-          height: 200,
-          decoration: BoxDecoration(
-            color: Colors.red,
-            image: DecorationImage(
-              image: AssetImage(widget.imagePath),
-              fit: BoxFit.cover,
+      Hero(
+        tag: '${widget.dayString} ${widget.timeString}',
+        child: ClipPath(
+          clipper: MyClipper(),
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.red,
+              image: DecorationImage(
+                image: AssetImage(widget.imagePath),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
         ),

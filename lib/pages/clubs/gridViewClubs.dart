@@ -163,18 +163,21 @@ class GridViewClub extends StatelessWidget {
               children: <Widget>[
                 Opacity(
                   opacity: 0.8,
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      //color: Colors.white,
-                      border: new Border.all(
-                        color: kBackgroundColor,
-                        width: 5,
-                        style: BorderStyle.solid,
-                      ),
-                      image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: AssetImage(_eventImage),
+                  child: Hero(
+                    tag: '$day $_eventTime',
+                    child: Container(
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        //color: Colors.white,
+                        border: new Border.all(
+                          color: kBackgroundColor,
+                          width: 5,
+                          style: BorderStyle.solid,
+                        ),
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: AssetImage(_eventImage),
+                        ),
                       ),
                     ),
                   ),

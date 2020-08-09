@@ -344,7 +344,7 @@ class _RowTimePickerState extends State<RowTimePicker>{
             FlatButton(
               child: Text(time.hour.toString() + "h" + ((time.minute>=10) ? time.minute.toString() : "0"+time.minute.toString()) ?? ""),
               onPressed: () {
-                DatePicker.showDateTimePicker(context, showTitleActions: true,
+                DatePicker.showTimePicker(context, showTitleActions: true, showSecondsColumn: false,
                     onChanged: (date) {
                       print('change $date in time zone ' + date.timeZoneOffset.inHours.toString());
                     },

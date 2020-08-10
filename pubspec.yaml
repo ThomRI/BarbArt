@@ -24,7 +24,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_week_view: ^0.3.1
+  intl: ^0.16.1
+  http: ^0.12.2
+  path_provider: ^1.6.11
   carousel_slider: ^2.2.1
 
 
@@ -53,6 +55,8 @@ flutter:
     - assets/header_background_sd.png
     - assets/logo_clipped.png
     - assets/header_background_raw.png
+    - assets/profile_generic.png
+    - assets/event.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

@@ -12,7 +12,7 @@ class MainScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        //backgroundColor: kPrimaryColor,
+        backgroundColor: kBackgroundColor,
         //appBar: _buildAppBar(),
         body: MainBody(),
       ),

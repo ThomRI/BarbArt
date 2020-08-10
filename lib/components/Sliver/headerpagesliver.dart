@@ -11,13 +11,14 @@ enum SliverActions {
   Expand,           // Expand the FlexibleSpaceBar
   None,             // Do nothing
 
-  CollapseAndStay,  // Collapses and forbid the expansion // TODO : Implement CollapseAndStay. For now just collapses.
-  ExpandAndStay,    // Expands and forbids to collapse    // TODO : Implement ExpandAndStay. For now just expands.
+  CollapseAndStay,  // Collapses and forbid the expansion
+  ExpandAndStay,    // Expands and forbids to collapse
 }
 
 /// This class's purpose is to represent a full body page with a header containing a custom logo and a page list that can be scrolled underneath.
 /// It should be highly configurable, but is not for now.
 /// TODO : Add configuration possibilities.
+/// TODO : Warning : Problem of animation when selecting page from header. Works well with every page but the second one which jumps directly to the corresponding page!
 class HeaderPageSliver extends StatefulWidget {
   final List pagesList;
   final SliverActions Function(int index) onPageChanged; // Should return a SliverAction
@@ -141,10 +142,6 @@ class HeaderPageSliverState extends State<HeaderPageSliver> {
         SliverList(
           delegate: SliverChildListDelegate([
             Container(
-              decoration: BoxDecoration(
-                color: kBackgroundColor,
-              ),
-
               child: PageListBody(
                 key: bodyPageListKey,
                 onPageChanged: () { /* PAGE CHANGED IN THE BODY */

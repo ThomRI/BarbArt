@@ -1,18 +1,9 @@
 import 'package:barbart/components/AbstractPageComponent.dart';
+import 'package:barbart/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_week_view/flutter_week_view.dart';
 
-class MusicPage extends StatelessWidget implements AbstractPageComponent {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: WeekView(
-        dates: [DateTime.now().subtract(Duration(days: 1)), DateTime.now(), DateTime.now().add(Duration(days: 1))],
-      ),
-    );
-  }
-
+class MusicPage extends StatefulWidget implements AbstractPageComponent {
   @override
   String get name => "Salle musique";
 
@@ -22,5 +13,14 @@ class MusicPage extends StatelessWidget implements AbstractPageComponent {
   @override
   Icon get logo => Icon(Icons.music_note, color: Colors.white, size: 100);
 
+  @override
+  State<StatefulWidget> createState() => _MusicPageState();
+}
 
+class _MusicPageState extends State<MusicPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+  
 }

@@ -8,8 +8,6 @@ import 'package:flutter/material.dart';
 class MainBody extends StatelessWidget {
   MainBody({Key key}) : super(key: key);
 
-  final GlobalKey<HeaderPageSliverState> key = new GlobalKey<HeaderPageSliverState>();
-
   @override
   Widget build(BuildContext context) {
     return HeaderPageSliver(

@@ -12,16 +12,11 @@ class HomePage extends StatelessWidget implements AbstractPageComponent{
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AbstractPageComponent.backgroundColor,
-
-      key: _scaffoldKey,
-      body: Container(
-        child: Center(
-            child: const Text("Home Page"),
-          ),
-        ),
-      );
+    return Container(
+      child: Center(
+        child: const Text("Home Page"),
+      ),
+    );
   }
 
   @override

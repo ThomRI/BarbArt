@@ -1,5 +1,6 @@
 import 'package:barbart/components/AbstractPageComponent.dart';
 import 'package:barbart/components/ControlledCarousel.dart';
+import 'package:barbart/main.dart';
 import 'package:barbart/pages/clubs/clubspage.dart';
 import 'package:barbart/pages/events/eventspage.dart';
 import 'package:barbart/pages/home/homepage.dart';
@@ -12,6 +13,7 @@ import 'package:flutter/material.dart';
 import '../constants.dart';
 import '../utils.dart';
 
+// ignore: must_be_immutable
 class PageListHeader extends StatelessWidget {
 
   List pagesList;
@@ -43,11 +45,10 @@ class PageListHeader extends StatelessWidget {
                   alignment: Alignment.topCenter,
                   child: Container(
                     margin: EdgeInsets.only(top: dp(context, 10)),
-                    child: ControlledCarousel(
-                      enabled: true,
-                      itemList: pagesList.map((page) => Container(
-                        child: page.logo,
-                      )).toList(),
+                    child: Image(
+                      image: AssetImage("assets/logo_clipped.png"),
+                      fit: BoxFit.cover,
+                      width: dp(context, 50),
                     ),
                   ),
                 ),
@@ -64,7 +65,7 @@ class PageListHeader extends StatelessWidget {
       ),
 
       decoration: BoxDecoration(
-        color: AbstractPageComponent.backgroundColor,
+        color: kBackgroundColor,
       ),
     );
   }

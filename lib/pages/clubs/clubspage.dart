@@ -9,13 +9,10 @@ class ClubsPage extends StatelessWidget implements AbstractPageComponent{
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AbstractPageComponent.backgroundColor,
-      body: Container(
+    return Container(
         child: Center(
           child: Text("Clubs Page"),
         )
-      ),
     );
   }
 

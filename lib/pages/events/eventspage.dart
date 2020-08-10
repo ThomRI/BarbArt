@@ -1,20 +1,14 @@
 import 'package:barbart/components/AbstractPageComponent.dart';
 import 'package:barbart/constants.dart';
+import 'package:barbart/main.dart';
+import 'package:barbart/pages/events/squaredayview.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../utils.dart';
+
 class EventsPage extends StatelessWidget implements AbstractPageComponent {
   EventsPage({Key key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AbstractPageComponent.backgroundColor,
-      body: Center(
-        child: Text("Events Page"),
-      ),
-    );
-  }
 
   @override
   Icon get icon => Icon(Icons.people, color: Colors.white);
@@ -24,5 +18,13 @@ class EventsPage extends StatelessWidget implements AbstractPageComponent {
 
   @override
   String get name => "Évènements";
+
+  @override
+  Widget build(BuildContext context) {
+    return SquareDayView(
+
+    );
+  }
+
 
 }

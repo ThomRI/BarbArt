@@ -30,6 +30,8 @@ class ProfileScreenState extends State<ProfileScreen>{
     });
   }
 
+  bool receiveNotifications = true;
+
   @override
   Widget build(BuildContext context) {
 
@@ -144,10 +146,24 @@ class ProfileScreenState extends State<ProfileScreen>{
                 ],
               ),
               SizedBox(
-                height: (MediaQuery.of(context).orientation == Orientation.portrait) ? 100: 50,
+                height: (MediaQuery.of(context).orientation == Orientation.portrait) ? 50: 30,
+              ),
+
+              Padding(
+                padding: EdgeInsets.only(left: 20, right: 20),
+                child: SwitchListTile(
+                  onChanged: (bool){
+                    setState(() {
+                      receiveNotifications = bool;
+                    });
+                  }, //TODO: implement onChanged function
+                  title: Text('Receive notifications'),
+                  value: receiveNotifications,
+                  activeColor: kPrimaryColor,
+                ),
               ),
               // TODO: Add on pressed functions
-              ProfileButton(title: 'Change password', negativeColors: true, iconData: Icons.lock, onPressed: (context){},),
+              ProfileButton(title: 'Change password', negativeColors: true, marginTop: 30, iconData: Icons.lock, onPressed: (context){},),
               ProfileButton(title: 'Clubs you follow' , negativeColors: true, marginTop: 30, marginBottom: 30, iconData: Icons.apps, onPressed: _showMultiSelect),
               ProfileButton(title: 'Log out' , marginTop: 30, marginBottom: 50, iconData: Icons.person, onPressed: (context){},),
             ],

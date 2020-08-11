@@ -23,9 +23,9 @@ class MyApp extends StatelessWidget {
         primaryColor: kPrimaryColor,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-
+      initialRoute: '/login',
       routes: {
-        '/' : (context) => MainScreen(),
+        '/home' : (context) => MainScreen(),
         '/settings' : (context) => SettingsScreen(),
         '/login' : (context) => LoginScreen(),
         '/profile' : (context) => ProfileScreen(),

@@ -26,16 +26,6 @@ class HomePage extends StatelessWidget implements AbstractPageComponent{
                   child: const Text("Home Page"),
                 ),
               ),
-              Expanded(
-                child: Center(
-                  child: FlatButton(
-
-                    onPressed: (){Navigator.of(context).pushNamed('/login');},
-                      color: kPrimaryColor,
-                    child: Text("Log in", style: TextStyle(color: Colors.white)),
-                  ),
-                ),
-              )
             ],
           )
 

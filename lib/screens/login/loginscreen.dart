@@ -18,7 +18,13 @@ class _LoginScreenState extends State<LoginScreen>{
         length: 2,
         child: Scaffold(
           appBar: AppBar(
-            title: Text("Log in"),
+            title: Row(
+              children: <Widget>[
+                CircleAvatar(backgroundImage: AssetImage('assets/logo.png'),),
+                SizedBox(width: 20,),
+                Text('Barb\'art', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),)
+              ],
+            ),
             bottom: TabBar(
               tabs: [
                 Tab(icon: Icon(Icons.check), text: "Log in",),
@@ -99,7 +105,7 @@ class _LoginTabState extends State<LoginTab>{
                 ),
               ),
               GestureDetector(
-                onTap: (){},
+                onTap: (){Navigator.pushReplacementNamed(context, '/home');},
                 child: Container(
                   margin: EdgeInsets.only(top : 50, bottom: 70),
                   height: 50,

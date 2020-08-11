@@ -32,6 +32,8 @@ class ProfileScreenState extends State<ProfileScreen>{
 
   bool receiveNotifications = true;
 
+  final double pi = 3.141592653589793;
+
   @override
   Widget build(BuildContext context) {
 
@@ -105,67 +107,98 @@ class ProfileScreenState extends State<ProfileScreen>{
 
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Profil'),),
+        appBar: AppBar(title: const Text('Profile'),),
         backgroundColor: Colors.white,
         body: SingleChildScrollView(
-          child: Column(
+          child: Stack(
             children: <Widget>[
-              Column(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  SizedBox(
-                    height: (MediaQuery.of(context).orientation == Orientation.portrait) ? 80: 40,
-                  ),
-                  CircleAvatar(
-                    backgroundImage: _image ?? AssetImage('assets/logo.png'),
-                    radius: 80,
-                    child: Align(
-                      alignment: Alignment.bottomRight,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: kPrimaryColor,
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                              Icons.edit
-                          ),
-                          onPressed: getImage,
-                          tooltip: 'Pick Image',
-                        ),
+                  Container(
+                    //color: Colors.red,
+                    child: Transform.rotate(
+                      angle: pi/5,
+                      child: Image(
+                        width: 120,
+                        height: 120,
+                        image:AssetImage('assets/images/pickaxe.png'),
                       ),
                     ),
                   ),
                   Container(
-                    margin: EdgeInsets.only(top: 10),
-                    padding: EdgeInsets.all(5),
-                      child: Text('Surname Name', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                  ),
-                  Container(
-                    child: Text('emailadress@gmail.com', style: TextStyle(fontSize: 12),),
+                    //color: Colors.blue,
+                    child: Transform.rotate(
+                      angle: -pi/5,
+                      child: Image(
+                        width: 120,
+                        height: 120,
+                        image:AssetImage('assets/images/boule_pics.png'),
+                      ),
+                    ),
                   ),
                 ],
               ),
-              SizedBox(
-                height: (MediaQuery.of(context).orientation == Orientation.portrait) ? 50: 30,
-              ),
+              Column(
+                children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      SizedBox(
+                        height: (MediaQuery.of(context).orientation == Orientation.portrait) ? 80: 40,
+                      ),
+                      CircleAvatar(
+                        backgroundImage: _image ?? AssetImage('assets/logo.png'),
+                        radius: 80,
+                        child: Align(
+                          alignment: Alignment.bottomRight,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: kPrimaryColor,
+                            ),
+                            child: IconButton(
+                              icon: Icon(
+                                  Icons.edit
+                              ),
+                              onPressed: getImage,
+                              tooltip: 'Pick Image',
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        margin: EdgeInsets.only(top: 10),
+                        padding: EdgeInsets.all(5),
+                          child: Text('Surname Name', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                      ),
+                      Container(
+                        child: Text('emailadress@gmail.com', style: TextStyle(fontSize: 12),),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: (MediaQuery.of(context).orientation == Orientation.portrait) ? 50: 30,
+                  ),
 
-              Padding(
-                padding: EdgeInsets.only(left: 20, right: 20),
-                child: SwitchListTile(
-                  onChanged: (bool){
-                    setState(() {
-                      receiveNotifications = bool;
-                    });
-                  }, //TODO: implement onChanged function
-                  title: Text('Receive notifications'),
-                  value: receiveNotifications,
-                  activeColor: kPrimaryColor,
-                ),
+                  Padding(
+                    padding: EdgeInsets.only(left: 20, right: 20),
+                    child: SwitchListTile(
+                      onChanged: (bool){
+                        setState(() {
+                          receiveNotifications = bool;
+                        });
+                      }, //TODO: implement onChanged function
+                      title: Text('Receive notifications'),
+                      value: receiveNotifications,
+                      activeColor: kPrimaryColor,
+                    ),
+                  ),
+                  // TODO: Add on pressed functions
+                  ProfileButton(title: 'Change password', negativeColors: true, marginTop: 30, iconData: Icons.lock, onPressed: (context){},),
+                  ProfileButton(title: 'Clubs you follow' , negativeColors: true, marginTop: 30, marginBottom: 30, iconData: Icons.apps, onPressed: _showMultiSelect),
+                  ProfileButton(title: 'Log out' , marginTop: 30, marginBottom: 50, iconData: Icons.person, onPressed: (context){Navigator.popUntil(context, ModalRoute.withName('/home'));Navigator.of(context).pushReplacementNamed('/login');},),
+                ],
               ),
-              // TODO: Add on pressed functions
-              ProfileButton(title: 'Change password', negativeColors: true, marginTop: 30, iconData: Icons.lock, onPressed: (context){},),
-              ProfileButton(title: 'Clubs you follow' , negativeColors: true, marginTop: 30, marginBottom: 30, iconData: Icons.apps, onPressed: _showMultiSelect),
-              ProfileButton(title: 'Log out' , marginTop: 30, marginBottom: 50, iconData: Icons.person, onPressed: (context){},),
             ],
           ),
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants.dart';
 import '../../multiSelectDialog.dart';
@@ -19,12 +20,23 @@ class ProfileScreen extends StatefulWidget {
 class ProfileScreenState extends State<ProfileScreen>{
 
 
+  PickedFile _image;
+  final picker = ImagePicker();
+  Future getImage() async {
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    setState(() {
+      _image = PickedFile(pickedFile.path);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
 
 
     List <MultiSelectDialogItem<int>> multiItem = List();
 
+    // List of all clubs
     final valuesToPopulate = {
       1 : "Cuisine",
       2 : "Cinéma",
@@ -36,6 +48,7 @@ class ProfileScreenState extends State<ProfileScreen>{
     var _initialValuesString = new List<String>();
     var _initialValuesInt = new List<int>();
 
+    // TODO: change this function so that it uses server based data and not sharedPreferences
     void getInitialValues() async{
       SharedPreferences prefs = await SharedPreferences.getInstance();
       if (prefs.getStringList('initialValues')!= null){
@@ -62,6 +75,8 @@ class ProfileScreenState extends State<ProfileScreen>{
       getInitialValues();
       populateMultiSelect();
       final items = multiItem;
+
+      // TODO: instead of SharedPreferences, get values from server or local data
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
       final selectedValues = await showDialog<Set<int>>(
@@ -81,6 +96,7 @@ class ProfileScreenState extends State<ProfileScreen>{
         for(int x in _selectedValuesInt){
           _selectedValuesString.add(x.toString());
         }
+        // TODO: Update values in SQL server
         prefs.setStringList('initialValues', _selectedValuesString);
 
       });}
@@ -89,20 +105,106 @@ class ProfileScreenState extends State<ProfileScreen>{
       child: Scaffold(
         appBar: AppBar(title: const Text('Profil'),),
         backgroundColor: Colors.white,
-        body: Center(
-          child: Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.only(top: 75, bottom: 30, right: 10),
-            child: RaisedButton(
-
-              color: kPrimaryColor,
-              child: Text("Clubs à afficher par défaut" ,
-                style: TextStyle(color: Colors.white,),),
-              onPressed: () => _showMultiSelect(context),
-            ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: <Widget>[
+              Column(
+                children: <Widget>[
+                  SizedBox(
+                    height: (MediaQuery.of(context).orientation == Orientation.portrait) ? 80: 40,
+                  ),
+                  CircleAvatar(
+                    backgroundImage: _image ?? AssetImage('assets/logo.png'),
+                    radius: 80,
+                    child: Align(
+                      alignment: Alignment.bottomRight,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: kPrimaryColor,
+                        ),
+                        child: IconButton(
+                          icon: Icon(
+                              Icons.edit
+                          ),
+                          onPressed: getImage,
+                          tooltip: 'Pick Image',
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(top: 10),
+                    padding: EdgeInsets.all(5),
+                      child: Text('Surname Name', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                  ),
+                  Container(
+                    child: Text('emailadress@gmail.com', style: TextStyle(fontSize: 12),),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: (MediaQuery.of(context).orientation == Orientation.portrait) ? 100: 50,
+              ),
+              // TODO: Add on pressed functions
+              ProfileButton(title: 'Change password', negativeColors: true, iconData: Icons.lock, onPressed: (context){},),
+              ProfileButton(title: 'Clubs you follow' , negativeColors: true, marginTop: 30, marginBottom: 30, iconData: Icons.apps, onPressed: _showMultiSelect),
+              ProfileButton(title: 'Log out' , marginTop: 30, marginBottom: 50, iconData: Icons.person, onPressed: (context){},),
+            ],
           ),
         ),
       ),);
+  }
+
+}
+
+class ProfileButton extends StatelessWidget{
+
+  final String title;
+  final IconData iconData;
+  final onPressed;
+  final double marginTop;
+  final double marginBottom;
+  final bool negativeColors;
+
+  const ProfileButton({Key key, this.title = "", this.onPressed, this.iconData = Icons.remove, this.marginTop = 0, this.marginBottom = 0, this.negativeColors = false}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+   return GestureDetector(
+     onTap: () => onPressed(context),
+     child: Container(
+       margin: EdgeInsets.only(right:30, left: 30, bottom: marginBottom ?? 0, top: marginTop ?? 0),
+       padding: EdgeInsets.all(15),
+       decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(10),
+           border: Border.all(
+             color: negativeColors ? kPrimaryColor : Colors.white,
+             style: BorderStyle.solid,
+             width: 1
+           ),
+           gradient: LinearGradient(
+               colors: negativeColors ? [Colors.white, Colors.white] : [
+                 kPrimaryColor,
+                 kPrimaryColorIntermediateAlpha,
+               ]
+           )
+       ),
+       child: Center(
+         child: Row(
+           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+           children: <Widget>[
+             Container(
+               padding: EdgeInsets.only(left: 10, right: 10),
+               child: Icon(iconData, color: negativeColors ? kPrimaryColor : Colors.white,)
+             ),
+             Text(title, style: TextStyle(color: negativeColors ? kPrimaryColor : Colors.white, fontWeight: FontWeight.bold),),
+             SizedBox(width: 40,)
+           ],
+         ),
+       ),
+     ),
+   );
   }
 
 }

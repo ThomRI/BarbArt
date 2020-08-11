@@ -28,7 +28,9 @@ class MyApp extends StatelessWidget {
         password: "MyPass",
         onAuthenticated: () {
           print("Authenticated, uuid: " + gAPI.selfClient.uuid);
-          gAPI.update(APIFlags.EVENTS | APIFlags.PROFILE);
+          gAPI.update(APIFlags.EVENTS | APIFlags.PROFILE, onUpdateDone: () {
+            gAPI.save();
+          });
         }
     );
   }

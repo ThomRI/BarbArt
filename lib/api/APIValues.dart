@@ -1,4 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:barbart/api/structures.dart';
+import 'package:barbart/constants.dart';
+import 'package:barbart/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart';
 
@@ -8,7 +13,7 @@ typedef VoidCallback = void Function();
 
 class _JsonKeys {
   static const EventsList   = "events";
-  static const Event        = "event";
+  static const Event        = "events";
 
   static const ClubsList    = "clubs";
   static const Club         = "club";
@@ -18,10 +23,12 @@ class _JsonKeys {
 }
 
 class _Routes {
-  static const EventsList   = "events";
-  static const ClubsList    = "clubs";
+  static const Events   = "events";
+  static const EventsGoing = "events/going";
 
-  static const ClientsList  = "clients";
+  static const Clubs    = "clubs";
+
+  static const Clients  = "clients";
 }
 
 /// Used to declare flags for the API. For example, when re-fetching everything from server, only one update method should be called with the correct flag to indicate what to update.
@@ -60,13 +67,14 @@ class APIValues {
 
   // Always call this function to update, with the desired updates as the flag.
   /// Match local data with server according to the given flag.
-  void update(int flag, {Function authNotAliveCallback}) async {
+  void update(int flag, {Function authNotAliveCallback, Function onUpdateDone}) async {
     bool authStillAlive = true;
     if(flag & APIFlags.EVENTS != 0)   authStillAlive &= await _updateEvents();
     if(flag & APIFlags.CLUBS != 0)    authStillAlive &= await _updateClubs();
     if(flag & APIFlags.PROFILE != 0)  authStillAlive &= await _updateProfile();
 
     if(!authStillAlive && authNotAliveCallback != null) authNotAliveCallback();
+    if(authStillAlive && onUpdateDone != null)          onUpdateDone(); // Calling the callback only if the auth is still alive..
   }
 
   /* ########################### */
@@ -74,7 +82,7 @@ class APIValues {
   /* ########################### */
   Future<bool> _updateProfile() async {
     // Fetching self client infos
-    FetchResponse response = await APIManager.fetch(route: _Routes.ClientsList + "/" + selfClient.uuid, token: _token);
+    FetchResponse response = await APIManager.fetch(route: _Routes.Clients + "/" + selfClient.uuid, token: _token);
     if(response.state == FetchResponseState.ERROR_AUTH) return false;
     // Note : if the uuid isn't resolved yet, server will return an ERROR_AUTH and not an unknown error, because having the token means having the uuid (it comes with it).
 
@@ -85,7 +93,7 @@ class APIValues {
     selfClient = AClient.fromJSON(response.body);
 
     // Fetching profile picture (avatar)
-    selfClient.avatar = await APIManager.fetchImage(route: response.body['avatar_route'], token: _token);
+    selfClient.avatar = await APIManager.fetchImage(route: selfClient.avatar_route, token: _token);
 
     return true;
   }
@@ -102,7 +110,7 @@ class APIValues {
   // Returns false iff there was an authentication error
   Future<bool> _updateEvents() async {
     // Fetching events from server
-    FetchResponse response = await APIManager.fetch(route: _Routes.EventsList, token: _token);
+    FetchResponse response = await APIManager.fetch(route: _Routes.Events + "/*", token: _token);
     if(response.state == FetchResponseState.ERROR_AUTH) return false;
 
     // Not needed, and forced request disabled : using the cache list (not updating anything).
@@ -124,15 +132,31 @@ class APIValues {
     return true;
   }
 
+  // Return the success state of the request
+  Future<bool> requestGoing(int eventLocalId, {goingRequest: true, Function(bool success) onConfirmed}) async {
+    FetchResponse response = await APIManager.fetch(route: _Routes.EventsGoing + "/" + events[eventLocalId].id.toString(), params: {'going': goingRequest.toString()}, token: _token);
+
+    bool success = true;
+    if(response.state != FetchResponseState.OK) success = false;
+
+
+    if(success) { // Instead of making a full update, we can just adapt the values here as we know what happened server-side. TODO : Maybe unify the API here ?
+      this.events[eventLocalId].nbrPeopleGoing += (goingRequest) ? 1 : -1;
+    }
+
+    if(onConfirmed != null) onConfirmed(success);
+    return success;
+  }
+
   /* ############################ */
-  /* ########## CLUBS ########## */
+  /* ########## CLUBS ########### */
   /* ############################ */
 
   List<AClub> clubs = new List<AClub>();
 
   Future<bool> _updateClubs() async {
     // Fetching events from server
-    FetchResponse response = await APIManager.fetch(route: _Routes.ClubsList, token: _token);
+    FetchResponse response = await APIManager.fetch(route: _Routes.Clubs, token: _token);
     if(response.state == FetchResponseState.ERROR_AUTH) return false;
 
     // Not needed, and forced request disabled : using the cache list (not updating anything).
@@ -143,5 +167,36 @@ class APIValues {
     (response.body[_JsonKeys.ClubsList] as List<dynamic>).forEach((clubJSON) {clubs.add(new AClub.fromJSON(clubJSON));});
 
     return true;
+  }
+
+  /* ################################################ */
+  /* ########## MIRRORING SERVER ON LOCAL ########### */
+  /* ################################################ */
+
+  Future<void> save() async {
+    String path = await appLocalPath;
+    File file = new File(path + "/" + API_SAVEFILE);
+
+    // Deleting the file before overwriting
+    if(file.existsSync()) file.deleteSync();
+
+    // Serializing data
+    Map<String, dynamic> json = new Map<String, dynamic>();
+
+    /* Initializing JSON arrays */
+    json.addAll({
+      _JsonKeys.ClientsList: new List<Map<String, dynamic>>(),
+      _JsonKeys.EventsList: new List<Map<String, dynamic>>(),
+      _JsonKeys.ClubsList: new List<Map<String, dynamic>>(),
+    });
+
+    // Events
+    for(AEvent ev in this.events) json[_JsonKeys.EventsList].add(ev.toJSON());
+
+    // Clubs
+    for(AClub cl in this.clubs) json[_JsonKeys.ClubsList].add(cl.toJSON());
+
+    // Writing back into the file
+    file.writeAsString(jsonEncode(json));
   }
 }

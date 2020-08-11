@@ -1,5 +1,6 @@
 import 'package:barbart/physics/interruptible_scroll_physics.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../constants.dart';
@@ -19,6 +20,7 @@ enum SliverActions {
 /// It should be highly configurable, but is not for now.
 /// TODO : Add configuration possibilities.
 /// TODO : Warning : Problem of animation when selecting page from header. Works well with every page but the second one which jumps directly to the corresponding page!
+// ignore: must_be_immutable
 class HeaderPageSliver extends StatefulWidget {
   final List pagesList;
   final SliverActions Function(int index) onPageChanged; // Should return a SliverAction
@@ -204,6 +206,7 @@ class PageListBodyState extends State<PageListBody> {
     return Container(
       height: MediaQuery.of(context).size.height,
       child: PageView.builder(
+        physics: BouncingScrollPhysics(), // Just is nicer in general
         controller: controller,
         pageSnapping: true,
         itemBuilder: (context, index) => widget.pagesList[index],

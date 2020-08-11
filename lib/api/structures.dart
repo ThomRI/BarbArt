@@ -18,8 +18,10 @@ class AClient extends APIStructure{
           email;
 
   dynamic avatar = new AssetImage("assets/event.png");
+  String avatar_route;
 
-  AClient({this.uuid = "", this.email = ""}) {}
+  // ignore: non_constant_identifier_names
+  AClient({this.uuid = "", this.email = "", this.avatar_route = ""});
 
   // Set this client as a generic non-authenticated client
   void genericify() {
@@ -32,6 +34,7 @@ class AClient extends APIStructure{
   factory AClient.fromJSON(Map<String, dynamic> json) => AClient(
     uuid: json['uuid'],
     email: json['email'] ?? "",
+    avatar_route: json['avatar_route'] ?? ""
   );
 
   @override
@@ -48,9 +51,22 @@ class AEvent extends APIStructure{
             imageUrl,
             location;
 
+  int nbrPeopleGoing    = 0,
+      nbrPlaceAvailable = 0;
+
   DateTime  dateTimeBegin, dateTimeEnd;
 
-  AEvent({this.id, this.title, this.dateTimeBegin, this.dateTimeEnd, this.location, this.description, this.imageUrl}) : super();
+  dynamic image = AssetImage("assets/event.png");
+
+  AEvent({this.id,
+          this.title,
+          this.dateTimeBegin,
+          this.dateTimeEnd,
+          this.location,
+          this.description,
+          this.imageUrl,
+          this.nbrPeopleGoing,
+          this.nbrPlaceAvailable}) : super();
 
   String toString() {
     return "{${this.title}, ${this.dateTimeBegin}}";
@@ -69,17 +85,21 @@ class AEvent extends APIStructure{
     dateTimeEnd: DateTime.parse(json["datetime_end"]),
     location: json["location"],
     description: json["description"],
-    imageUrl: json["image_url"]
+    imageUrl: json["image_url"],
+    nbrPlaceAvailable: json["nbr_place_available"],
+    nbrPeopleGoing: json["nbr_people_going"]
   );
 
   Map<String, dynamic> toJSON() => {
     "id": id,
     "title": title,
-    "datetime_begin": dateTimeBegin,
-    "datetime_end": dateTimeEnd,
+    "datetime_begin": dateTimeBegin.toString(),
+    "datetime_end": dateTimeEnd.toString(),
     "location": location,
     "description": description,
-    "image_url": imageUrl
+    "image_url": imageUrl,
+    "nbr_place_available": nbrPlaceAvailable,
+    "nbr_people_going": nbrPeopleGoing
   };
 }
 

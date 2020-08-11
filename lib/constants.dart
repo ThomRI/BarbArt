@@ -8,10 +8,11 @@ const kDefaultPadding = 20.0;
 const kDefaultRadius = 30.0;
 const kDefaultCurveShift = 15.0;
 
-const kDefaultTransitionDuration = const Duration(milliseconds: 400);
+const kDefaultTransitionDuration = const Duration(milliseconds: 200);
 
 const double kLogoSize = 135;
 
 /* API */
-const API_BASEURL = "192.168.1.31";
+const API_BASEHOST = "192.168.43.203";
+const API_BASEURL = "http://" + API_BASEHOST;
 const API_SAVEFILE = "api.json";

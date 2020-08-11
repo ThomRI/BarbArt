@@ -1,12 +1,3 @@
-import 'package:barbart/components/AbstractPageComponent.dart';
-import 'package:barbart/components/ControlledCarousel.dart';
-import 'package:barbart/main.dart';
-import 'package:barbart/pages/clubs/clubspage.dart';
-import 'package:barbart/pages/events/eventspage.dart';
-import 'package:barbart/pages/home/homepage.dart';
-import 'package:barbart/pages/music/musicpage.dart';
-import 'package:barbart/screens/settings/settingsscreen.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 

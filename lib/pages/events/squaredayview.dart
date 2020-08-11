@@ -1,4 +1,6 @@
 import 'package:barbart/api/structures.dart';
+import 'package:barbart/components/routing/FadePageRoute.dart';
+import 'package:barbart/components/routing/SlidePageRoute.dart';
 import 'package:barbart/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +8,7 @@ import 'package:intl/intl.dart';
 
 import '../../main.dart';
 import '../../utils.dart';
+import 'detailsscreen.dart';
 
 enum SortingMode {
   INCREASING,
@@ -26,6 +29,8 @@ class SquareDayView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    DateTime today = extractDate(DateTime.now());
+
     // Storing the relevant dates (between the minimum and maximum ones).
     // TODO : Don't compute this at each builds... A callback for updates from the API ?
 
@@ -45,56 +50,76 @@ class SquareDayView extends StatelessWidget {
     }
 
     List<DateTime> dates = dateEventMap.keys.toList();
-    dates.sort((a, b) => (sortingMode == SortingMode.INCREASING) ? a.compareTo(b) : b.compareTo(a)); // Sorting by date decreasing
+    dates.sort((a, b) => (sortingMode == SortingMode.INCREASING) ? a.compareTo(b) : b.compareTo(a)); // Sorting by date
 
     return Container(
-      margin: EdgeInsets.only(top: 80, left: 5, right: 5),
+      margin: EdgeInsets.only(top: 65, left: 5, right: 5),
       child: ListView.builder( // Vertical event list view
+        padding: EdgeInsets.only(top: 5, bottom: 40),
         itemCount: dates.length,
         itemBuilder: (BuildContext context, int dateIndex) {
-          return Container(
-              height: 230,
-              width: deviceSize(context).width,
-              child: Column(
-                children: <Widget>[
-                  Row( // Calendar icon + day text row
-                    children: <Widget>[
-
-                      // Calendar icon
-                      Container(
-                        child: const Icon(Icons.calendar_today, color: kPrimaryColor),
-                        margin: EdgeInsets.only(left: 10),
-                        padding: EdgeInsets.all(5),
-                      ),
-
-                      // Day text container
-                      Container(
-                        width: deviceSize(context).width * 0.6666, // 2/3 of the width
-                        alignment: Alignment.centerLeft,
-                        padding: EdgeInsets.only(
-                          top: 5,
-                          right: 5,
-                          left: 10,
-                          bottom: 5
+          return Card(
+              //shadowColor: (dates[dateIndex].day < 3) ? Colors.green : Colors.black,
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0)
+              ),
+              child: Container(
+                padding: EdgeInsets.only(left: 10, right: 10),
+                child: Column(
+                  children: <Widget>[
+                    Row( // Calendar icon + day text row
+                      children: <Widget>[
+                        // Calendar icon
+                        Container(
+                          child: Icon(Icons.calendar_today, color: (dates[dateIndex] == today) ? Colors.red.withOpacity(0.7) : kPrimaryColor),
+                          padding: EdgeInsets.all(5),
                         ),
-                        child: Text(
-                          DateFormat("dd/MM EEEE").format(dates[dateIndex]),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: kPrimaryColor,
-                            fontStyle: FontStyle.italic
+
+                        // Day text container
+                        Container(
+                            width: deviceSize(context).width * 0.3333, // 1/3 of the width
+                            alignment: Alignment.centerLeft,
+                            padding: EdgeInsets.only(
+                                top: 5,
+                                right: 5,
+                                left: 0,
+                                bottom: 5
+                            ),
+                            child:  Text(
+                              DateFormat("EEEE").format(dates[dateIndex]),
+                              textAlign: TextAlign.right,
+                              style: TextStyle(
+                                  color: (dates[dateIndex] == today) ? Colors.red.withOpacity(0.7) : kPrimaryColor,
+                                  fontStyle: FontStyle.italic
+                              ),
+
+                              textScaleFactor: 2,
+                            )
+                        ),
+
+                        Expanded(
+                          child: Text(
+                            DateFormat("dd/MM").format(dates[dateIndex]),
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                                color: Colors.grey,
+                                fontStyle: FontStyle.italic
+                            ),
+
+                            textScaleFactor: 1.5,
                           ),
-                          textScaleFactor: 2,
-                        ),
-                      )
-                    ],
-                  ),
+                        )
 
-                  _ListDayView(
-                    eventIdList: dateEventMap[dates[dateIndex]],
-                  )
-                  // Actual grid of event for the date pointed buu the item builder index
-                ],
+                      ],
+                    ),
+
+                    _ListDayView(
+                      eventIdList: dateEventMap[dates[dateIndex]],
+                    )
+                    // Actual grid of event for the date pointed buu the item builder index
+                  ],
+                ),
               )
           );
         },
@@ -125,7 +150,11 @@ class _ListDayView extends StatelessWidget {
         itemBuilder: (BuildContext context, int index) {
           return GestureDetector(
             onTap: () {
-              // EVENT TAPPED !
+              Navigator.push(context, FadePageRoute(
+                page: DetailsScreen(
+                  eventId: eventIdList[index],
+                )
+              ));
             },
 
             child: Container(
@@ -143,11 +172,11 @@ class _ListDayView extends StatelessWidget {
                         decoration: BoxDecoration(
                           border: Border.all(
                             color: kPrimaryColor,
-                            width: 5,
+                            width: 4,
                             style: BorderStyle.solid,
                           ),
 
-                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
                           image: DecorationImage(
                             fit: BoxFit.cover,
                             image: AssetImage("assets/event.png"), // EVENT IMAGE URL HERE
@@ -158,31 +187,34 @@ class _ListDayView extends StatelessWidget {
                   ),
 
                   /* Hovering text */
-                  Container(
-                    alignment: Alignment.center,
-                    margin: EdgeInsets.all(15),
-                    child: RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        text: ' ${gAPI.events[eventIdList[index]].title} \n',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                          fontSize: 30,
-                          backgroundColor: Color(0x66FFFFFF),
-                        ),
+                  Hero (
+                    tag: 'eventText: ${gAPI.events[eventIdList[index]].id}',
+                    child: Container(
+                      alignment: Alignment.center,
+                      margin: EdgeInsets.all(15),
+                      child: RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          text: ' ${gAPI.events[eventIdList[index]].title} \n',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 30,
+                            backgroundColor: Color(0x66FFFFFF),
+                          ),
 
-                        children: <TextSpan>[
-                          TextSpan(
-                            text: ' ' + gAPI.events[eventIdList[index]].timesToString() + ' ',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.normal,
+                          children: <TextSpan>[
+                            TextSpan(
+                              text: ' ' + gAPI.events[eventIdList[index]].timesToString() + ' ',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.normal,
+                              )
                             )
-                          )
-                        ]
+                          ]
+                        )
                       )
-                    )
+                    ),
                   )
                 ],
               )

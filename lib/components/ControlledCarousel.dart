@@ -1,6 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 
+// ignore: must_be_immutable
 class ControlledCarousel extends StatefulWidget {
   List itemList;
   bool enabled = true;

@@ -25,9 +25,3 @@ DateTime extractDate(DateTime dateTime) {
 String timeToString(DateTime time) {
   return  ((time.hour < 10) ? "0" : "") + time.hour.toString() + 'h' + ((time.minute < 10) ? "0" : "") + (time.minute.toString() ?? "");
 }
-
-String dayToDayWeekString(DateTime dateTime) {
-  switch(dateTime.day) {
-
-  }
-}

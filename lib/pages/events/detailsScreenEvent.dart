@@ -219,7 +219,7 @@ class _ListViewDetailsState extends State<ListViewDetails> with SingleTickerProv
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 20,
-                          color: _colorAnimation.value,
+                            color: _colorAnimation.value,
                           fontWeight: FontWeight.normal,
                         ),
                       ),

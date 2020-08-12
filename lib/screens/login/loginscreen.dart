@@ -3,6 +3,7 @@ import 'package:barbart/multiSelectDialog.dart';
 import 'package:barbart/pages/data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -53,6 +54,20 @@ class LoginTab extends StatefulWidget{
 }
 
 class _LoginTabState extends State<LoginTab>{
+
+  bool _validMail = false;
+  bool _validPassword = false;
+
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  bool testValidityMail(String str){
+    return (str.length == 3) ? true:false;
+  }
+  bool testValidityPassword(String str){
+    return (str.length == 3) ? true:false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -84,20 +99,30 @@ class _LoginTabState extends State<LoginTab>{
                           border: Border(bottom: BorderSide(color: Colors.grey[100]))
                       ),
                       child: TextField(
+                        controller: _emailController,
+                        onChanged: (str){setState(() {
+                          _validMail = testValidityMail(str);
+                        });},
                         decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Email or Phone number",
-                            hintStyle: TextStyle(color: Colors.grey[400])
+                          border: InputBorder.none,
+                          hintText: "Email adress",
+                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          errorText: (_validMail || _emailController.value.text =="") ? null: 'Invalid email adress' ,
                         ),
                       ),
                     ),
                     Container(
                       padding: EdgeInsets.all(8.0),
                       child: TextField(
+                        controller: _passwordController,
+                        onChanged: (str){setState(() {
+                          _validPassword = testValidityPassword(str);
+                        });},
                         decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Password",
-                            hintStyle: TextStyle(color: Colors.grey[400])
+                          border: InputBorder.none,
+                          hintText: "Password",
+                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          errorText: (_validPassword || _passwordController.value.text == "")? null: 'Invalid password',
                         ),
                       ),
                     )
@@ -105,7 +130,22 @@ class _LoginTabState extends State<LoginTab>{
                 ),
               ),
               GestureDetector(
-                onTap: (){Navigator.pushReplacementNamed(context, '/home');},
+                onTap: (){
+                  if (_validPassword && _validMail){
+                    if(_validPassword){ //TODO: test if the email and password are correct here
+                      Navigator.pushReplacementNamed(context, '/home');
+                    } else{
+                      Fluttertoast.showToast(
+                          msg: 'Wrong email adress or password',
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIos: 1,
+                          backgroundColor: Colors.grey,
+                          textColor: Colors.white
+                      );
+                    }
+                  }
+                },
                 child: Container(
                   margin: EdgeInsets.only(top : 50, bottom: 70),
                   height: 50,
@@ -149,6 +189,28 @@ class _SignUpTabState extends State<SignUpTab>{
     }
   }
 
+  bool _validName = false;
+  bool _validFirstname = false;
+  bool _validMail = false;
+  bool _validPassword = false;
+
+  final _nameController = TextEditingController();
+  final _firstnameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  bool testValidityName(String str){
+    return (str.length == 3) ? true:false;
+  }
+  bool testValidityFirstName(String str){
+    return (str.length == 3) ? true:false;
+  }
+  bool testValidityMail(String str){
+    return (str.length == 3) ? true:false;
+  }
+  bool testValidityPassword(String str){
+    return (str.length == 3) ? true:false;
+  }
 
   void _showMultiSelect(BuildContext context) async {
     multiItem = [];
@@ -200,10 +262,15 @@ class _SignUpTabState extends State<SignUpTab>{
                           border: Border(bottom: BorderSide(color: Colors.grey[100]))
                       ),
                       child: TextField(
+                        controller: _firstnameController,
+                        onChanged: (str){setState(() {
+                          _validFirstname = testValidityFirstName(str);
+                        });},
                         decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Firstname",
-                            hintStyle: TextStyle(color: Colors.grey[400])
+                          border: InputBorder.none,
+                          hintText: "Firstname",
+                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          errorText: (_validFirstname || _firstnameController.value.text =="") ? null: 'Invalid firstname' ,
                         ),
                       ),
                     ),
@@ -213,10 +280,15 @@ class _SignUpTabState extends State<SignUpTab>{
                           border: Border(bottom: BorderSide(color: Colors.grey[100]))
                       ),
                       child: TextField(
+                        controller: _nameController,
+                        onChanged: (str){setState(() {
+                          _validName = testValidityName(str);
+                        });},
                         decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Name",
-                            hintStyle: TextStyle(color: Colors.grey[400])
+                          border: InputBorder.none,
+                          hintText: "Name",
+                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          errorText: (_validName || _nameController.value.text =="") ? null: 'Invalid name' ,
                         ),
                       ),
                     ),
@@ -226,20 +298,30 @@ class _SignUpTabState extends State<SignUpTab>{
                           border: Border(bottom: BorderSide(color: Colors.grey[100]))
                       ),
                       child: TextField(
+                        controller: _emailController,
+                        onChanged: (str){setState(() {
+                          _validMail = testValidityMail(str);
+                        });},
                         decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Email or Phone number",
-                            hintStyle: TextStyle(color: Colors.grey[400])
+                          border: InputBorder.none,
+                          hintText: "Email adress",
+                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          errorText: (_validMail || _emailController.value.text =="") ? null: 'Invalid email adress' ,
                         ),
                       ),
                     ),
                     Container(
                       padding: EdgeInsets.all(8.0),
                       child: TextField(
+                        controller: _passwordController,
+                        onChanged: (str){setState(() {
+                          _validPassword = testValidityPassword(str);
+                        });},
                         decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Password",
-                            hintStyle: TextStyle(color: Colors.grey[400])
+                          border: InputBorder.none,
+                          hintText: "Password",
+                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          errorText: (_validPassword || _passwordController.value.text =="") ? null: 'Invalid password' ,
                         ),
                       ),
                     )
@@ -283,7 +365,11 @@ class _SignUpTabState extends State<SignUpTab>{
                 )
               ),
               GestureDetector(
-                onTap: (){},
+                onTap: (){
+                  if (_validPassword && _validMail && _validFirstname && _validName){
+                    Navigator.pushReplacementNamed(context, '/home');
+                  }
+                },
                 child: Container(
                   margin: EdgeInsets.only(top : 50, bottom: 70),
                   height: 50,

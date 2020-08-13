@@ -143,7 +143,7 @@ class _HomeListViewItemState extends State<HomeListViewItem> with SingleTickerPr
               ),
               Container(
                 margin: EdgeInsets.only(left: 20, right: 20),
-                decoration: BoxDecoration(
+                decoration: _commented ? null : BoxDecoration(
                     border: Border(
                         bottom: BorderSide(
                             color: Colors.grey[300],
@@ -179,18 +179,59 @@ class _HomeListViewItemState extends State<HomeListViewItem> with SingleTickerPr
                         IconButton(
                           icon: Icon(
                             Icons.chat_bubble,
-                            color: Colors.grey[400],
+                            color: _commented ? Colors.blue : Colors.grey[400],
                           ),
                           onPressed: (){
                             setState(() {
-                              _commented ? _controller.reverse() : _controller.forward();
+                              _commented = !_commented;
                             });
                           },
                         ),
-                        Align(child: Text('12 comments'))
+                        Align(child: Text('12 comments', style: TextStyle(color: _commented ? Colors.blue : Colors.grey[400]),))
                       ],
                     )
                   ],
+                ),
+              ),
+              (!_commented) ? Container() :
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: kPrimaryColor.withAlpha(50),
+                    width: 1,
+                    style: BorderStyle.solid
+                  ),
+                  borderRadius: BorderRadius.all(Radius.circular(20))
+                ),
+                height: 400,
+                child: ListView.builder(
+                  padding: EdgeInsets.only(top: 10),
+                  itemCount: 10,
+                  itemBuilder: (BuildContext context, _){
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          CircleAvatar(
+                            backgroundImage: AssetImage('assets/logo.png'),
+                          ),
+                          SizedBox(width: 10,),
+                          Container(
+                            width: MediaQuery.of(context).size.width - 120,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text('Name Firstname', style: TextStyle(color: Colors.black,fontSize: 15, fontWeight: FontWeight.bold),),
+                                RichText(textAlign: TextAlign.justify,text:TextSpan(text: lorem.substring(0, 100), style: TextStyle(fontSize: 12, color: Colors.black, ),)),
+                                Text('20 min ago', style: TextStyle(color: Colors.grey[400]),)
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    )
+                  ;}
                 ),
               )
             ],

@@ -2,7 +2,10 @@
 
 import 'package:flutter/material.dart';
 
+import '../main.dart';
 import '../utils.dart';
+import 'APIManager.dart';
+import 'APIValues.dart';
 
 /* IMPORTANT : Every classes related to the API start by 'A' */
 
@@ -13,12 +16,14 @@ abstract class APIStructure {
 }
 
 /// Represents an API client. Most likely linked to one account (custom or fb,google,...). Anyway it has one UUID.
-class AClient extends APIStructure{
+class AClient extends APIStructure {
   String  uuid,
           email;
 
-  dynamic avatar = new AssetImage("assets/event.png");
+  dynamic avatar = new AssetImage("assets/profile_generic.png");
   String avatar_route;
+
+
 
   // ignore: non_constant_identifier_names
   AClient({this.uuid = "", this.email = "", this.avatar_route = ""});
@@ -41,6 +46,19 @@ class AClient extends APIStructure{
   Map<String, dynamic> toJSON() {
     // TODO: implement toJSON
     throw UnimplementedError();
+  }
+
+  // If the client is going to an event. TODO: Make the same function as isGoing(AEvent, ...) overloaded for clubs.
+  Future<bool> isGoing(AEvent event, {Function(bool) onConfirmed}) async {
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.EventsGoing + "/get", params: {'id': event.id.toString(), 'uuid': this.uuid}, token: gAPI.token);
+
+    bool success = true;
+    if(response.state != FetchResponseState.OK) success = false;
+
+    bool going = success && response.body.containsKey('going') && response.body['going']; // False in case of unsuccessful.
+    if(onConfirmed != null) onConfirmed(going);
+
+    return going;
   }
 }
 
@@ -75,6 +93,21 @@ class AEvent extends APIStructure{
   String timesToString() {
     return timeToString(dateTimeBegin) + ' - ' + timeToString(dateTimeEnd);
   }
+
+  Future<bool> setGoing(AClient client, {going = true, Function(bool) onConfirmed}) async {
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.EventsGoing + "/set/" + this.id.toString(), params: {'uuid': client.uuid, 'going': going.toString()}, token: gAPI.token);
+
+    bool success = true;
+    if(response.state != FetchResponseState.OK) success = false;
+
+    if(success) { // Instead of making a full update, we can just adapt the values here as we know what happened server-side. TODO : Maybe unify the API here ?
+      this.nbrPeopleGoing += (going) ? 1 : -1;
+    }
+
+    if(onConfirmed != null) onConfirmed(success);
+    return success;
+  }
+
 
   /* Here are the links in notation between this code and the server's database */
   @override

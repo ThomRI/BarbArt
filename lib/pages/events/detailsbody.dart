@@ -19,23 +19,41 @@ class DetailsBody extends StatefulWidget {
 
 class _DetailsBodyState extends State<DetailsBody> {
   bool localGoing = false; // true when UI shows that the user is going to the event, false when the user is not going.
-  bool pending = false; // If we are still waiting for the server...
+  bool pending = false; // If we are still waiting for the server... True by default as there is the going request right at the beginning.
+
+  @override
+  void initState() {
+    super.initState();
+
+    pending = true;
+    /* Fetching if the client is going */
+    gAPI.selfClient.isGoing(
+        gAPI.events[widget.eventId],
+        onConfirmed: (bool going) {
+          setState(() {
+            localGoing = going;
+            pending = false;
+          });
+        }
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // The GoingState is now the state AT THE MOMENT THE BUTTON WAS PRESSED !
+          // The localGoing state is now the state AT THE MOMENT THE BUTTON WAS PRESSED !
 
           if(pending) // Do nothing, we are waiting for the server.
             return;
 
           // Requesting server, asynchronously with a callback function when we get the response;
-          gAPI.requestGoing(
-            widget.eventId,
-            goingRequest: !localGoing, // We request the opposite of the current state.
-            onConfirmed: (bool success) {
+          gAPI.events[widget.eventId].setGoing(
+            gAPI.selfClient,
+            going: !localGoing, // We request the opposite of the current state.
+            onConfirmed: (success) {
+              if(!success) return;
               this.setState(() {
                 localGoing = !localGoing;
                 pending = false;

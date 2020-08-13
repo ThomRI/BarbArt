@@ -11,7 +11,7 @@ import 'APIManager.dart';
 
 typedef VoidCallback = void Function();
 
-class _JsonKeys {
+class APIJsonKeys {
   static const EventsList   = "events";
   static const Event        = "events";
 
@@ -22,7 +22,7 @@ class _JsonKeys {
   static const Client       = "client";
 }
 
-class _Routes {
+class APIRoutes {
   static const Events   = "events";
   static const EventsGoing = "events/going";
 
@@ -43,8 +43,10 @@ class APIFlags {
 class APIValues {
 
   bool forced = false; // Should request be forced ? If not, server returned json won't be parsed if the server indicates that it already returned the exact same json.
-  String _token = "";
   AClient selfClient = new AClient();
+
+  String _token = "";
+  String get token => _token;
 
   /// Toggles the forces request mode. Forced requests' response is parsed even if it is the exact same answer as the previous request of the same type.
   void toggleForced() {
@@ -77,12 +79,14 @@ class APIValues {
     if(authStillAlive && onUpdateDone != null)          onUpdateDone(); // Calling the callback only if the auth is still alive..
   }
 
+  // Always call this function to make a server API request, with the desired requests as the flag
+
   /* ########################### */
   /* ######### PROFILE ######### */
   /* ########################### */
   Future<bool> _updateProfile() async {
     // Fetching self client infos
-    FetchResponse response = await APIManager.fetch(route: _Routes.Clients + "/" + selfClient.uuid, token: _token);
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.Clients + "/" + selfClient.uuid, token: _token);
     if(response.state == FetchResponseState.ERROR_AUTH) return false;
     // Note : if the uuid isn't resolved yet, server will return an ERROR_AUTH and not an unknown error, because having the token means having the uuid (it comes with it).
 
@@ -90,7 +94,7 @@ class APIValues {
     if(!forced && response.state == FetchResponseState.OK_NOT_NEEDED) return true;
 
     // Updating profile infos
-    selfClient = AClient.fromJSON(response.body);
+    selfClient = AClient.fromJSON(response.body['clients'][0]);
 
     // Fetching profile picture (avatar)
     selfClient.avatar = await APIManager.fetchImage(route: selfClient.avatar_route, token: _token);
@@ -110,7 +114,7 @@ class APIValues {
   // Returns false iff there was an authentication error
   Future<bool> _updateEvents() async {
     // Fetching events from server
-    FetchResponse response = await APIManager.fetch(route: _Routes.Events + "/*", token: _token);
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.Events + "/*", token: _token);
     if(response.state == FetchResponseState.ERROR_AUTH) return false;
 
     // Not needed, and forced request disabled : using the cache list (not updating anything).
@@ -118,7 +122,7 @@ class APIValues {
 
     // Updating the events list
     events.clear();
-    (response.body[_JsonKeys.EventsList] as List<dynamic>).forEach((eventJSON) {events.add(new AEvent.fromJSON(eventJSON));});
+    (response.body[APIJsonKeys.EventsList] as List<dynamic>).forEach((eventJSON) {events.add(new AEvent.fromJSON(eventJSON));});
 
     // Updating the DateTime mapping
     mappedEventsIndices.clear();
@@ -132,22 +136,6 @@ class APIValues {
     return true;
   }
 
-  // Return the success state of the request
-  Future<bool> requestGoing(int eventLocalId, {goingRequest: true, Function(bool success) onConfirmed}) async {
-    FetchResponse response = await APIManager.fetch(route: _Routes.EventsGoing + "/" + events[eventLocalId].id.toString(), params: {'going': goingRequest.toString()}, token: _token);
-
-    bool success = true;
-    if(response.state != FetchResponseState.OK) success = false;
-
-
-    if(success) { // Instead of making a full update, we can just adapt the values here as we know what happened server-side. TODO : Maybe unify the API here ?
-      this.events[eventLocalId].nbrPeopleGoing += (goingRequest) ? 1 : -1;
-    }
-
-    if(onConfirmed != null) onConfirmed(success);
-    return success;
-  }
-
   /* ############################ */
   /* ########## CLUBS ########### */
   /* ############################ */
@@ -156,7 +144,7 @@ class APIValues {
 
   Future<bool> _updateClubs() async {
     // Fetching events from server
-    FetchResponse response = await APIManager.fetch(route: _Routes.Clubs, token: _token);
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.Clubs, token: _token);
     if(response.state == FetchResponseState.ERROR_AUTH) return false;
 
     // Not needed, and forced request disabled : using the cache list (not updating anything).
@@ -164,7 +152,7 @@ class APIValues {
 
     // Fetch succeeded : updating cached list
     clubs.clear();
-    (response.body[_JsonKeys.ClubsList] as List<dynamic>).forEach((clubJSON) {clubs.add(new AClub.fromJSON(clubJSON));});
+    (response.body[APIJsonKeys.ClubsList] as List<dynamic>).forEach((clubJSON) {clubs.add(new AClub.fromJSON(clubJSON));});
 
     return true;
   }
@@ -185,16 +173,16 @@ class APIValues {
 
     /* Initializing JSON arrays */
     json.addAll({
-      _JsonKeys.ClientsList: new List<Map<String, dynamic>>(),
-      _JsonKeys.EventsList: new List<Map<String, dynamic>>(),
-      _JsonKeys.ClubsList: new List<Map<String, dynamic>>(),
+      APIJsonKeys.ClientsList: new List<Map<String, dynamic>>(),
+      APIJsonKeys.EventsList: new List<Map<String, dynamic>>(),
+      APIJsonKeys.ClubsList: new List<Map<String, dynamic>>(),
     });
 
     // Events
-    for(AEvent ev in this.events) json[_JsonKeys.EventsList].add(ev.toJSON());
+    for(AEvent ev in this.events) json[APIJsonKeys.EventsList].add(ev.toJSON());
 
     // Clubs
-    for(AClub cl in this.clubs) json[_JsonKeys.ClubsList].add(cl.toJSON());
+    for(AClub cl in this.clubs) json[APIJsonKeys.ClubsList].add(cl.toJSON());
 
     // Writing back into the file
     file.writeAsString(jsonEncode(json));

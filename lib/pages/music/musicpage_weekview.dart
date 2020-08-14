@@ -32,22 +32,37 @@ class _MusicPageState extends State<MusicPage>{
   CalendarController _controller;
   Map<DateTime, List<dynamic>> _events;
   List<dynamic> _selectedEvents;
-  TextEditingController _eventController;
+  TextEditingController _eventTitleController;
+  TextEditingController _eventAuthorController;
+  TextEditingController _eventDescriptionController;
+  TextEditingController _eventTitleBottomController;
+  TextEditingController _eventAuthorBottomController;
+  TextEditingController _eventDescriptionBottomController;
   SharedPreferences prefs;
+  bool _admin;
 
   @override
   void initState() {
     super.initState();
     _controller = CalendarController();
-    _eventController = TextEditingController();
+    _eventTitleController = TextEditingController();
+    _eventAuthorController = TextEditingController();
+    _eventDescriptionController = TextEditingController();
     _events = {};
     _selectedEvents = [];
     initPrefs();
+    _admin = true;
   }
 
   void dispose(){
     super.dispose();
     _controller.dispose();
+    _eventTitleController.dispose();
+    _eventAuthorController.dispose();
+    _eventDescriptionController.dispose();
+    _eventTitleBottomController.dispose();
+    _eventAuthorBottomController.dispose();
+    _eventDescriptionBottomController.dispose();
   }
 
   initPrefs() async {
@@ -79,19 +94,158 @@ class _MusicPageState extends State<MusicPage>{
     return DateTime(dateTime.year, dateTime.month, dateTime.day);
   }
 
+  String dateTimeToTimeString(DateTime time){
+    return time.hour.toString() + "h" + ((time.minute>=10) ? time.minute.toString() : "0"+time.minute.toString()) ?? "";
+  }
+
+  void displayModalBottomSheet(context, id, title, author, description, startTime, endTime) {
+
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+
+        return SingleChildScrollView(
+          child: new Wrap(
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    SizedBox(width: MediaQuery.of(context).size.width,),
+                    Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
+                    Text(author, style: TextStyle(fontSize: 15, color: Colors.grey[800]),),
+                    Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(description, style: TextStyle(fontSize: 15),),
+                    ),
+                    Text("Start at: ${dateTimeToTimeString(startTime)}"),
+                    Text("End at: ${dateTimeToTimeString(endTime)}"),
+                  ]
+                ),
+              ),
+              !_admin? Container() : new ListTile(
+                leading: new Icon(Icons.edit),
+                title: new Text('Edit'),
+                onTap: () async{
+                  final GlobalKey<_RowTimePickerState> startKeyBottomSheet = GlobalKey<_RowTimePickerState>();
+                  final endKeyBottomSheet = GlobalKey<_RowTimePickerState>();
+
+                  _eventTitleBottomController = TextEditingController(text: title);
+                  _eventAuthorBottomController = TextEditingController(text: author);
+                  _eventDescriptionBottomController = TextEditingController(text: description);
+
+                  await showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                    title: Text('Editing an event'),
+                    content: Wrap(
+                      children: <Widget>[
+                        Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              TextField(
+                                  controller: _eventTitleBottomController,
+                                  inputFormatters: [
+                                    LengthLimitingTextInputFormatter(30),
+                                  ]
+                              ),
+                              TextField(
+                                  controller: _eventAuthorBottomController,
+                                  inputFormatters: [
+                                    LengthLimitingTextInputFormatter(30),
+                                  ]
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(5),
+                                child: TextField(
+                                  controller: _eventDescriptionBottomController,
+                                  textAlign: TextAlign.justify,
+                                  minLines: 1,
+                                  maxLines: 10,
+                                ),
+                              ),
+                              RowTimePicker(key: startKeyBottomSheet, title: 'Start at', time: startTime),
+                              RowTimePicker(key: endKeyBottomSheet, title: 'End at', time: endTime),
+                            ]
+                        ),
+                      ],
+                    ),
+                    actions: <Widget>[
+                      FlatButton(
+                        child: Text("Cancel"),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _eventAuthorBottomController.clear();
+                          _eventTitleBottomController.clear();
+                          _eventDescriptionBottomController.clear();
+                        },
+                      ),
+                      FlatButton(
+                        child: Text("Save"),
+                        onPressed: () {
+                          setState(() {
+                            setState((){
+                              _events[_controller.selectedDay][id] =
+                              {'title': _eventTitleBottomController.text,
+                                'author': _eventAuthorBottomController.text,
+                                'description' : _eventDescriptionBottomController.text,
+                                'startTime': startKeyBottomSheet.currentState.time.toString(),
+                                'endTime': endKeyBottomSheet.currentState.time.toString()};
+                              prefs.setString("events", json.encode(encodeMap(_events))); //TODO: update server
+                              _eventAuthorBottomController.clear();
+                              _eventTitleBottomController.clear();
+                              _eventDescriptionBottomController.clear();
+                            });
+                          });
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
+                  ));
+                }
+              ),
+              !_admin? Container() : new ListTile(
+                  leading: new Icon(Icons.delete),
+                  title: new Text('Delete this event'),
+                  onTap: (){
+                    setState((){
+                      _events.clear(); //TODO: delete this and delete the corresponding event instead
+                      prefs.setString("events", json.encode(encodeMap(_events))); //TODO: update server
+                      _eventAuthorBottomController.clear();
+                      _eventTitleBottomController.clear();
+                      _eventDescriptionBottomController.clear();
+                    });
+                    Navigator.pop(context);
+                  }
+              ),
+            ],
+          ),
+        );
+      }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-
     List<FlutterWeekViewEvent> _eventsDayView = List<FlutterWeekViewEvent>();
     if (_events[_controller.selectedDay] != null){
       for (dynamic event in _events[_controller.selectedDay]){
+        int id = _events[_controller.selectedDay].indexOf(event);
+        String title = event["title"];
+        String author = event["author"];
+        String description = event["description"];
+        DateTime startTime = DateTime.parse(event["startTime"]);
+        DateTime endTime = DateTime.parse(event["endTime"]);
         _eventsDayView.add(FlutterWeekViewEvent(
-          title: event["title"],
-          description: 'A description',
-          start: DateTime.parse(event["startTime"]),
-          end: DateTime.parse(event["endTime"]),
+          title: title,
+          description: description,
+          start: startTime,
+          end: endTime,
           backgroundColor: kPrimaryColorIntermediateAlpha,
-          onTap: (){}
+          onTap: () {displayModalBottomSheet(context, id, title, author, description, startTime, endTime);}
+
         ),);
       }
     }
@@ -217,52 +371,84 @@ class _MusicPageState extends State<MusicPage>{
     await showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          content: Container(
-            height: min(200, MediaQuery.of(context).size.height),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          content: SingleChildScrollView(
+            child: Wrap(
               children: <Widget>[
-                Container(
-                    margin: EdgeInsets.only(bottom: 30),
-                    child: Column(
-                      children: <Widget>[
-                        Text('Title'),
-                        TextField(
-                            controller: _eventController,
-                            inputFormatters: [
-                              LengthLimitingTextInputFormatter(20),
-                            ]
-                        ),
-                      ],
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Container(
+                        margin: EdgeInsets.only(bottom: 30),
+                        child: Column(
+                          children: <Widget>[
+                            Text('Title'),
+                            TextField(
+                                controller: _eventTitleController,
+                                inputFormatters: [
+                                  LengthLimitingTextInputFormatter(30),
+                                ]
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Text('Author'),
+                            TextField(
+                                controller: _eventAuthorController,
+                                inputFormatters: [
+                                  LengthLimitingTextInputFormatter(30),
+                                ]
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Text('Description'),
+                            TextField(
+                                controller: _eventDescriptionController,
+                            ),
+                          ],
+                        )
+                    ),
+                    Container(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        //crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          RowTimePicker(key: startKey, time: _startTime, title: "Start at ",),
+                          RowTimePicker(key: endKey, time: _endTime, title: "End at ",),
+                        ],
+                      ),
                     )
+                  ],
                 ),
-                Container(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    //crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      RowTimePicker(key: startKey, time: _startTime, title: "Start at ",),
-                      RowTimePicker(key: endKey, time: _endTime, title: "End at ",),
-                    ],
-                  ),
-                )
-              ],
+              ]
             ),
           ),
           actions: <Widget>[
             FlatButton(
               child: Text("Cancel"),
               onPressed: () {
-                _eventController.clear();
+                _eventTitleController.clear();
+                _eventAuthorController.clear();
                 Navigator.pop(context);
               },
             ),
             FlatButton(
               child: Text("Save"),
               onPressed: () {
-                if (_eventController.text.isEmpty) {
+                if (_eventTitleController.text.isEmpty) {
                   Fluttertoast.showToast(
                       msg: 'No title',
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.CENTER,
+                      timeInSecForIos: 1,
+                      backgroundColor: Colors.grey,
+                      textColor: Colors.white
+                  );
+                  return;
+                }
+                else if(_eventAuthorController.text.isEmpty){
+                  Fluttertoast.showToast(
+                      msg: 'No author',
                       toastLength: Toast.LENGTH_SHORT,
                       gravity: ToastGravity.CENTER,
                       timeInSecForIos: 1,
@@ -274,7 +460,12 @@ class _MusicPageState extends State<MusicPage>{
                 _startTime = startKey.currentState.time;
                 _endTime = endKey.currentState.time;
                 if (validTime(_startTime, _endTime, _events[_controller.selectedDay])){
-                  Map<String, String> dictEvent = {'title': _eventController.text, 'startTime': _startTime.toString(), 'endTime':_endTime.toString()};
+                  Map<String, String> dictEvent = {
+                    'title': _eventTitleController.text,
+                    'author': _eventAuthorController.text,
+                    'description' : _eventDescriptionController.text,
+                    'startTime': _startTime.toString(),
+                    'endTime':_endTime.toString()};
                   if (_events[_controller.selectedDay] != null) {
                     _events[_controller.selectedDay].add(dictEvent);
                   } else {
@@ -282,7 +473,7 @@ class _MusicPageState extends State<MusicPage>{
                   }
                   _events[_controller.selectedDay].sort((x, y) => (x["startTime"].compareTo(y["startTime"])));
                   prefs.setString("events", json.encode(encodeMap(_events)));
-                  _eventController.clear();
+                  _eventTitleController.clear();
                   Navigator.pop(context);
                   setState(() {
                     _selectedEvents = _events[_controller.selectedDay];

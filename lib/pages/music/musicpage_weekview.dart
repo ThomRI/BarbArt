@@ -40,6 +40,8 @@ class _MusicPageState extends State<MusicPage>{
   TextEditingController _eventDescriptionBottomController;
   SharedPreferences prefs;
   bool _admin;
+  int idClient = 1;
+  int idAuthorTest = 1;
 
   @override
   void initState() {
@@ -51,7 +53,7 @@ class _MusicPageState extends State<MusicPage>{
     _events = {};
     _selectedEvents = [];
     initPrefs();
-    _admin = true;
+    _admin = false;
   }
 
   void dispose(){
@@ -98,7 +100,7 @@ class _MusicPageState extends State<MusicPage>{
     return time.hour.toString() + "h" + ((time.minute>=10) ? time.minute.toString() : "0"+time.minute.toString()) ?? "";
   }
 
-  void displayModalBottomSheet(context, id, title, author, description, startTime, endTime) {
+  void displayModalBottomSheet(context, id, idAuthor, title, author, description, startTime, endTime) {
 
     showModalBottomSheet(
       context: context,
@@ -124,7 +126,7 @@ class _MusicPageState extends State<MusicPage>{
                   ]
                 ),
               ),
-              !_admin? Container() : new ListTile(
+              (_admin || idClient == idAuthor)? new ListTile(
                 leading: new Icon(Icons.edit),
                 title: new Text('Edit'),
                 onTap: () async{
@@ -187,7 +189,8 @@ class _MusicPageState extends State<MusicPage>{
                           setState(() {
                             setState((){
                               _events[_controller.selectedDay][id] =
-                              {'title': _eventTitleBottomController.text,
+                              {'id_author': "$idAuthorTest", // TODO: change
+                                'title': _eventTitleBottomController.text,
                                 'author': _eventAuthorBottomController.text,
                                 'description' : _eventDescriptionBottomController.text,
                                 'startTime': startKeyBottomSheet.currentState.time.toString(),
@@ -205,8 +208,8 @@ class _MusicPageState extends State<MusicPage>{
                     ],
                   ));
                 }
-              ),
-              !_admin? Container() : new ListTile(
+              ): Container(),
+              (_admin ||idAuthor == idClient) ? new ListTile(
                   leading: new Icon(Icons.delete),
                   title: new Text('Delete this event'),
                   onTap: (){
@@ -219,7 +222,7 @@ class _MusicPageState extends State<MusicPage>{
                     });
                     Navigator.pop(context);
                   }
-              ),
+              ) : Container(),
             ],
           ),
         );
@@ -232,7 +235,8 @@ class _MusicPageState extends State<MusicPage>{
     List<FlutterWeekViewEvent> _eventsDayView = List<FlutterWeekViewEvent>();
     if (_events[_controller.selectedDay] != null){
       for (dynamic event in _events[_controller.selectedDay]){
-        int id = _events[_controller.selectedDay].indexOf(event);
+        int id = _events[_controller.selectedDay].indexOf(event); // TODO: change
+        int idAuthor = int.parse(event["id_author"]); // TODO: change
         String title = event["title"];
         String author = event["author"];
         String description = event["description"];
@@ -244,7 +248,7 @@ class _MusicPageState extends State<MusicPage>{
           start: startTime,
           end: endTime,
           backgroundColor: kPrimaryColorIntermediateAlpha,
-          onTap: () {displayModalBottomSheet(context, id, title, author, description, startTime, endTime);}
+          onTap: () {displayModalBottomSheet(context, id, idAuthor, title, author, description, startTime, endTime);}
 
         ),);
       }
@@ -342,7 +346,7 @@ class _MusicPageState extends State<MusicPage>{
   _showAddDialog() async {
     DateTime day = _controller.selectedDay ?? DateTime.now();
     DateTime _startTime = DateTime(day.year , day.month, day.day, 12, 0);
-    DateTime _endTime = DateTime(day.year, day.month,day.day, 12, 0);
+    DateTime _endTime =_startTime.add(Duration(hours: 1));
 
 
     final GlobalKey<_RowTimePickerState> startKey = GlobalKey<_RowTimePickerState>();
@@ -352,6 +356,8 @@ class _MusicPageState extends State<MusicPage>{
       if (_eventsOfTheDay == null){
         return true;
       }
+      print(end);
+      print(start);
       if (end.compareTo(start) != 1){
         return false;
       }
@@ -462,6 +468,7 @@ class _MusicPageState extends State<MusicPage>{
                 _endTime = endKey.currentState.time;
                 if (validTime(_startTime, _endTime, _events[_controller.selectedDay])){
                   Map<String, String> dictEvent = {
+                    'id_author': "$idAuthorTest", // TODO: change
                     'title': _eventTitleController.text,
                     'author': _eventAuthorController.text,
                     'description' : _eventDescriptionController.text,

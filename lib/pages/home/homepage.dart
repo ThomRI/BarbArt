@@ -120,7 +120,7 @@ class _HomeListViewItemState extends State<HomeListViewItem> with SingleTickerPr
   void initState() {
     _liked = widget.liked;
     _commented = widget.commented;
-    _admin = true;
+    _admin = false;
 
     _tags = '[WEI][SOIREE FOLLE]';
     _mainText = lorem;
@@ -230,9 +230,12 @@ class _HomeListViewItemState extends State<HomeListViewItem> with SingleTickerPr
               ),
               Container(
                 padding: EdgeInsets.all(10),
-                child: TagsWidget(admin: _admin, items: [Item(title: "WEI", active : false),
-                                          Item(title: "SOIREE FOLLE", active: false)],)
-                /*child: !_editingTags ? Text(_tags, style: TextStyle(fontSize: 17)) :
+                child: TagsWidget(admin: _admin, items: [
+                  Item(title: "WEI"),
+                  Item(title: "SOIREE FOLLE")],)
+                /*
+                ######### old version ################
+                child: !_editingTags ? Text(_tags, style: TextStyle(fontSize: 17)) :
                 Column(
                   children: <Widget>[
                     TextField(
@@ -492,7 +495,7 @@ class _TagsWidgetState extends State<TagsWidget>{
           // Add item to the data source.
           setState(() {
             // required
-            _items.add(Item(title: str, active: false));
+            _items.add(Item(title: str));
           });
         },
       ): null,
@@ -506,8 +509,10 @@ class _TagsWidgetState extends State<TagsWidget>{
           key: Key(index.toString()),
           index: index, // required
           title: item.title,
-          active: true,
-          activeColor: kPrimaryColor,
+          color: kPrimaryColor,
+          textColor: Colors.white,
+          active: false,
+          pressEnabled: false,
           customData: item.customData,
           textStyle: TextStyle( fontSize: _fontSize, ),
           combine: ItemTagsCombine.withTextBefore,// OR null,
@@ -522,8 +527,9 @@ class _TagsWidgetState extends State<TagsWidget>{
               return true;
             },
           ) : null, // OR null,
+          /*
           onPressed: (item) => print(item),
-          onLongPressed: (item) => print(item),
+          onLongPressed: (item) => print(item),*/
         );
 
       },

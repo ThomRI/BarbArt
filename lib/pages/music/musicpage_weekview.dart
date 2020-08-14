@@ -429,6 +429,7 @@ class _MusicPageState extends State<MusicPage>{
               onPressed: () {
                 _eventTitleController.clear();
                 _eventAuthorController.clear();
+                _eventDescriptionController.clear();
                 Navigator.pop(context);
               },
             ),

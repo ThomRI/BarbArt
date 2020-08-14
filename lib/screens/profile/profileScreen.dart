@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -20,13 +22,13 @@ class ProfileScreen extends StatefulWidget {
 class ProfileScreenState extends State<ProfileScreen>{
 
 
-  PickedFile _image;
+  String _image;
   final picker = ImagePicker();
   Future getImage() async {
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+    final PickedFile pickedFile = await picker.getImage(source: ImageSource.gallery);
 
     setState(() {
-      _image = PickedFile(pickedFile.path);
+      _image = pickedFile.path;
     });
   }
 
@@ -147,24 +149,24 @@ class ProfileScreenState extends State<ProfileScreen>{
                         height: (MediaQuery.of(context).orientation == Orientation.portrait) ? 80: 40,
                       ),
                       CircleAvatar(
-                        backgroundImage: _image ?? AssetImage('assets/logo.png'),
                         radius: 80,
+                        backgroundImage: (_image != null) ? AssetImage(_image) : AssetImage('assets/logo.png'),
                         child: Align(
-                          alignment: Alignment.bottomRight,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: kPrimaryColor,
-                            ),
-                            child: IconButton(
-                              icon: Icon(
-                                  Icons.edit
+                            alignment: Alignment.bottomRight,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: kPrimaryColor,
                               ),
-                              onPressed: getImage,
-                              tooltip: 'Pick Image',
+                              child: IconButton(
+                                icon: Icon(
+                                    Icons.edit
+                                ),
+                                onPressed: getImage,
+                                tooltip: 'Pick Image',
+                              ),
                             ),
                           ),
-                        ),
                       ),
                       Container(
                         margin: EdgeInsets.only(top: 10),

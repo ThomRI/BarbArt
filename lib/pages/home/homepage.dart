@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:barbart/components/pagelistheader.dart';
+import 'package:flutter_tags/flutter_tags.dart';
 
 class HomePage extends StatefulWidget implements AbstractPageComponent{
 
@@ -229,7 +230,9 @@ class _HomeListViewItemState extends State<HomeListViewItem> with SingleTickerPr
               ),
               Container(
                 padding: EdgeInsets.all(10),
-                child: !_editingTags ? Text(_tags, style: TextStyle(fontSize: 17)) :
+                child: TagsWidget(admin: _admin, items: [Item(title: "WEI", active : false),
+                                          Item(title: "SOIREE FOLLE", active: false)],)
+                /*child: !_editingTags ? Text(_tags, style: TextStyle(fontSize: 17)) :
                 Column(
                   children: <Widget>[
                     TextField(
@@ -268,7 +271,7 @@ class _HomeListViewItemState extends State<HomeListViewItem> with SingleTickerPr
                       ],
                     )
                   ],
-                ),// TEXT),// tags
+                ),// TEXT),// tags*/
               ),
               Container(
                 padding: EdgeInsets.all(10),
@@ -441,4 +444,89 @@ class _HomeListViewItemState extends State<HomeListViewItem> with SingleTickerPr
     );
   }
 
+}
+
+class TagsWidget extends StatefulWidget{
+
+  final admin;
+  final List items;
+
+  const TagsWidget({Key key, this.items, this.admin}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _TagsWidgetState();
+
+}
+
+class _TagsWidgetState extends State<TagsWidget>{
+
+  List _items;
+  final double _fontSize = 14;
+
+  @override
+  void initState(){
+    super.initState();
+    _items = widget.items;
+    /* if you store data on a local database (sqflite), then you could do something like this
+    Model().getItems().then((items){
+      _items = items;
+    });*/
+  }
+
+  // Allows you to get a list of all the ItemTags
+  _getAllItem(){
+    List<Item> lst = _tagStateKey.currentState?.getAllItem;
+    if(lst!=null)
+      lst.where((a) => a.active==true).forEach( ( a) => print(a.title));
+  }
+
+  final GlobalKey<TagsState> _tagStateKey = GlobalKey<TagsState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Tags(
+      key:_tagStateKey,
+      textField: widget.admin ? TagsTextField(
+        textStyle: TextStyle(fontSize: _fontSize),
+        onSubmitted: (String str) {
+          // Add item to the data source.
+          setState(() {
+            // required
+            _items.add(Item(title: str, active: false));
+          });
+        },
+      ): null,
+      itemCount: _items.length, // required
+      itemBuilder: (int index){
+        final item = _items[index];
+
+        return ItemTags(
+          // Each ItemTags must contain a Key. Keys allow Flutter to
+          // uniquely identify widgets.
+          key: Key(index.toString()),
+          index: index, // required
+          title: item.title,
+          active: true,
+          activeColor: kPrimaryColor,
+          customData: item.customData,
+          textStyle: TextStyle( fontSize: _fontSize, ),
+          combine: ItemTagsCombine.withTextBefore,// OR null,
+          removeButton: widget.admin ? ItemTagsRemoveButton(
+            onRemoved: (){
+              // Remove the item from the data source.
+              setState(() {
+                // required
+                _items.removeAt(index);
+              });
+              //required
+              return true;
+            },
+          ) : null, // OR null,
+          onPressed: (item) => print(item),
+          onLongPressed: (item) => print(item),
+        );
+
+      },
+    );
+  }
 }

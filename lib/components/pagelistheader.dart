@@ -15,6 +15,7 @@ import '../utils.dart';
 class PageListHeader extends StatelessWidget {
 
   List pagesList;
+  bool _admin = true;
 
   PageListHeader({Key key, this.pagesList}) : super(key: key);
 
@@ -27,7 +28,7 @@ class PageListHeader extends StatelessWidget {
         child: Container(
           child: Stack(
             children: <Widget>[
-              Positioned(
+              _admin ? Positioned(
                 right: 0,
                 child: IconButton(
                   alignment: Alignment.topRight,
@@ -36,7 +37,7 @@ class PageListHeader extends StatelessWidget {
                     Navigator.of(context).pushNamed('/settings');
                   },
                 ),
-              ),
+              ): Container(),
               Positioned(
                 child: IconButton(
                   alignment: Alignment.topLeft,

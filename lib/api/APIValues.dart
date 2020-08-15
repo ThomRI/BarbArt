@@ -12,46 +12,70 @@ import 'APIManager.dart';
 typedef VoidCallback = void Function();
 
 class APIJsonKeys {
-  static const EventsList   = "events";
-  static const Event        = "events";
+  static const EventsList         = "events";
+  static const Event              = "events";
 
-  static const ClubsList    = "clubs";
-  static const Club         = "club";
+  static const ClubsList          = "clubs";
+  static const Club               = "club";
 
-  static const ClientsList  = "clients";
-  static const Client       = "client";
+  static const ClientsList        = "clients";
+  static const Client             = "client";
+
+  static const PostsList          = "posts";
+  static const Post               = "post";
+
+  static const MusicReservations  = "reservations";
 }
 
 class APIRoutes {
-  static const Events   = "events";
-  static const EventsGoing = "events/going";
+  static const Events       = "events";
+  static const EventsGoing  = "events/going";
 
-  static const Clubs    = "clubs";
+  static const Clubs        = "clubs";
 
-  static const Clients  = "clients";
+  static const Clients      = "clients";
+
+  static const Posts        = "posts";
+  static const PostsLikes   = "posts/likes";
+
+  static const Music        = "music";
 }
 
 /// Used to declare flags for the API. For example, when re-fetching everything from server, only one update method should be called with the correct flag to indicate what to update.
 class APIFlags {
-  static const EVENTS       = 1 << 0; // 0001
-  static const CLUBS        = 1 << 1; // 0010
+  static const EVENTS             = 1 << 0; // 0001
+  static const CLUBS              = 1 << 1; // 0010
 
-  static const PROFILE      = 1 << 2; // 0100 // The user's profile, the self client.
-  static const EVERYTHING   = 0x11111111;
+  static const PROFILE            = 1 << 2; // 0100 // The user's profile, the self client.
+
+  static const SOCIAL_POSTS       = 1 << 3; // 1000
+
+  static const MUSIC_RESERVATIONS = 1 << 4; // 0001 0000
+
+  static const EVERYTHING         = 0x11111111;
+}
+
+class APIConfig {
+  static const String SQL_ARRAY_SEPARATOR = ",";
+
+  DateTime  postsBeginTime,
+            postsEndTime;
+
+  final forceRequests; // Should request be forced ? If not, server returned json won't be parsed if the server indicates that it already returned the exact same json. TODO : Implement server side
+
+  APIConfig({this.postsBeginTime, this.postsEndTime, this.forceRequests = false});
 }
 
 class APIValues {
+  final APIConfig config;
 
-  bool forced = false; // Should request be forced ? If not, server returned json won't be parsed if the server indicates that it already returned the exact same json.
   AClient selfClient = new AClient();
 
   String _token = "";
-  String get token => _token;
 
-  /// Toggles the forces request mode. Forced requests' response is parsed even if it is the exact same answer as the previous request of the same type.
-  void toggleForced() {
-    this.forced = !this.forced;
-  }
+  APIValues({@required this.config});
+
+  String get token => _token;
 
   /// Authenticates the client with the provided credentials and saves its uuid and the access token.
   Future<bool> authenticate({@required String email, @required String password, Function onAuthenticated}) async {
@@ -71,15 +95,35 @@ class APIValues {
   /// Match local data with server according to the given flag.
   void update(int flag, {Function authNotAliveCallback, Function onUpdateDone}) async {
     bool authStillAlive = true;
-    if(flag & APIFlags.EVENTS != 0)   authStillAlive &= await _updateEvents();
-    if(flag & APIFlags.CLUBS != 0)    authStillAlive &= await _updateClubs();
-    if(flag & APIFlags.PROFILE != 0)  authStillAlive &= await _updateProfile();
+    if(flag & APIFlags.EVENTS != 0)         authStillAlive &= await _updateEvents();
+    if(flag & APIFlags.CLUBS != 0)          authStillAlive &= await _updateClubs();
+    if(flag & APIFlags.PROFILE != 0)        authStillAlive &= await _updateProfile();
+    if(flag & APIFlags.SOCIAL_POSTS != 0)   authStillAlive &= await _updateSocialPosts();
 
     if(!authStillAlive && authNotAliveCallback != null) authNotAliveCallback();
     if(authStillAlive && onUpdateDone != null)          onUpdateDone(); // Calling the callback only if the auth is still alive..
   }
 
-  // Always call this function to make a server API request, with the desired requests as the flag
+  /* ########################### */
+  /* ######### CLIENTS ######### */
+  /* ########################### */
+  List<AClient> clients = new List<AClient>(); // This is a list of cached clients which won't necessarily contain every clients registered on the server.
+  Map<String, int> _uuidToIndexClients = new Map<String, int>();
+
+  AClient clientFromUUID(String uuid) => clients[_uuidToIndexClients[uuid]];
+
+  void cacheClient(AClient client, {bool cacheAvatar = false}) {
+    if(_uuidToIndexClients.containsKey(client.uuid)) return;
+
+    // Fetching the avatar if needed
+    if(cacheAvatar) {
+      client.avatar = APIManager.fetchImage(route: client.avatar_route, token: _token);
+    }
+
+    clients.add(client);
+    _uuidToIndexClients.addAll({client.uuid: clients.length - 1});
+  }
+
 
   /* ########################### */
   /* ######### PROFILE ######### */
@@ -91,10 +135,10 @@ class APIValues {
     // Note : if the uuid isn't resolved yet, server will return an ERROR_AUTH and not an unknown error, because having the token means having the uuid (it comes with it).
 
     // Not needed, and forced request disabled : using the cached profile infos (not updating anything)
-    if(!forced && response.state == FetchResponseState.OK_NOT_NEEDED) return true;
+    if(!config.forceRequests && response.state == FetchResponseState.OK_NOT_NEEDED) return true;
 
     // Updating profile infos
-    selfClient = AClient.fromJSON(response.body['clients'][0]);
+    selfClient = AClient.fromJSON(response.body[APIJsonKeys.ClientsList][0]);
 
     // Fetching profile picture (avatar)
     selfClient.avatar = await APIManager.fetchImage(route: selfClient.avatar_route, token: _token);
@@ -118,7 +162,7 @@ class APIValues {
     if(response.state == FetchResponseState.ERROR_AUTH) return false;
 
     // Not needed, and forced request disabled : using the cache list (not updating anything).
-    if(!forced && response.state == FetchResponseState.OK_NOT_NEEDED) return true;
+    if(!config.forceRequests && response.state == FetchResponseState.OK_NOT_NEEDED) return true;
 
     // Updating the events list
     events.clear();
@@ -148,13 +192,43 @@ class APIValues {
     if(response.state == FetchResponseState.ERROR_AUTH) return false;
 
     // Not needed, and forced request disabled : using the cache list (not updating anything).
-    if(!forced && response.state == FetchResponseState.OK_NOT_NEEDED) return true;
+    if(!config.forceRequests && response.state == FetchResponseState.OK_NOT_NEEDED) return true;
 
     // Fetch succeeded : updating cached list
     clubs.clear();
     (response.body[APIJsonKeys.ClubsList] as List<dynamic>).forEach((clubJSON) {clubs.add(new AClub.fromJSON(clubJSON));});
 
     return true;
+  }
+
+  /* ################################### */
+  /* ########## SOCIAL POSTS ########### */
+  /* ################################### */
+
+  List<ASocialPost> socialPosts = new List<ASocialPost>();
+
+  Future<bool> _updateSocialPosts() async {
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.Posts, params: {'begin_datetime': config.postsBeginTime.toString(), 'end_datetime': config.postsEndTime.toString()}, token: _token);
+    if(response.state == FetchResponseState.ERROR_AUTH) return false;
+
+    // Not needed, and forced request disabled : using the cache list (not updating anything).
+    if(!config.forceRequests && response.state == FetchResponseState.OK_NOT_NEEDED) return true;
+
+    socialPosts.clear();
+    (response.body[APIJsonKeys.PostsList] as List<dynamic>).forEach((socialPostJSON) {socialPosts.add(new ASocialPost.fromJSON(socialPostJSON));});
+
+    /* Caching the authors of the posts in the cached client list */
+    (response.body[APIJsonKeys.ClientsList] as List<dynamic>).forEach((clientJSON) {this.cacheClient(new AClient.fromJSON(clientJSON), cacheAvatar: true);});
+
+    return true;
+  }
+
+  /* ######################################## */
+  /* ########## MUSIC RESERVATION ########### */
+  /* ######################################## */
+
+  Future<bool> _updateMusicReservation() async {
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.Music, token: _token);
   }
 
   /* ################################################ */

@@ -3,7 +3,6 @@ import 'package:barbart/constants.dart';
 import 'package:barbart/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 
 import '../../main.dart';
@@ -27,10 +26,10 @@ class _DetailsBodyState extends State<DetailsBody> {
 
     pending = true;
     /* Fetching if the client is going */
-    gAPI.selfClient.isGoing(
-        gAPI.events[widget.eventId],
+    gAPI.events[widget.eventId].isGoing(
+        gAPI.selfClient,
         onConfirmed: (bool going) {
-          setState(() {
+          this.setState(() {
             localGoing = going;
             pending = false;
           });

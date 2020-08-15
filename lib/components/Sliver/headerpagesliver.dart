@@ -143,28 +143,26 @@ class HeaderPageSliverState extends State<HeaderPageSliver> {
 
         SliverList(
           delegate: SliverChildListDelegate([
-            Container(
-              child: PageListBody(
-                key: bodyPageListKey,
-                onPageChanged: () { /* PAGE CHANGED IN THE BODY */
-                  headerPageListKey.currentState.setState(() {
-                    headerPageListKey.currentState.selectedIndex = bodyPageListKey.currentState.currentIndex;
-                    headerPageListKey.currentState.displayIndex = bodyPageListKey.currentState.currentIndex;
+            PageListBody(
+              key: bodyPageListKey,
+              onPageChanged: () { /* PAGE CHANGED IN THE BODY */
+                headerPageListKey.currentState.setState(() {
+                  headerPageListKey.currentState.selectedIndex = bodyPageListKey.currentState.currentIndex;
+                  headerPageListKey.currentState.displayIndex = bodyPageListKey.currentState.currentIndex;
 
-                    _handlePageChangedCallback();
-                  });
-                },
+                  _handlePageChangedCallback();
+                });
+              },
 
-                pagesList: widget.pagesList,
+              pagesList: widget.pagesList,
 
-                onScroll: (double scrollValue) {
-                  if(widget.headerFollowFirstPage && scrollValue <= 1.0) {
-                    controller.jumpTo(expandedHeight * scrollValue);
-                  }
+              onScroll: (double scrollValue) {
+                if(widget.headerFollowFirstPage && scrollValue <= 1.0) {
+                  controller.jumpTo(expandedHeight * scrollValue);
+                }
 
-                  widget.onPageScroll(scrollValue); // Calling the provided callback.
-                },
-              ),
+                widget.onPageScroll(scrollValue); // Calling the provided callback.
+              },
             ),
           ]
           ),
@@ -195,6 +193,8 @@ class PageListBodyState extends State<PageListBody> {
 
   @override
   void initState() {
+    super.initState();
+
     controller.addListener(() {
       widget.onScroll(controller.page); // controller.page is in range [0.0; nbr of pages - 1] and is a DOUBLE that is interpolated between pages when scrolling (pseudo-continuous values between 0 and 1 for scrolling between the first and second page for example).
     });
@@ -206,7 +206,7 @@ class PageListBodyState extends State<PageListBody> {
     return Container(
       height: MediaQuery.of(context).size.height,
       child: PageView.builder(
-        physics: BouncingScrollPhysics(), // Just is nicer in general
+        //physics: BouncingScrollPhysics(), // Just nicer in general
         controller: controller,
         pageSnapping: true,
         itemBuilder: (context, index) => widget.pagesList[index],

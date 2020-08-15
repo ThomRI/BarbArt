@@ -1,20 +1,13 @@
 import 'package:barbart/components/AbstractPageComponent.dart';
+import 'package:barbart/components/SocialPostItem.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-class HomePage extends StatelessWidget implements AbstractPageComponent{
-  HomePage({Key key}) : super(key: key);
+import '../../main.dart';
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: Center(
-        child: const Text("Home Page"),
-      ),
-    );
-  }
+class HomePage extends StatefulWidget implements AbstractPageComponent{
+  HomePage({Key key}) : super(key: key);
 
   @override
   String get name => "Accueil";
@@ -24,5 +17,31 @@ class HomePage extends StatelessWidget implements AbstractPageComponent{
 
   @override
   Image get logo => Image(image: AssetImage("assets/logo_clipped.png"));
+
+  @override
+  State<StatefulWidget> createState() => _HomePageState();
+
+}
+
+class _HomePageState extends State<HomePage> {
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(top: 10),
+      child: ListView.builder(
+        padding: EdgeInsets.only(bottom: 250),
+        itemCount: gAPI.socialPosts.length,
+        itemBuilder: (BuildContext context, int index) {
+          return SocialPostItem(socialPostLocalId: index,);
+        },
+      ),
+    );
+  }
 
 }

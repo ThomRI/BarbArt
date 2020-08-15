@@ -14,10 +14,20 @@ class PageListHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: kBackgroundColor,
       child: ClipPath(
         clipper: _MainClipper(),
 
         child: Container(
+
+          /* Background image */
+          decoration: BoxDecoration(
+            image:  DecorationImage(
+              image: AssetImage("assets/header_background_raw.png"),
+              fit: BoxFit.cover,
+            ),
+          ),
+
           child: Stack(
             children: <Widget>[
               Positioned(
@@ -46,17 +56,7 @@ class PageListHeader extends StatelessWidget {
               ),
             ],
           ),
-          decoration: BoxDecoration(
-            image:  DecorationImage(
-              image: AssetImage("assets/header_background_raw.png"),
-              fit: BoxFit.cover,
-            ),
-          ),
         ),
-      ),
-
-      decoration: BoxDecoration(
-        color: kBackgroundColor,
       ),
     );
   }

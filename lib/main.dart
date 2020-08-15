@@ -19,7 +19,11 @@ void main() {
 class MyApp extends StatelessWidget {
 
   MyApp() {
-    gAPI = new APIValues();
+    gAPI = new APIValues(config: new APIConfig(
+      forceRequests: false,
+      postsBeginTime: DateTime(1999), // From 1999-01-01 00:00:00
+      postsEndTime: DateTime.now().add(Duration(days: 1)) // To tomorrow to have every posts
+    ));
 
     /* API Authentication */
     print("Attempting to auth...");
@@ -28,7 +32,7 @@ class MyApp extends StatelessWidget {
         password: "MyPass",
         onAuthenticated: () {
           print("Authenticated, uuid: " + gAPI.selfClient.uuid);
-          gAPI.update(APIFlags.EVENTS | APIFlags.PROFILE, onUpdateDone: () {
+          gAPI.update(APIFlags.EVENTS | APIFlags.PROFILE | APIFlags.SOCIAL_POSTS, onUpdateDone: () {
             gAPI.save();
           });
         }

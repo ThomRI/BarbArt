@@ -24,6 +24,10 @@ DateTime extractDate(DateTime dateTime) {
   return DateTime(dateTime.year, dateTime.month, dateTime.day);
 }
 
+bool sameDates(DateTime a, DateTime b) {
+  return extractDate(a) == extractDate(b);
+}
+
 String timeToString(DateTime time) {
   return  ((time.hour < 10) ? "0" : "") + time.hour.toString() + 'h' + ((time.minute < 10) ? "0" : "") + (time.minute.toString() ?? "");
 }

@@ -76,11 +76,15 @@ class APIValues {
   APIValues({@required this.config});
 
   String get token => _token;
+  bool get authenticated => _token != "";
 
   /// Authenticates the client with the provided credentials and saves its uuid and the access token.
-  Future<bool> authenticate({@required String email, @required String password, Function onAuthenticated}) async {
+  Future<bool> authenticate({@required String email, @required String password, Function onAuthenticated, Function onAuthenticationFailed}) async {
     FetchResponse response = await APIManager.authenticate(email, password);
-    if(response.state != FetchResponseState.OK) return false;
+    if(response.state != FetchResponseState.OK) {
+      if(onAuthenticationFailed != null) onAuthenticationFailed();
+      return false;
+    }
 
     // Authentication succeeded
     _token = response.body['token'];
@@ -239,7 +243,7 @@ class APIValues {
   /// Updates the music reservations starting from today
   Future<bool> _updateMusicReservations() async {
     // Fetching reservations from server
-    FetchResponse response = await APIManager.fetch(route: APIRoutes.Music, params: {'date': extractDate(DateTime.now()).toString()}, token: _token);
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.Music, params: {'from_date': extractDate(DateTime.now()).toString()}, token: _token);
     if(response.state == FetchResponseState.ERROR_AUTH) return false;
 
     // Not needed, and forced request disabled : using the cache list (not updating anything).

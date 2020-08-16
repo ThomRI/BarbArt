@@ -10,17 +10,19 @@ class MainBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HeaderPageSliver(
-      pagesList: [HomePage(), EventsPage(), MusicPage(), ClubsPage()],
+    return Scaffold(
+      body: HeaderPageSliver(
+        pagesList: [HomePage(), EventsPage(), MusicPage(), ClubsPage()],
 
-      onPageChanged: (int index) {
-        if(index == 0)  return SliverActions.ExpandAndStay;
-        else            return SliverActions.CollapseAndStay;
-      },
+        onPageChanged: (int index) {
+          if(index == 0)  return SliverActions.ExpandAndStay;
+          else            return SliverActions.CollapseAndStay;
+        },
 
-      onPageScroll: (double scrollValue) { },
+        onPageScroll: (double scrollValue) { },
 
-      headerFollowFirstPage: true,
+        headerFollowFirstPage: true,
+      ),
     );
   }
 }

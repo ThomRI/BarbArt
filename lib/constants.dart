@@ -8,7 +8,7 @@ const kDefaultPadding = 20.0;
 const kDefaultRadius = 30.0;
 const kDefaultCurveShift = 15.0;
 
-const kDefaultTransitionDuration = const Duration(milliseconds: 200);
+const kDefaultTransitionDuration = const Duration(milliseconds: 100);
 
 const double kLogoSize = 135;
 

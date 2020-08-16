@@ -44,12 +44,15 @@ class PageListHeader extends StatelessWidget {
               Positioned.fill(
                 child: Align(
                   alignment: Alignment.topCenter,
-                  child: Container(
-                    margin: EdgeInsets.only(top: dp(context, 10)),
-                    child: Image(
-                      image: AssetImage("assets/logo_clipped.png"),
-                      fit: BoxFit.cover,
-                      width: dp(context, 50),
+                  child: Hero(
+                    tag: "server_splashscreen",
+                    child: Container(
+                      margin: EdgeInsets.only(top: dp(context, 10)),
+                      child: Image(
+                        image: AssetImage("assets/logo_clipped.png"),
+                        fit: BoxFit.cover,
+                        width: dp(context, 50),
+                      ),
                     ),
                   ),
                 ),

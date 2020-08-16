@@ -21,6 +21,7 @@ class SquareDayView extends StatelessWidget {
 
   final SortingMode sortingMode;
 
+
   SquareDayView({Key key, this.minimumDateTime, this.maximumDateTime, this.sortingMode = SortingMode.INCREASING}) : super(key: key) {
     minimumDateTime ??= extractDate(DateTime.now().subtract(Duration(days: 300)));
     maximumDateTime ??= extractDate(DateTime.now().add(Duration(days: 300)));
@@ -62,8 +63,9 @@ class SquareDayView extends StatelessWidget {
               //shadowColor: (dates[dateIndex].day < 3) ? Colors.green : Colors.black,
               elevation: 2,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.0)
+                borderRadius: BorderRadius.circular(10.0)
               ),
+
               child: Container(
                 padding: EdgeInsets.only(left: 10, right: 10),
                 child: Column(

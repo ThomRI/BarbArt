@@ -37,6 +37,10 @@ class AClient extends APIStructure {
     this.avatar = new AssetImage("assets/profile_generic.png");
   }
 
+  String toString() {
+    return this.firstname + " " + this.lastname;
+  }
+
   @override
   factory AClient.fromJSON(Map<String, dynamic> json) => AClient(
     uuid: json['uuid'],
@@ -53,12 +57,13 @@ class AClient extends APIStructure {
   }
 }
 
-class AEvent extends APIStructure{
+class AEvent extends APIStructure {
   int       id;
   String    title,
             description,
             imageUrl,
-            location;
+            location,
+            clientUUID;
 
   int nbrPeopleGoing    = 0,
       nbrPlaceAvailable = 0;
@@ -75,7 +80,8 @@ class AEvent extends APIStructure{
           this.description,
           this.imageUrl,
           this.nbrPeopleGoing,
-          this.nbrPlaceAvailable}) : super();
+          this.nbrPlaceAvailable,
+          this.clientUUID}) : super();
 
   String toString() {
     return "{${this.title}, ${this.dateTimeBegin}}";
@@ -113,20 +119,19 @@ class AEvent extends APIStructure{
   }
 
 
-
-
   /* Here are the links in notation between this code and the server's database */
   @override
   factory AEvent.fromJSON(Map<String, dynamic> json) => AEvent(
-    id: json['id'],
-    title: json["title"],
-    dateTimeBegin: DateTime.parse(json["datetime_begin"]),
-    dateTimeEnd: DateTime.parse(json["datetime_end"]),
-    location: json["location"],
-    description: json["description"],
-    imageUrl: json["image_url"],
-    nbrPlaceAvailable: json["nbr_place_available"],
-    nbrPeopleGoing: json["nbr_people_going"]
+    id:                 json['id'] ?? -1,
+    title:              json["title"] ?? "",
+    dateTimeBegin:      DateTime.parse(json["datetime_begin"]) ?? DateTime.now(),
+    dateTimeEnd:        DateTime.parse(json["datetime_end"]) ?? DateTime.now(),
+    location:           json["location"] ?? "",
+    description:        json["description"] ?? "",
+    imageUrl:           json["image_url"] ?? "",
+    nbrPlaceAvailable:  json["nbr_place_available"] ?? 0,
+    nbrPeopleGoing:     json["nbr_people_going"] ?? 0,
+    clientUUID:         json['client_uuid'] ?? ""
   );
 
   Map<String, dynamic> toJSON() => {
@@ -138,7 +143,8 @@ class AEvent extends APIStructure{
     "description": description,
     "image_url": imageUrl,
     "nbr_place_available": nbrPlaceAvailable,
-    "nbr_people_going": nbrPeopleGoing
+    "nbr_people_going": nbrPeopleGoing,
+    "client_uuid": clientUUID
   };
 }
 
@@ -213,14 +219,14 @@ class ASocialPost extends APIStructure {
 
   @override
   factory ASocialPost.fromJSON(Map<String, dynamic> json) => ASocialPost(
-    id:           json['id'],
-    clientUUID:   json['client_uuid'],
-    title:        json['title'],
-    body:         json['body'],
-    datetime:     DateTime.parse(json['datetime']),
-    tags:         json['tags'].toString().split(APIConfig.SQL_ARRAY_SEPARATOR),
-    nbrLikes:     json['nbr_likes'],
-    nbrComments:  json['nbr_comments']
+    id:           json['id'] ?? -1,
+    clientUUID:   json['client_uuid'] ?? "",
+    title:        json['title'] ?? "",
+    body:         json['body'] ?? "",
+    datetime:     DateTime.parse(json['datetime']) ?? new DateTime(1999),
+    tags:         json['tags'].toString().split(APIConfig.SQL_ARRAY_SEPARATOR) ?? new List<String>(),
+    nbrLikes:     json['nbr_likes'] ?? 0,
+    nbrComments:  json['nbr_comments'] ?? 0
   );
 
   Future<bool> setLike(AClient client, {@required bool liked, Function(bool success) onConfirmed}) async {
@@ -254,5 +260,4 @@ class ASocialPost extends APIStructure {
     // TODO: implement toJSON
     throw UnimplementedError();
   }
-
 }

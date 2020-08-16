@@ -95,10 +95,11 @@ class APIValues {
   /// Match local data with server according to the given flag.
   void update(int flag, {Function authNotAliveCallback, Function onUpdateDone}) async {
     bool authStillAlive = true;
-    if(flag & APIFlags.EVENTS != 0)         authStillAlive &= await _updateEvents();
-    if(flag & APIFlags.CLUBS != 0)          authStillAlive &= await _updateClubs();
-    if(flag & APIFlags.PROFILE != 0)        authStillAlive &= await _updateProfile();
-    if(flag & APIFlags.SOCIAL_POSTS != 0)   authStillAlive &= await _updateSocialPosts();
+    if(flag & APIFlags.EVENTS != 0)             authStillAlive &= await _updateEvents();
+    if(flag & APIFlags.CLUBS != 0)              authStillAlive &= await _updateClubs();
+    if(flag & APIFlags.PROFILE != 0)            authStillAlive &= await _updateProfile();
+    if(flag & APIFlags.SOCIAL_POSTS != 0)       authStillAlive &= await _updateSocialPosts();
+    if(flag & APIFlags.MUSIC_RESERVATIONS != 0) authStillAlive &= await _updateMusicReservations();
 
     if(!authStillAlive && authNotAliveCallback != null) authNotAliveCallback();
     if(authStillAlive && onUpdateDone != null)          onUpdateDone(); // Calling the callback only if the auth is still alive..
@@ -227,8 +228,38 @@ class APIValues {
   /* ########## MUSIC RESERVATION ########### */
   /* ######################################## */
 
-  Future<bool> _updateMusicReservation() async {
-    FetchResponse response = await APIManager.fetch(route: APIRoutes.Music, token: _token);
+  // Note : Music reservations use the events system of the API. Basically a reservation is a AEvent.
+
+  // This list must be the only one accessed to retrieve the actual events.
+  // Mapping should be done with indices of this list
+  List<AEvent> musicReservations = new List<AEvent>();
+  Map<DateTime, List<int>> mappedMusicReservationsIndicesByDay = new Map<DateTime, List<int>>();
+
+  // Returns false iff there was an authentication error
+  /// Updates the music reservations starting from today
+  Future<bool> _updateMusicReservations() async {
+    // Fetching reservations from server
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.Music, params: {'date': extractDate(DateTime.now()).toString()}, token: _token);
+    if(response.state == FetchResponseState.ERROR_AUTH) return false;
+
+    // Not needed, and forced request disabled : using the cache list (not updating anything).
+    if(!config.forceRequests && response.state == FetchResponseState.OK_NOT_NEEDED) return true;
+
+    // Updating the events list
+    musicReservations.clear();
+    (response.body[APIJsonKeys.MusicReservations] as List<dynamic>).forEach((eventJSON) {musicReservations.add(new AEvent.fromJSON(eventJSON));});
+
+    // Updating the DateTime mapping
+    mappedMusicReservationsIndicesByDay.clear();
+    for(int i = 0;i < musicReservations.length; i++) {
+      DateTime extracted = extractDate(musicReservations[i].dateTimeBegin);
+      if(!mappedMusicReservationsIndicesByDay.containsKey(extracted)) { // The datetime is not in the map yet
+        mappedMusicReservationsIndicesByDay.addAll({extracted: new List<int>()});
+      }
+      mappedMusicReservationsIndicesByDay[extracted].add(i);
+    }
+
+    return true;
   }
 
   /* ################################################ */

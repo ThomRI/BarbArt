@@ -24,6 +24,7 @@ class HomePage extends StatefulWidget implements AbstractPageComponent{
 }
 
 class _HomePageState extends State<HomePage> {
+  bool _pending = true; // Waiting for the server
 
   @override
   void initState() {
@@ -34,12 +35,15 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(top: 10),
-      child: ListView.builder(
-        padding: EdgeInsets.only(bottom: 250),
-        itemCount: gAPI.socialPosts.length,
-        itemBuilder: (BuildContext context, int index) {
-          return SocialPostItem(socialPostLocalId: index,);
-        },
+      child: gAPI.socialPosts.length > 0 ?
+        ListView.builder(
+          padding: EdgeInsets.only(bottom: 250),
+          itemCount: gAPI.socialPosts.length,
+          itemBuilder: (BuildContext context, int index) {
+            return SocialPostItem(socialPostLocalId: index,);
+          },
+        ) : Center(
+        child: Text("Waiting for server..."),
       ),
     );
   }

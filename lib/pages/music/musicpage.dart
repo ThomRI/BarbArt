@@ -6,6 +6,7 @@ import 'package:flutter_week_view/flutter_week_view.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../main.dart';
+import '../../utils.dart';
 
 class MusicPage extends StatefulWidget implements AbstractPageComponent {
   @override
@@ -23,15 +24,71 @@ class MusicPage extends StatefulWidget implements AbstractPageComponent {
 
 class _MusicPageState extends State<MusicPage> {
   CalendarController _controller;
-  List<int> _selectedEventsIndices;
+  List<FlutterWeekViewEvent> _calendarEvents;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Init things here
+    _controller = new CalendarController();
+
+    _calendarEvents = _generateInternalEventList(DateTime.now());
+  }
+
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
+
+  List<FlutterWeekViewEvent> _generateInternalEventList(DateTime day) {
+    List<FlutterWeekViewEvent> list = List<FlutterWeekViewEvent>();
+
+    DateTime extracted = extractDate(day); // Wipes out the hour,min,sec
+    if(gAPI.mappedMusicReservationsIndicesByDay.containsKey(extracted)) {
+      gAPI.mappedMusicReservationsIndicesByDay[extracted].forEach((index) {
+        list.add(new FlutterWeekViewEvent(
+            title: gAPI.clientFromUUID(gAPI.musicReservations[index].clientUUID).toString(),
+            description: gAPI.musicReservations[index].description,
+            start: gAPI.musicReservations[index].dateTimeBegin,
+            end: gAPI.musicReservations[index].dateTimeEnd,
+
+            backgroundColor: kPrimaryColor.withOpacity(0.5),
+            eventTextBuilder: (event, context, dayView, height, width) => Row(
+              children: <Widget>[
+                Text(
+                  event.title,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                Expanded(
+                  child: Text(
+                    timeToString(event.start) + " - " + timeToString(event.end),
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      color: Colors.grey[200],
+                      fontWeight: FontWeight.bold,
+                    )
+                  )
+                )
+              ],
+            ),
+
+            onTap: () {
+              // TODO: Implement music calendar event onTap()
+            }
+        ));
+      });
+    }
+
+    return list;
+  }
 
   @override
   Widget build(BuildContext context) {
-    /* Creating Flutter Week View compatible events */
-    List<FlutterWeekViewEvent> _calendarEvents = List<FlutterWeekViewEvent>();
-
-
-
     return Container(
       margin: EdgeInsets.only(top: 70),
 
@@ -40,59 +97,78 @@ class _MusicPageState extends State<MusicPage> {
         children: <Widget>[
 
           /* Main scroll view */
-          SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
 
-                /* Table Calendar (date picker) */
-                TableCalendar(
-                  calendarController: _controller,
+              /* Table Calendar (date picker) */
+              TableCalendar(
+                calendarController: _controller,
 
-                  events: gAPI.mappedEventsIndices,
-                  initialCalendarFormat: CalendarFormat.week,
-                  calendarStyle: CalendarStyle(
-                    canEventMarkersOverflow: true,
-                    todayColor: Colors.orange,
-                    selectedColor: kPrimaryColor,
-                    todayStyle: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18.0,
-                      color: Colors.white
-                    ),
+                events: gAPI.mappedMusicReservationsIndicesByDay,
+                initialCalendarFormat: CalendarFormat.week,
+                calendarStyle: CalendarStyle(
+                  canEventMarkersOverflow: true,
+                  todayColor: Colors.orange,
+                  selectedColor: kPrimaryColor,
+                  todayStyle: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18.0,
+                    color: Colors.white
                   ),
-
-                  headerStyle: HeaderStyle(
-                    centerHeaderTitle: true,
-
-                    /* View format selector decoration */
-                    formatButtonDecoration: BoxDecoration(
-                      color: Colors.orange,
-                      borderRadius: BorderRadius.circular(20.0),
-                    ),
-
-                    formatButtonTextStyle: TextStyle(color: Colors.white),
-                    formatButtonShowsNext: false,
-                  ),
-
-                  startingDayOfWeek: StartingDayOfWeek.monday,
-
-                  /* Header day selection callback */
-                  onDaySelected: (date, eventsList) {
-                    // Updating the selected events indices list to update the listview
-                    this.setState(() {
-                      _selectedEventsIndices = eventsList;
-                    });
-                  }
                 ),
 
-                /* Actual calendar (day view) */
-                DayView(
+                headerStyle: HeaderStyle(
+                  centerHeaderTitle: true,
+
+                  /* View format selector decoration */
+                  formatButtonDecoration: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+
+                  formatButtonTextStyle: TextStyle(color: Colors.white),
+                  formatButtonShowsNext: false,
+                ),
+
+                startingDayOfWeek: StartingDayOfWeek.monday,
+
+                /* Header day selection callback */
+                onDaySelected: (date, eventsList) {
+                  // Updating the selected events indices list to update the listview
+                  this.setState(() {
+                    _calendarEvents = _generateInternalEventList(_controller.selectedDay ?? DateTime.now());
+                  });
+                }
+              ),
+
+              /* Actual calendar (day view) */
+              Expanded(
+                child: DayView(
                   date: _controller.selectedDay ?? DateTime.now(),
+                  events: _calendarEvents,
+                  style: DayViewStyle.fromDate(
+                    date: _controller.selectedDay ?? DateTime.now(),
+                    currentTimeCircleColor: Colors.pink,
+                    dayBarHeight: 0.0,
+                    hourRowHeight: 40.0,
+                  )
+                ),
+              )
 
-                )
+            ],
+          ),
 
-              ],
+          /* Floating Button */
+          Positioned(
+            bottom: 50,
+            right: 10,
+            child: FloatingActionButton(
+              backgroundColor: kPrimaryColor,
+              child: const Icon(Icons.add),
+              onPressed: () {
+                // TODO: Implement music page floating button onPressed()
+              },
             )
           )
 

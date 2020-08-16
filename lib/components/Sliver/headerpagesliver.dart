@@ -189,12 +189,13 @@ class PageListBody extends StatefulWidget {
 class PageListBodyState extends State<PageListBody> {
   int currentIndex = 0;
 
-  PageController controller = new PageController();
+  PageController controller;
 
   @override
   void initState() {
     super.initState();
 
+    controller = PageController(initialPage: 0);
     controller.addListener(() {
       widget.onScroll(controller.page); // controller.page is in range [0.0; nbr of pages - 1] and is a DOUBLE that is interpolated between pages when scrolling (pseudo-continuous values between 0 and 1 for scrolling between the first and second page for example).
     });

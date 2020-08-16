@@ -146,7 +146,6 @@ class _MusicPageState extends State<MusicPage> {
     DateTime extracted = extractDate(day); // Wipes out the hour,min,sec
     if(gAPI.mappedMusicReservationsIndicesByDay.containsKey(extracted)) {
       gAPI.mappedMusicReservationsIndicesByDay[extracted].forEach((index) { // Loop here
-        print("Music index: " + index.toString());
         list.add(new FlutterWeekViewEvent(
             title: gAPI.clientFromUUID(gAPI.musicReservations[index].clientUUID).toString(),
             description: gAPI.musicReservations[index].description,

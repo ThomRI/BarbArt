@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../constants.dart';
+import '../main.dart';
 import '../utils.dart';
 
 // ignore: must_be_immutable
@@ -30,6 +31,8 @@ class PageListHeader extends StatelessWidget {
 
           child: Stack(
             children: <Widget>[
+
+              /* Settings icon */
               Positioned(
                 right: 0,
                 child: IconButton(
@@ -41,18 +44,47 @@ class PageListHeader extends StatelessWidget {
                 ),
               ),
 
+
+              /* Avatar */
+              Positioned(
+                left: 10,
+                top: 10,
+                child: Container(
+                  padding: EdgeInsets.all(5.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(5.0)
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      CircleAvatar(
+
+                        child: Image(image: gAPI.selfClient.avatar),
+                        maxRadius: 15.0,
+                      ),
+
+                      Container(
+                        margin: EdgeInsets.only(left: 5.0),
+                        child: const Text(
+                          "Claire",
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              ),
+
+              /* Centered logo */
               Positioned.fill(
                 child: Align(
                   alignment: Alignment.topCenter,
-                  child: Hero(
-                    tag: "server_splashscreen",
-                    child: Container(
-                      margin: EdgeInsets.only(top: dp(context, 10)),
-                      child: Image(
-                        image: AssetImage("assets/logo_clipped.png"),
-                        fit: BoxFit.cover,
-                        width: dp(context, 50),
-                      ),
+                  child: Container(
+                    margin: EdgeInsets.only(top: dp(context, 10)),
+                    child: Image(
+                      image: AssetImage("assets/logo_clipped.png"),
+                      fit: BoxFit.cover,
+                      width: dp(context, 50),
                     ),
                   ),
                 ),

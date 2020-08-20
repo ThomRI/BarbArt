@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:barbart/api/structures.dart';
 import 'package:barbart/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart';
@@ -8,13 +9,23 @@ import 'package:http/http.dart';
 class APIManager {
   APIManager();
 
+  static Future<FetchResponse> register({ @required String email,
+                                          @required String password,
+                                          @required String firstname,
+                                          @required String lastname}) async {
+
+    // Note: The password should be sent over HTTPS so this shouldn't be an issue.
+    Map<String, dynamic> json = jsonDecode((await post(API_BASEURL + "/register", body: {"email": email, "password": password, "firstname": firstname, "lastname": lastname})).body);
+    return _validateResponse(json);
+  }
+
   static Future<FetchResponse> authenticate(String email, String password) async {
     Map<String, dynamic> json = jsonDecode((await post(API_BASEURL + "/auth", body: {"email": email, "password": password})).body);
     return _validateResponse(json);
   }
 
   static FetchResponse _validateResponse(Map<String, dynamic> json) { // Checks if we are still authenticated, changes the auth flag otherwise.
-    if(!json['auth']) {
+    if(json.containsKey('auth') && !json['auth']) {
       return new FetchResponse(
         state: FetchResponseState.ERROR_AUTH,
         body: json

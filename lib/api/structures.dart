@@ -52,8 +52,12 @@ class AClient extends APIStructure {
 
   @override
   Map<String, dynamic> toJSON() {
-    // TODO: implement toJSON
-    throw UnimplementedError();
+    return {
+      'uuid': uuid,
+      'firstname': firstname,
+      'lastname': lastname,
+      'email': email,
+    };
   }
 }
 
@@ -124,8 +128,8 @@ class AEvent extends APIStructure {
   factory AEvent.fromJSON(Map<String, dynamic> json) => AEvent(
     id:                 json['id'] ?? -1,
     title:              json["title"] ?? "",
-    dateTimeBegin:      DateTime.parse(json["datetime_begin"]) ?? DateTime.now(),
-    dateTimeEnd:        DateTime.parse(json["datetime_end"]) ?? DateTime.now(),
+    dateTimeBegin:      DateTime.parse(json["datetime_begin"]).toLocal() ?? DateTime.now(), // DateTime is received as UTC from server
+    dateTimeEnd:        DateTime.parse(json["datetime_end"]).toLocal() ?? DateTime.now(), // DateTime is received as UTC from server
     location:           json["location"] ?? "",
     description:        json["description"] ?? "",
     imageUrl:           json["image_url"] ?? "",
@@ -223,7 +227,7 @@ class ASocialPost extends APIStructure {
     clientUUID:   json['client_uuid'] ?? "",
     title:        json['title'] ?? "",
     body:         json['body'] ?? "",
-    datetime:     DateTime.parse(json['datetime']) ?? new DateTime(1999),
+    datetime:     DateTime.parse(json['datetime']).toLocal() ?? new DateTime(1999), // DateTime is received as UTC from server
     tags:         json['tags'].toString().split(APIConfig.SQL_ARRAY_SEPARATOR) ?? new List<String>(),
     nbrLikes:     json['nbr_likes'] ?? 0,
     nbrComments:  json['nbr_comments'] ?? 0

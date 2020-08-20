@@ -24,7 +24,7 @@ class APIJsonKeys {
   static const PostsList          = "posts";
   static const Post               = "post";
 
-  static const MusicReservations  = "reservations";
+  static const Registrations      = "registrations";
 }
 
 class APIRoutes {
@@ -39,6 +39,8 @@ class APIRoutes {
   static const PostsLikes   = "posts/likes";
 
   static const Music        = "music";
+
+  static const Register     = "register";
 }
 
 /// Used to declare flags for the API. For example, when re-fetching everything from server, only one update method should be called with the correct flag to indicate what to update.
@@ -78,6 +80,26 @@ class APIValues {
   String get token => _token;
   bool get authenticated => _token != "";
 
+  Future<bool> register({ @required String email,
+                          @required String password,
+                          @required String firstname,
+                          @required String lastname,
+                          Function(AClient) onRegistered, Function onRegistrationFailed,
+                          bool makeSelf = false}) async {
+    FetchResponse response = await APIManager.register(email: null, password: null, firstname: null, lastname: null);
+    if(response.state != FetchResponseState.OK) { // Something went wrong
+      if(onRegistrationFailed != null) onRegistrationFailed();
+      return false;
+    }
+
+    // Registration succeeded
+    AClient client = new AClient.fromJSON(response.body['client']);
+    if(makeSelf) this.selfClient = client;
+
+    if(onRegistered != null) onRegistered(client);
+    return true;
+  }
+
   /// Authenticates the client with the provided credentials and saves its uuid and the access token.
   Future<bool> authenticate({@required String email, @required String password, Function onAuthenticated, Function onAuthenticationFailed}) async {
     FetchResponse response = await APIManager.authenticate(email, password);
@@ -115,7 +137,7 @@ class APIValues {
   List<AClient> clients = new List<AClient>(); // This is a list of cached clients which won't necessarily contain every clients registered on the server.
   Map<String, int> _uuidToIndexClients = new Map<String, int>();
 
-  AClient clientFromUUID(String uuid) => clients[_uuidToIndexClients[uuid]];
+  AClient clientFromUUID(String uuid) => (uuid == selfClient.uuid) ? selfClient : clients[_uuidToIndexClients[uuid]];
 
   void cacheClient(AClient client, {bool cacheAvatar = false}) {
     if(_uuidToIndexClients.containsKey(client.uuid)) return;
@@ -224,20 +246,19 @@ class APIValues {
 
     /* Caching the authors of the posts in the cached client list */
     (response.body[APIJsonKeys.ClientsList] as List<dynamic>).forEach((clientJSON) {this.cacheClient(new AClient.fromJSON(clientJSON), cacheAvatar: true);});
-
     return true;
   }
 
-  /* ######################################## */
-  /* ########## MUSIC RESERVATION ########### */
-  /* ######################################## */
+  /* ######################################### */
+  /* ########## MUSIC REGISTRATION ########### */
+  /* ######################################### */
 
   // Note : Music reservations use the events system of the API. Basically a reservation is a AEvent.
 
   // This list must be the only one accessed to retrieve the actual events.
   // Mapping should be done with indices of this list
-  List<AEvent> musicReservations = new List<AEvent>();
-  Map<DateTime, List<int>> mappedMusicReservationsIndicesByDay = new Map<DateTime, List<int>>();
+  List<AEvent> musicRegistrations = new List<AEvent>();
+  Map<DateTime, List<int>> mappedMusicRegistrationsIndicesByDay = new Map<DateTime, List<int>>();
 
   // Returns false iff there was an authentication error
   /// Updates the music reservations starting from today
@@ -250,19 +271,47 @@ class APIValues {
     if(!config.forceRequests && response.state == FetchResponseState.OK_NOT_NEEDED) return true;
 
     // Updating the events list
-    musicReservations.clear();
-    (response.body[APIJsonKeys.MusicReservations] as List<dynamic>).forEach((eventJSON) {musicReservations.add(new AEvent.fromJSON(eventJSON));});
+    musicRegistrations.clear();
+    (response.body[APIJsonKeys.Registrations] as List<dynamic>).forEach((eventJSON) {
+      AEvent registration = new AEvent.fromJSON(eventJSON);
+      musicRegistrations.add(registration);
+    });
 
     // Updating the DateTime mapping
-    mappedMusicReservationsIndicesByDay.clear();
-    for(int i = 0;i < musicReservations.length; i++) {
-      DateTime extracted = extractDate(musicReservations[i].dateTimeBegin);
-      if(!mappedMusicReservationsIndicesByDay.containsKey(extracted)) { // The datetime is not in the map yet
-        mappedMusicReservationsIndicesByDay.addAll({extracted: new List<int>()});
+    mappedMusicRegistrationsIndicesByDay.clear();
+    for(int i = 0;i < musicRegistrations.length; i++) {
+      DateTime extracted = extractDate(musicRegistrations[i].dateTimeBegin);
+      if(!mappedMusicRegistrationsIndicesByDay.containsKey(extracted)) { // The datetime is not in the map yet
+        mappedMusicRegistrationsIndicesByDay.addAll({extracted: new List<int>()});
       }
-      mappedMusicReservationsIndicesByDay[extracted].add(i);
+      mappedMusicRegistrationsIndicesByDay[extracted].add(i);
     }
 
+    // Caching clients
+    (response.body[APIJsonKeys.ClientsList] as List<dynamic>).forEach((clientJSON) {this.cacheClient(new AClient.fromJSON(clientJSON), cacheAvatar: false);});
+
+    return true;
+  }
+
+  Future<bool> registerMusicRegistration(AClient client, {@required DateTime beginTime, @required DateTime endTime, Function(AEvent registration) onConfirmed}) async {
+    print(beginTime.toUtc().toString() + " " + endTime.toUtc().toString());
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.Music + "/" + APIRoutes.Register, params: {'beginTime': beginTime.toUtc().toString(), 'endTime': endTime.toUtc().toString()}, token: _token);
+    if(response.state != FetchResponseState.OK) return false;
+
+    // Request should be successful from here, meaning that the server correctly registered the request, and that the registration is unique, and not overlapping any other
+    // (We can then safely add it to the cached registrations)
+
+    // Updating local cached registrations without updating everything
+    AEvent registration = new AEvent.fromJSON(response.body['registration']);
+    DateTime extracted = extractDate(registration.dateTimeBegin);
+
+    musicRegistrations.add(registration);
+    if(!mappedMusicRegistrationsIndicesByDay.containsKey(extracted)) {
+      mappedMusicRegistrationsIndicesByDay.addAll({extracted: new List<int>()}); // Adding the new extracted date to the map if not already existent
+    }
+    mappedMusicRegistrationsIndicesByDay[extracted].add(musicRegistrations.length - 1);
+
+    if(onConfirmed != null) onConfirmed(registration);
     return true;
   }
 
@@ -286,6 +335,9 @@ class APIValues {
       APIJsonKeys.EventsList: new List<Map<String, dynamic>>(),
       APIJsonKeys.ClubsList: new List<Map<String, dynamic>>(),
     });
+
+    // Cached clients
+    for(AClient client in this.clients) json[APIJsonKeys.ClientsList].add(client.toJSON());
 
     // Events
     for(AEvent ev in this.events) json[APIJsonKeys.EventsList].add(ev.toJSON());

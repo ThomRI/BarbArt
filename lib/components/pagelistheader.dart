@@ -65,8 +65,8 @@ class PageListHeader extends StatelessWidget {
 
                       Container(
                         margin: EdgeInsets.only(left: 5.0),
-                        child: const Text(
-                          "Claire",
+                        child: Text(
+                          gAPI.selfClient.firstname,
                           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       )

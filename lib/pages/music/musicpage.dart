@@ -1,4 +1,5 @@
 import 'package:barbart/components/AbstractPageComponent.dart';
+import 'package:barbart/components/eventregistrationdialog.dart';
 import 'package:barbart/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -31,13 +32,13 @@ class _MusicPageState extends State<MusicPage> {
   void initState() {
     super.initState();
 
-    // Will be initiated each time we get back on the music page
+    // Generating flutter internal events
     _calendarEvents = _generateInternalEventList(DateTime.now());
   }
 
   @override
   Widget build(BuildContext context) {
-    DateTime _selectedDay = widget._controller.selectedDay ?? extractDate(DateTime.now());
+    DateTime _selectedDay = (widget._controller.selectedDay ?? extractDate(DateTime.now())).toLocal();
 
     return Container(
         margin: EdgeInsets.only(top: 70),
@@ -54,7 +55,7 @@ class _MusicPageState extends State<MusicPage> {
                 /* Table Calendar (date picker) */
                 TableCalendar(
                     calendarController: widget._controller,
-                    events: gAPI.mappedMusicReservationsIndicesByDay,
+                    events: gAPI.mappedMusicRegistrationsIndicesByDay,
                     initialSelectedDay: _selectedDay,
                     startDay: extractDate(DateTime.now()),
                     initialCalendarFormat: CalendarFormat.week,
@@ -118,13 +119,30 @@ class _MusicPageState extends State<MusicPage> {
 
             /* Floating Button */
             Positioned(
-                bottom: 50,
+                bottom: 30,
                 right: 10,
                 child: FloatingActionButton(
                   backgroundColor: kPrimaryColor,
                   child: const Icon(Icons.add),
                   onPressed: () {
-                    // TODO: Implement music page floating button onPressed()
+                    EventRegistrationDialog.show(context, day: _selectedDay, title: Text("Time slot"), onConfirmed: (DateTime beginTime, DateTime endTime) {
+
+                      /* ########################################### */
+                      /* ###### HERE SLOT REGISTRATION ACTION ###### */
+                      /* ########################################### */
+
+                      return gAPI.registerMusicRegistration(
+                        gAPI.selfClient,
+                        beginTime: beginTime,
+                        endTime: endTime,
+                        onConfirmed: (registration) {
+                          this.setState(() {
+                            _calendarEvents.add(_generateInternalEvent(gAPI.musicRegistrations.length - 1)); // Generating last added registration
+                          });
+                        }
+                      );
+
+                    });
                   },
                 )
             )
@@ -134,58 +152,57 @@ class _MusicPageState extends State<MusicPage> {
     );
   }
 
-  void dispose() {
-    super.dispose();
-    widget._controller.dispose();
-  }
+  FlutterWeekViewEvent _generateInternalEvent(int registrationLocalIndex) {
+    return new FlutterWeekViewEvent(
+        title: gAPI.clientFromUUID(gAPI.musicRegistrations[registrationLocalIndex].clientUUID).toString(),
+        description: gAPI.musicRegistrations[registrationLocalIndex].description,
+        start: gAPI.musicRegistrations[registrationLocalIndex].dateTimeBegin,
+        end: gAPI.musicRegistrations[registrationLocalIndex].dateTimeEnd,
 
-  // Generates events compatible with the internals of flutter_week_view
-  List<FlutterWeekViewEvent> _generateInternalEventList(DateTime day) {
-    List<FlutterWeekViewEvent> list = List<FlutterWeekViewEvent>();
+        backgroundColor: kPrimaryColor.withOpacity(0.5),
 
-    DateTime extracted = extractDate(day); // Wipes out the hour,min,sec
-    if(gAPI.mappedMusicReservationsIndicesByDay.containsKey(extracted)) {
-      gAPI.mappedMusicReservationsIndicesByDay[extracted].forEach((index) { // Loop here
-        list.add(new FlutterWeekViewEvent(
-            title: gAPI.clientFromUUID(gAPI.musicReservations[index].clientUUID).toString(),
-            description: gAPI.musicReservations[index].description,
-            start: gAPI.musicReservations[index].dateTimeBegin,
-            end: gAPI.musicReservations[index].dateTimeEnd,
+        /* Calendar event item content */
+        eventTextBuilder: (event, context, dayView, height, width) => Row(
+          children: <Widget>[
+            Text(
+              event.title,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
 
-            backgroundColor: kPrimaryColor.withOpacity(0.5),
-
-            /* Calendar event item content */
-            eventTextBuilder: (event, context, dayView, height, width) => Row(
-              children: <Widget>[
-                Text(
-                  event.title,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                Expanded(
-                  child: Text(
+            Expanded(
+                child: Text(
                     timeToString(event.start) + " - " + timeToString(event.end),
                     textAlign: TextAlign.right,
                     style: TextStyle(
                       color: Colors.grey[200],
                       fontWeight: FontWeight.bold,
                     )
-                  )
                 )
-              ],
-            ),
+            )
+          ],
+        ),
 
-            onTap: () {
-              // TODO: Implement music calendar event onTap()
-            }
-        ));
+        onTap: () {
+          // TODO: Implement music calendar event onTap()
+        }
+    );
+  }
+
+  // Generates events compatible with the internals of flutter_week_view
+  List<FlutterWeekViewEvent> _generateInternalEventList(DateTime day) {
+    List<FlutterWeekViewEvent> list = new List<FlutterWeekViewEvent>();
+
+    DateTime extracted = extractDate(day); // Wipes out the hour,min,sec
+    if(gAPI.mappedMusicRegistrationsIndicesByDay.containsKey(extracted)) {
+      gAPI.mappedMusicRegistrationsIndicesByDay[extracted].forEach((index) { // Loop here
+        list.add(_generateInternalEvent(index));
       });
     }
 
     return list;
   }
-  
+
 }

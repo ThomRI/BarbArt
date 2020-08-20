@@ -113,62 +113,74 @@ class HeaderPageSliverState extends State<HeaderPageSliver> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      controller: controller,
-      physics: (verticalScrollEnabled) ? AlwaysScrollableScrollPhysics() : NeverScrollableScrollPhysics(),
+    return WillPopScope(
 
-      slivers: <Widget>[
-        SliverAppBar(
-          expandedHeight: this.expandedHeight,
-          pinned: true, // Whether or not the header should always be shown (in its minimized form)
-          floating: false, // Show the header each time we scroll back up (instead of waiting the top of the page)
-          bottom: PreferredSize(
-            preferredSize: Size.fromHeight(10),
-            child: PageList(
-              key: headerPageListKey,
-              onSelectionChanged: () { /* SELECTION CHANGED IN THE HEADER */
-                bodyPageListKey.currentState.controller.jumpToPage(headerPageListKey.currentState.selectedIndex);
+      /* Back button override */
+      onWillPop: () async {
+        if(bodyPageListKey.currentState.currentIndex == 0) return true; // Don't override if already on the first page
 
-                _handlePageChangedCallback();
-              },
+        bodyPageListKey.currentState.controller.animateToPage(0, duration: kDefaultTransitionDuration, curve: Curves.easeIn);
+        return false;
+      },
 
-              pagesList: widget.pagesList,
-            ),
-          ),
-          flexibleSpace: FlexibleSpaceBar(
-            background: widget.m_header,
-            collapseMode: CollapseMode.parallax,
-          ),
-        ),
 
-        SliverList(
-          delegate: SliverChildListDelegate([
-            PageListBody(
-              key: bodyPageListKey,
-              onPageChanged: () { /* PAGE CHANGED IN THE BODY */
-                headerPageListKey.currentState.setState(() {
-                  headerPageListKey.currentState.selectedIndex = bodyPageListKey.currentState.currentIndex;
-                  headerPageListKey.currentState.displayIndex = bodyPageListKey.currentState.currentIndex;
+      child: CustomScrollView(
+        controller: controller,
+        physics: (verticalScrollEnabled) ? AlwaysScrollableScrollPhysics() : NeverScrollableScrollPhysics(),
+
+        slivers: <Widget>[
+          SliverAppBar(
+            expandedHeight: this.expandedHeight,
+            pinned: true, // Whether or not the header should always be shown (in its minimized form)
+            floating: false, // Show the header each time we scroll back up (instead of waiting the top of the page)
+            bottom: PreferredSize(
+              preferredSize: Size.fromHeight(10),
+              child: PageList(
+                key: headerPageListKey,
+                onSelectionChanged: () { /* SELECTION CHANGED IN THE HEADER */
+                  bodyPageListKey.currentState.controller.jumpToPage(headerPageListKey.currentState.selectedIndex);
 
                   _handlePageChangedCallback();
-                });
-              },
+                },
 
-              pagesList: widget.pagesList,
-
-              onScroll: (double scrollValue) {
-                if(widget.headerFollowFirstPage && scrollValue <= 1.0) {
-                  controller.jumpTo(expandedHeight * scrollValue);
-                }
-
-                widget.onPageScroll(scrollValue); // Calling the provided callback.
-              },
+                pagesList: widget.pagesList,
+              ),
             ),
-          ]
+            flexibleSpace: FlexibleSpaceBar(
+              background: widget.m_header,
+              collapseMode: CollapseMode.parallax,
+            ),
           ),
-        ),
 
-      ],
+          SliverList(
+            delegate: SliverChildListDelegate([
+              PageListBody(
+                key: bodyPageListKey,
+                onPageChanged: () { /* PAGE CHANGED IN THE BODY */
+                  headerPageListKey.currentState.setState(() {
+                    headerPageListKey.currentState.selectedIndex = bodyPageListKey.currentState.currentIndex;
+                    headerPageListKey.currentState.displayIndex = bodyPageListKey.currentState.currentIndex;
+
+                    _handlePageChangedCallback();
+                  });
+                },
+
+                pagesList: widget.pagesList,
+
+                onScroll: (double scrollValue) {
+                  if(widget.headerFollowFirstPage && scrollValue <= 1.0) {
+                    controller.jumpTo(expandedHeight * scrollValue);
+                  }
+
+                  widget.onPageScroll(scrollValue); // Calling the provided callback.
+                },
+              ),
+            ]
+            ),
+          ),
+
+        ],
+      ),
     );
   }
 }

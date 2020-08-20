@@ -165,7 +165,7 @@ class _DetailsBodyState extends State<DetailsBody> {
 
                     /* Event number of places available */
                     TextIcon(
-                      icon: Icon(Icons.event_seat, color: Colors.deepOrange),
+                      icon: Icon(Icons.event_seat, color: Colors.brown[400]),
                       text: Text(gAPI.events[widget.eventId].nbrPlaceAvailable.toString(), style: TextStyle(fontSize: 20)),
                     )
                   ],

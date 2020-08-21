@@ -1,3 +1,4 @@
+import 'package:barbart/api/APIValues.dart';
 import 'package:barbart/components/AbstractPageComponent.dart';
 import 'package:barbart/components/eventregistrationdialog.dart';
 import 'package:barbart/constants.dart';
@@ -27,19 +28,28 @@ class MusicPage extends StatefulWidget implements AbstractPageComponent {
 
 class _MusicPageState extends State<MusicPage> {
   List<FlutterWeekViewEvent> _calendarEvents;
+  DateTime _selectedDay;
+
+  Future<void> refresh({Function onDone}) async {
+    _selectedDay = (widget._controller.selectedDay ?? extractDate(DateTime.now())).toLocal();
+
+    // Generating flutter internal events
+    _calendarEvents = _generateInternalEventList(_selectedDay);
+
+    this.setState(() {
+      if(onDone != null) onDone();
+    });
+  }
 
   @override
   void initState() {
     super.initState();
 
-    // Generating flutter internal events
-    _calendarEvents = _generateInternalEventList(DateTime.now());
+    refresh(); // Async
   }
 
   @override
   Widget build(BuildContext context) {
-    DateTime _selectedDay = (widget._controller.selectedDay ?? extractDate(DateTime.now())).toLocal();
-
     return Container(
         margin: EdgeInsets.only(top: 70),
 
@@ -48,73 +58,80 @@ class _MusicPageState extends State<MusicPage> {
           children: <Widget>[
 
             /* Main scroll view */
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
+            RefreshIndicator(
+              onRefresh: () async {
+                gAPI.update(APIFlags.MUSIC_RESERVATIONS, onUpdateDone: () {
+                  this.setState(() {refresh();});
+                });
+              },
 
-                /* Table Calendar (date picker) */
-                TableCalendar(
-                    calendarController: widget._controller,
-                    events: gAPI.mappedMusicRegistrationsIndicesByDay,
-                    initialSelectedDay: _selectedDay,
-                    startDay: extractDate(DateTime.now()),
-                    initialCalendarFormat: CalendarFormat.week,
-                    calendarStyle: CalendarStyle(
-                      canEventMarkersOverflow: true,
-                      todayColor: Colors.orange,
-                      selectedColor: kPrimaryColor,
-                      todayStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18.0,
-                          color: Colors.white
-                      ),
-                    ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
 
-                    headerStyle: HeaderStyle(
-                      centerHeaderTitle: true,
-
-                      /* View format selector decoration */
-                      formatButtonDecoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(20.0),
+                  /* Table Calendar (date picker) */
+                  TableCalendar(
+                      calendarController: widget._controller,
+                      events: gAPI.mappedMusicRegistrationsIndicesByDay,
+                      initialSelectedDay: _selectedDay,
+                      startDay: extractDate(DateTime.now()),
+                      initialCalendarFormat: CalendarFormat.week,
+                      calendarStyle: CalendarStyle(
+                        canEventMarkersOverflow: true,
+                        todayColor: Colors.orange,
+                        selectedColor: kPrimaryColor,
+                        todayStyle: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18.0,
+                            color: Colors.white
+                        ),
                       ),
 
-                      formatButtonTextStyle: TextStyle(color: Colors.white),
-                      formatButtonShowsNext: false,
-                    ),
+                      headerStyle: HeaderStyle(
+                        centerHeaderTitle: true,
 
-                    startingDayOfWeek: StartingDayOfWeek.monday,
+                        /* View format selector decoration */
+                        formatButtonDecoration: BoxDecoration(
+                          color: Colors.orange,
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
 
-                    /* Header day selection callback */
-                    onDaySelected: (date, eventsList) {
-                      // Updating the selected events indices list to update the listview
-                      this.setState(() {
-                        _calendarEvents = _generateInternalEventList(date);
-                      });
-                    }
-                ),
+                        formatButtonTextStyle: TextStyle(color: Colors.white),
+                        formatButtonShowsNext: false,
+                      ),
 
-                /* Actual calendar (day view) */
-                Expanded(
-                  child: DayView(
-                    date: _selectedDay,
-                    events: _calendarEvents,
-                    userZoomable: false,
-                    inScrollableWidget: true,
-                    style: DayViewStyle(
-                      backgroundColor: sameDates(_selectedDay, DateTime.now()) ? Colors.orange.withOpacity(0.1) : Colors.grey[200],
-                      hourRowHeight: 40.0,
-                      dayBarHeight: 0,
-                    ),/*DayViewStyle.fromDate(
-                    date: _controller.selectedDay ?? DateTime.now(),
-                    currentTimeCircleColor: Colors.pink,
-                    dayBarHeight: 0.0,
-                    hourRowHeight: 40.0,
-                  )*/
+                      startingDayOfWeek: StartingDayOfWeek.monday,
+
+                      /* Header day selection callback */
+                      onDaySelected: (date, eventsList) {
+                        // Refreshing
+                        refresh(); // Async
+                      }
                   ),
-                )
 
-              ],
+                  /* Actual calendar (day view) */
+                  Expanded(
+                    child: DayView(
+                      date: _selectedDay,
+                      events: _calendarEvents,
+                      userZoomable: false,
+                      inScrollableWidget: true,
+                      scrollToCurrentTime: true,
+                      style: DayViewStyle(
+                        backgroundColor: sameDates(_selectedDay, DateTime.now()) ? Colors.orange.withOpacity(0.1) : Colors.grey[200],
+                        hourRowHeight: 40.0,
+                        dayBarHeight: 0,
+                      ),/*DayViewStyle.fromDate(
+                      date: _controller.selectedDay ?? DateTime.now(),
+                      currentTimeCircleColor: Colors.pink,
+                      dayBarHeight: 0.0,
+                      hourRowHeight: 40.0,
+                    )*/
+                    ),
+                  )
+
+                ],
+              ),
             ),
 
             /* Floating Button */

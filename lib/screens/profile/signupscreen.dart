@@ -87,6 +87,10 @@ class _SignupScreenState extends State<SignupScreen> {
                 controller: _signupButtonController,
                 child: Text(_SignupScreenConstants.SignupButtonText, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 onPressed: () {
+                  // TODO: Implement and remove following error code
+                  _signupButtonController.error();
+                  return;
+
                   /* ################################ */
                   /* ###### HERE SIGNUP ACTION ###### */
                   /* ################################ */

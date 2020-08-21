@@ -1,5 +1,7 @@
 /* This file's purpose is to define data structures used in the API */
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import '../main.dart';

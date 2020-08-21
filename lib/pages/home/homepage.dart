@@ -1,3 +1,4 @@
+import 'package:barbart/api/APIValues.dart';
 import 'package:barbart/components/AbstractPageComponent.dart';
 import 'package:barbart/components/SocialPostItem.dart';
 import 'package:flutter/cupertino.dart';
@@ -34,14 +35,20 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(top: 10),
       child: gAPI.socialPosts.length > 0 ?
-        ListView.builder(
-          padding: EdgeInsets.only(bottom: 250),
-          itemCount: gAPI.socialPosts.length,
-          itemBuilder: (BuildContext context, int index) {
-            return SocialPostItem(socialPostLocalId: index,);
+        RefreshIndicator(
+          onRefresh: () async {
+            gAPI.update(APIFlags.SOCIAL_POSTS, onUpdateDone: () {
+              this.setState(() {});
+            });
           },
+          child: ListView.builder(
+            padding: EdgeInsets.only(top: 10.0, bottom: 230),
+            itemCount: gAPI.socialPosts.length,
+            itemBuilder: (BuildContext context, int index) {
+              return SocialPostItem(socialPostLocalId: index,);
+            },
+          ),
         ) : Center(
         child: Text("Waiting for server..."),
       ),

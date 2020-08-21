@@ -1,3 +1,5 @@
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:barbart/api/APIValues.dart';
 import 'package:barbart/api/structures.dart';
 import 'package:barbart/components/routing/FadePageRoute.dart';
 import 'package:barbart/components/routing/SlidePageRoute.dart';
@@ -16,7 +18,7 @@ enum SortingMode {
 }
 
 // ignore: must_be_immutable
-class SquareDayView extends StatelessWidget {
+class SquareDayView extends StatefulWidget {
   DateTime  minimumDateTime, maximumDateTime;
 
   final SortingMode sortingMode;
@@ -27,7 +29,11 @@ class SquareDayView extends StatelessWidget {
     maximumDateTime ??= extractDate(DateTime.now().add(Duration(days: 300)));
   }
 
+  @override
+  _SquareDayViewState createState() => _SquareDayViewState();
+}
 
+class _SquareDayViewState extends State<SquareDayView> {
   @override
   Widget build(BuildContext context) {
     DateTime today = extractDate(DateTime.now());
@@ -38,7 +44,7 @@ class SquareDayView extends StatelessWidget {
     // Map of the events with DateTime from which we only kept the date and not the time.
     Map<DateTime, List<int>> dateEventMap = new Map<DateTime, List<int>>();
     for(DateTime date in gAPI.mappedEventsIndices.keys.toList()) {
-      if(date.isBefore(minimumDateTime) || date.isAfter(maximumDateTime))
+      if(date.isBefore(widget.minimumDateTime) || date.isAfter(widget.maximumDateTime))
         continue;
 
       DateTime extractedDate = extractDate(date);
@@ -51,80 +57,87 @@ class SquareDayView extends StatelessWidget {
     }
 
     List<DateTime> dates = dateEventMap.keys.toList();
-    dates.sort((a, b) => (sortingMode == SortingMode.INCREASING) ? a.compareTo(b) : b.compareTo(a)); // Sorting by date
+    dates.sort((a, b) => (widget.sortingMode == SortingMode.INCREASING) ? a.compareTo(b) : b.compareTo(a)); // Sorting by date
 
     return Container(
       margin: EdgeInsets.only(top: 65, left: 5, right: 5),
-      child: ListView.builder( // Vertical event list view
-        padding: EdgeInsets.only(top: 5, bottom: 40),
-        itemCount: dates.length,
-        itemBuilder: (BuildContext context, int dateIndex) {
-          return Card(
-              //shadowColor: (dates[dateIndex].day < 3) ? Colors.green : Colors.black,
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0)
-              ),
+      child: RefreshIndicator(
+        onRefresh: () async {
+          gAPI.update(APIFlags.EVENTS, onUpdateDone: () {
+            this.setState(() {});
+          });
+        },
+        child: ListView.builder( // Vertical event list view
+          padding: EdgeInsets.only(top: 5, bottom: 40),
+          itemCount: dates.length,
+          itemBuilder: (BuildContext context, int dateIndex) {
+            return Card(
+                //shadowColor: (dates[dateIndex].day < 3) ? Colors.green : Colors.black,
+                elevation: 0.5,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5.0)
+                ),
 
-              child: Container(
-                padding: EdgeInsets.only(left: 10, right: 10),
-                child: Column(
-                  children: <Widget>[
-                    Row( // Calendar icon + day text row
-                      children: <Widget>[
-                        // Calendar icon
-                        Container(
-                          child: Icon(Icons.calendar_today, color: (dates[dateIndex] == today) ? Colors.red.withOpacity(0.7) : kPrimaryColor),
-                          padding: EdgeInsets.all(5),
-                        ),
+                child: Container(
+                  padding: EdgeInsets.only(left: 10, right: 10),
+                  child: Column(
+                    children: <Widget>[
+                      Row( // Calendar icon + day text row
+                        children: <Widget>[
+                          // Calendar icon
+                          Container(
+                            child: Icon(Icons.calendar_today, color: (dates[dateIndex] == today) ? Colors.red.withOpacity(0.7) : kPrimaryColor),
+                            padding: EdgeInsets.all(5),
+                          ),
 
-                        // Day text container
-                        Container(
-                            width: deviceSize(context).width * 0.3333, // 1/3 of the width
-                            alignment: Alignment.centerLeft,
-                            padding: EdgeInsets.only(
-                                top: 5,
-                                right: 5,
-                                left: 0,
-                                bottom: 5
-                            ),
-                            child:  Text(
-                              DateFormat("EEEE").format(dates[dateIndex]),
+                          // Day text container
+                          Container(
+                              width: deviceSize(context).width * 0.3333, // 1/3 of the width
+                              alignment: Alignment.centerLeft,
+                              padding: EdgeInsets.only(
+                                  top: 5,
+                                  right: 5,
+                                  left: 0,
+                                  bottom: 5
+                              ),
+                              child:  Text(
+                                DateFormat("EEEE").format(dates[dateIndex]),
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                    color: (dates[dateIndex] == today) ? Colors.red.withOpacity(0.7) : kPrimaryColor,
+                                    fontStyle: FontStyle.italic
+                                ),
+
+                                textScaleFactor: 2,
+                              )
+                          ),
+
+                          Expanded(
+                            child: Text(
+                              DateFormat("dd/MM").format(dates[dateIndex]),
                               textAlign: TextAlign.right,
                               style: TextStyle(
-                                  color: (dates[dateIndex] == today) ? Colors.red.withOpacity(0.7) : kPrimaryColor,
+                                  color: Colors.grey,
                                   fontStyle: FontStyle.italic
                               ),
 
-                              textScaleFactor: 2,
-                            )
-                        ),
-
-                        Expanded(
-                          child: Text(
-                            DateFormat("dd/MM").format(dates[dateIndex]),
-                            textAlign: TextAlign.right,
-                            style: TextStyle(
-                                color: Colors.grey,
-                                fontStyle: FontStyle.italic
+                              textScaleFactor: 1.5,
                             ),
+                          )
 
-                            textScaleFactor: 1.5,
-                          ),
-                        )
+                        ],
+                      ),
 
-                      ],
-                    ),
-
-                    _ListDayView(
-                      eventIdList: dateEventMap[dates[dateIndex]],
-                    )
-                    // Actual grid of event for the date pointed buu the item builder index
-                  ],
-                ),
-              )
-          );
-        },
+                      _ListDayView(
+                        eventIdList: dateEventMap[dates[dateIndex]],
+                      )
+                      // Actual grid of event for the date pointed buu the item builder index
+                    ],
+                  ),
+                )
+            );
+          },
+        ),
       ),
     );
   }
@@ -189,33 +202,45 @@ class _ListDayView extends StatelessWidget {
                   ),
 
                   /* Hovering text */
-                  Hero (
+                  Hero(
                     tag: 'eventText: ${gAPI.events[eventIdList[index]].id}',
                     child: Container(
                       alignment: Alignment.center,
                       margin: EdgeInsets.all(15),
-                      child: RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          text: ' ${gAPI.events[eventIdList[index]].title} \n',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                            fontSize: 30,
-                            backgroundColor: Color(0x66FFFFFF),
-                          ),
-
-                          children: <TextSpan>[
-                            TextSpan(
-                              text: ' ' + gAPI.events[eventIdList[index]].timesToString() + ' ',
+                      child: SingleChildScrollView( // Permits to avoid text overflowing from the square just before AutoSizeText resized it.
+                        scrollDirection: Axis.vertical, // Don't change it to horizontal : otherwise the text keeps begin scrollable
+                        physics: NeverScrollableScrollPhysics(),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            AutoSizeText(
+                              '${gAPI.events[eventIdList[index]].title}',
+                              maxLines: 1,
                               style: TextStyle(
+                                decoration: TextDecoration.none,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 30,
+                                backgroundColor: Color(0x66FFFFFF),
+                              )
+                            ),
+
+                            AutoSizeText(
+                              gAPI.events[eventIdList[index]].timesToString(),
+                              maxLines: 1,
+                              style: TextStyle(
+                                decoration: TextDecoration.none,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
                                 fontSize: 20,
-                                fontWeight: FontWeight.normal,
+                                backgroundColor: Color(0x66FFFFFF),
                               )
                             )
-                          ]
-                        )
+                          ],
+                        ),
                       )
+
                     ),
                   )
                 ],

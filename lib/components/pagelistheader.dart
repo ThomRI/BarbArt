@@ -16,81 +16,82 @@ class PageListHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: kBackgroundColor,
-      child: ClipPath(
-        clipper: _MainClipper(),
+      child: Container(
 
-        child: Container(
+        /* Background image */
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+            bottomRight: Radius.elliptical(100.0, 10.0),
+            bottomLeft: Radius.elliptical(100.0, 10.0)
+          ),
 
-          /* Background image */
-          decoration: BoxDecoration(
-            image:  DecorationImage(
-              image: AssetImage("assets/header_background_raw.png"),
-              fit: BoxFit.cover,
+          image:  DecorationImage(
+            image: AssetImage("assets/header_background_raw.png"),
+            fit: BoxFit.cover,
+          ),
+        ),
+
+        child: Stack(
+          children: <Widget>[
+
+            /* Settings icon */
+            Positioned(
+              right: 0,
+              child: IconButton(
+                alignment: Alignment.topRight,
+                icon: Icon(Icons.settings, color: Colors.white),
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/settings');
+                },
+              ),
             ),
-          ),
 
-          child: Stack(
-            children: <Widget>[
 
-              /* Settings icon */
-              Positioned(
-                right: 0,
-                child: IconButton(
-                  alignment: Alignment.topRight,
-                  icon: Icon(Icons.settings, color: Colors.white),
-                  onPressed: () {
-                    Navigator.of(context).pushNamed('/settings');
-                  },
+            /* Avatar */
+            Positioned(
+              left: 10,
+              top: 10,
+              child: Container(
+                padding: EdgeInsets.all(5.0),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(5.0)
                 ),
-              ),
+                child: Row(
+                  children: <Widget>[
+                    CircleAvatar(
 
-
-              /* Avatar */
-              Positioned(
-                left: 10,
-                top: 10,
-                child: Container(
-                  padding: EdgeInsets.all(5.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(5.0)
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      CircleAvatar(
-
-                        child: Image(image: gAPI.selfClient.avatar),
-                        maxRadius: 15.0,
-                      ),
-
-                      Container(
-                        margin: EdgeInsets.only(left: 5.0),
-                        child: Text(
-                          gAPI.selfClient.firstname,
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                      )
-                    ],
-                  ),
-                )
-              ),
-
-              /* Centered logo */
-              Positioned.fill(
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Container(
-                    margin: EdgeInsets.only(top: dp(context, 10)),
-                    child: Image(
-                      image: AssetImage("assets/logo_clipped.png"),
-                      fit: BoxFit.cover,
-                      width: dp(context, 50),
+                      child: Image(image: gAPI.selfClient.avatar),
+                      maxRadius: 15.0,
                     ),
+
+                    Container(
+                      margin: EdgeInsets.only(left: 5.0),
+                      child: Text(
+                        gAPI.selfClient.firstname,
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ),
+
+            /* Centered logo */
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Container(
+                  margin: EdgeInsets.only(top: dp(context, 10)),
+                  child: Image(
+                    image: AssetImage("assets/logo_clipped.png"),
+                    fit: BoxFit.cover,
+                    width: dp(context, 50),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:barbart/api/APIValues.dart';
 import 'package:barbart/components/AbstractPageComponent.dart';
 import 'package:barbart/constants.dart';
 import 'package:barbart/main.dart';
@@ -7,7 +8,7 @@ import 'package:flutter/material.dart';
 
 import '../../utils.dart';
 
-class EventsPage extends StatelessWidget implements AbstractPageComponent {
+class EventsPage extends StatefulWidget implements AbstractPageComponent {
   EventsPage({Key key}) : super(key: key);
 
   @override
@@ -20,11 +21,13 @@ class EventsPage extends StatelessWidget implements AbstractPageComponent {
   String get name => "Évènements";
 
   @override
+  _EventsPageState createState() => _EventsPageState();
+}
+
+class _EventsPageState extends State<EventsPage> {
+
+  @override
   Widget build(BuildContext context) {
-    return SquareDayView(
-
-    );
+    return SquareDayView();
   }
-
-
 }

@@ -1,8 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:barbart/api/APIWebSocket.dart';
 import 'package:barbart/api/structures.dart';
+import 'package:barbart/components/AbstractPageComponent.dart';
 import 'package:barbart/constants.dart';
+import 'package:barbart/pages/clubs/clubspage.dart';
+import 'package:barbart/pages/events/eventspage.dart';
+import 'package:barbart/pages/home/homepage.dart';
+import 'package:barbart/pages/music/musicpage.dart';
 import 'package:barbart/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart';
@@ -41,6 +47,7 @@ class APIRoutes {
   static const Music        = "music";
 
   static const Register     = "register";
+  static const Delete       = "delete";
 }
 
 /// Used to declare flags for the API. For example, when re-fetching everything from server, only one update method should be called with the correct flag to indicate what to update.
@@ -69,13 +76,53 @@ class APIConfig {
 }
 
 class APIValues {
+  Map<String, AbstractPageComponent> pages = {
+    'HomePage'  : HomePage(),
+    'EventsPage': EventsPage(),
+    'MusicPage' : MusicPage(),
+    'ClubsPage' : ClubsPage(),
+  };
+
+  Map<int, String> updateCodeMap = {
+    APIFlags.SOCIAL_POSTS       : 'HomePage',
+    APIFlags.EVENTS             : 'EventsPage',
+    APIFlags.MUSIC_RESERVATIONS : 'MusicPage',
+    APIFlags.CLUBS              : 'ClubsPage',
+  };
+
   final APIConfig config;
 
   AClient selfClient = new AClient();
 
   String _token = "";
 
-  APIValues({@required this.config});
+  /* Web Socket API */
+  APIWebSocket ws = new APIWebSocket();
+
+  APIValues({@required this.config}) {
+    // WebSocket API configuration
+    ws.addCallback((message) {
+      _handleWSMessage(message);
+    });
+  }
+
+  /* ############################## */
+  /* ######### WEB SOCKET ######### */
+  /* ############################## */
+
+  void _handleWSMessage(dynamic message) {
+    int code;
+
+    try {
+      code = int.parse(message);
+    } catch(e) {
+      print("[WARNING] Failed to parse code from server (WebSocket). Ignoring it.");
+      return;
+    }
+
+    update(code);
+    pages[updateCodeMap[code]].notifier.notify();
+  }
 
   String get token => _token;
   bool get authenticated => _token != "";
@@ -169,6 +216,9 @@ class APIValues {
 
     // Fetching profile picture (avatar)
     selfClient.avatar = await APIManager.fetchImage(route: selfClient.avatar_route, token: _token);
+
+    // Requesting for an open WebSocket connection
+    this.ws.send('#' + selfClient.uuid);
 
     return true;
   }
@@ -294,7 +344,6 @@ class APIValues {
   }
 
   Future<bool> registerMusicRegistration(AClient client, {@required DateTime beginTime, @required DateTime endTime, Function(AEvent registration) onConfirmed}) async {
-    print(beginTime.toUtc().toString() + " " + endTime.toUtc().toString());
     FetchResponse response = await APIManager.fetch(route: APIRoutes.Music + "/" + APIRoutes.Register, params: {'beginTime': beginTime.toUtc().toString(), 'endTime': endTime.toUtc().toString()}, token: _token);
     if(response.state != FetchResponseState.OK) return false;
 
@@ -312,6 +361,14 @@ class APIValues {
     mappedMusicRegistrationsIndicesByDay[extracted].add(musicRegistrations.length - 1);
 
     if(onConfirmed != null) onConfirmed(registration);
+    return true;
+  }
+
+  Future<bool> deleteMusicRegistration(AEvent registration, {Function() onConfirmed}) async {
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.Music + "/" + APIRoutes.Delete + "/" + registration.id.toString(), token: _token);
+    if(response.state != FetchResponseState.OK) return false;
+
+    if(onConfirmed != null) onConfirmed();
     return true;
   }
 

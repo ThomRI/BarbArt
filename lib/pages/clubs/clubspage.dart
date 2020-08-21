@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../constants.dart';
 
-class ClubsPage extends StatelessWidget implements AbstractPageComponent{
+class ClubsPage extends AbstractPageComponent{
   ClubsPage({Key key}) : super(key: key);
 
   @override
@@ -24,5 +24,17 @@ class ClubsPage extends StatelessWidget implements AbstractPageComponent{
 
   @override
   String get name => "Clubs";
+
+  @override
+  _ClubsPageState createState() => new _ClubsPageState();
   
+}
+
+class _ClubsPageState extends State<ClubsPage> {
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    throw UnimplementedError();
+  }
+
 }

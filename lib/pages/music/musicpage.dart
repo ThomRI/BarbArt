@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:barbart/api/APIValues.dart';
+import 'package:barbart/api/structures.dart';
 import 'package:barbart/components/AbstractPageComponent.dart';
 import 'package:barbart/components/eventregistrationdialog.dart';
+import 'package:barbart/components/updatenotifier.dart';
 import 'package:barbart/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +14,8 @@ import 'package:table_calendar/table_calendar.dart';
 import '../../main.dart';
 import '../../utils.dart';
 
-class MusicPage extends StatefulWidget implements AbstractPageComponent {
+// ignore: must_be_immutable
+class MusicPage extends AbstractPageComponent {
   CalendarController _controller = new CalendarController(); // It's important to keep the controller here, so that it is kept between different states
 
   @override
@@ -37,6 +42,9 @@ class _MusicPageState extends State<MusicPage> {
     _calendarEvents = _generateInternalEventList(_selectedDay);
 
     this.setState(() {
+      // Notifier done
+      widget.notifier.done();
+
       if(onDone != null) onDone();
     });
   }
@@ -51,7 +59,7 @@ class _MusicPageState extends State<MusicPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        margin: EdgeInsets.only(top: 70),
+        margin: EdgeInsets.only(top: 66),
 
         // Using a stack for the floating button
         child: Stack(
@@ -61,7 +69,7 @@ class _MusicPageState extends State<MusicPage> {
             RefreshIndicator(
               onRefresh: () async {
                 gAPI.update(APIFlags.MUSIC_RESERVATIONS, onUpdateDone: () {
-                  this.setState(() {refresh();});
+                  refresh();
                 });
               },
 
@@ -162,7 +170,10 @@ class _MusicPageState extends State<MusicPage> {
                     });
                   },
                 )
-            )
+            ),
+
+            /* Update Notifier */
+            widget.notifier,
 
           ],
         )
@@ -170,11 +181,12 @@ class _MusicPageState extends State<MusicPage> {
   }
 
   FlutterWeekViewEvent _generateInternalEvent(int registrationLocalIndex) {
+    AEvent registration = gAPI.musicRegistrations[registrationLocalIndex];
     return new FlutterWeekViewEvent(
-        title: gAPI.clientFromUUID(gAPI.musicRegistrations[registrationLocalIndex].clientUUID).toString(),
-        description: gAPI.musicRegistrations[registrationLocalIndex].description,
-        start: gAPI.musicRegistrations[registrationLocalIndex].dateTimeBegin,
-        end: gAPI.musicRegistrations[registrationLocalIndex].dateTimeEnd,
+        title: gAPI.clientFromUUID(registration.clientUUID).toString(),
+        description: registration.description,
+        start: registration.dateTimeBegin,
+        end: registration.dateTimeEnd,
 
         backgroundColor: kPrimaryColor.withOpacity(0.5),
 
@@ -203,7 +215,12 @@ class _MusicPageState extends State<MusicPage> {
         ),
 
         onTap: () {
-          // TODO: Implement music calendar event onTap()
+          if(gAPI.selfClient.uuid != registration.clientUUID) return; // It is not possible to delete a registration that isn't the selfClient's.
+
+          _showEventBottomSheet(
+            context,
+            registration: registration,
+          );
         }
     );
   }
@@ -220,6 +237,46 @@ class _MusicPageState extends State<MusicPage> {
     }
 
     return list;
+  }
+
+  void _showEventBottomSheet(BuildContext context, {AEvent registration}) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return SingleChildScrollView(
+          child: Container(
+            child: new Wrap(
+              children: <Widget>[
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: Text("Delete slot", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  onTap: () {
+
+                    /* ####################################### */
+                    /* ###### HERE SLOT DELETION ACTION ###### */
+                    /* ####################################### */
+
+                    gAPI.deleteMusicRegistration(
+                      registration,
+                      onConfirmed: () {
+                        Navigator.of(bc).pop();
+
+
+                        // Refreshing
+                        // TODO: Only delete the event and don't refresh everything with the server.
+                        gAPI.update(APIFlags.MUSIC_RESERVATIONS, onUpdateDone: () {
+                          refresh();
+                        });
+                      }
+                    );
+                  },
+                )
+              ],
+            ),
+          ),
+        );
+      }
+    );
   }
 
 }

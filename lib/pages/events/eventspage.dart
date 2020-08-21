@@ -8,7 +8,8 @@ import 'package:flutter/material.dart';
 
 import '../../utils.dart';
 
-class EventsPage extends StatefulWidget implements AbstractPageComponent {
+// ignore: must_be_immutable
+class EventsPage extends AbstractPageComponent {
   EventsPage({Key key}) : super(key: key);
 
   @override

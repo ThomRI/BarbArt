@@ -119,10 +119,10 @@ class _CustomTimePickerState extends State<_CustomTimePicker> {
         onPressed: () {
           DatePicker.showTimePicker(
             context,
-            showTitleActions: true,
+            showTitleActions: false,
             showSecondsColumn: false,
 
-            onConfirm: (date) {
+            onChanged: (date) {
               this.setState(() {
                 this.time = date.toLocal();
               });

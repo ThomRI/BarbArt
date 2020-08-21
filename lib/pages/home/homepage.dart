@@ -7,7 +7,7 @@ import 'package:flutter/rendering.dart';
 
 import '../../main.dart';
 
-class HomePage extends StatefulWidget implements AbstractPageComponent{
+class HomePage extends AbstractPageComponent{
   HomePage({Key key}) : super(key: key);
 
   @override

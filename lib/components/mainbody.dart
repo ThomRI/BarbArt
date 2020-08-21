@@ -5,6 +5,8 @@ import 'package:barbart/pages/home/homepage.dart';
 import 'package:barbart/pages/music/musicpage.dart';
 import 'package:flutter/material.dart';
 
+import '../main.dart';
+
 class MainBody extends StatelessWidget {
   MainBody({Key key}) : super(key: key);
 
@@ -12,7 +14,7 @@ class MainBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: HeaderPageSliver(
-        pagesList: [HomePage(), EventsPage(), MusicPage(), ClubsPage()],
+        pagesList: [gAPI.pages['HomePage'], gAPI.pages['EventsPage'], gAPI.pages['MusicPage'], gAPI.pages['ClubsPage']],
 
         onPageChanged: (int index) {
           if(index == 0)  return SliverActions.ExpandAndStay;

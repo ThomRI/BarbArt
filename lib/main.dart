@@ -1,9 +1,11 @@
 import 'package:barbart/api/APIValues.dart';
 import 'package:barbart/constants.dart';
+import 'package:barbart/screens/profile/profilescreen.dart';
 import 'package:barbart/screens/profile/signupscreen.dart';
 import 'package:barbart/screens/serversplashscreen.dart';
 import 'package:barbart/screens/settings/settingsscreen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'api/APIManager.dart';
 import 'components/mainbody.dart';
@@ -31,6 +33,10 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp
+    ]);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Barb'Art",
@@ -42,6 +48,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/' : (context) => MainScreen(),
         '/MainBody' : (context) => MainBody(),
+        '/profile'  : (context) => ProfileScreen(),
         '/signup'   : (context) => SignupScreen(),
         '/settings' : (context) => SettingsScreen(),
       },

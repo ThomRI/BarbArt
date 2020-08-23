@@ -1,10 +1,14 @@
+import 'package:barbart/utils.dart';
 import 'package:flutter/material.dart';
 
 //const kBackgroundColor = const Color(0xFF072d25);
 final Color kBackgroundColor = Colors.grey[200];
 const kPrimaryColor = const Color(0xFF0e5847);
+final Color kDefaultCircleAvatarBackgroundColor = Colors.grey[400];
 
 const kDefaultNotifierDuration = Duration(milliseconds: 300);
+
+double kDefaultButtonWidthRatio = 0.75; // Portion of the width screen for the buttons
 
 const kDefaultPadding = 20.0;
 const kDefaultRadius = 30.0;

@@ -60,6 +60,11 @@ class APIManager {
     return _validateResponse(json);
   }
 
+  static Future<FetchResponse> send({@required String route, @required String token, Map<String, String> params}) async {
+    Map<String, dynamic> json = jsonDecode((await post(API_BASEURL + "/" + route, body: params, headers: {HttpHeaders.authorizationHeader: token})).body);
+    return _validateResponse(json);
+  }
+
   static NetworkImage fetchImage({@required String route, @required String token, double scale = 1.0}) {
     return NetworkImage(
       API_BASEURL + "/" + route,

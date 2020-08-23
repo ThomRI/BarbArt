@@ -38,6 +38,7 @@ dependencies:
   rounded_loading_button: ^1.0.13 # Login screen loading buttons
   auto_size_text: ^2.1.0          # Auto rescaling text to fit number of lines constraint
   web_socket_channel: ^1.1.0      # Live communication with server through WebSocket
+  image_picker: ^0.6.7+6          # Image Picker
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -82,6 +83,8 @@ flutter:
     - assets/logo_clipped_sd.png
     - assets/logo_clipped_sd_inverted.png
     - assets/avatar_unknown.png
+    - assets/barbart/pic.png
+    - assets/barbart/pickaxe.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

@@ -40,6 +40,7 @@ class APIRoutes {
   static const Clubs        = "clubs";
 
   static const Clients      = "clients";
+  static const Avatar       = "avatar";
 
   static const Posts        = "posts";
   static const PostsLikes   = "posts/likes";
@@ -187,12 +188,13 @@ class APIValues {
   AClient clientFromUUID(String uuid) => (uuid == selfClient.uuid) ? selfClient : clients[_uuidToIndexClients[uuid]];
 
   void cacheClient(AClient client, {bool cacheAvatar = false}) {
-    if(_uuidToIndexClients.containsKey(client.uuid)) return;
-
     // Fetching the avatar if needed
     if(cacheAvatar) {
-      client.avatar = APIManager.fetchImage(route: client.avatar_route, token: _token);
+      // Note: Sending the timestamp is useful so that two consecutive URL are never the same. Otherwise NetworkImage doesn't load the same url.
+      client.avatar = APIManager.fetchImage(route: client.avatar_route + "?timestamp = " + DateTime.now().millisecondsSinceEpoch.toString(), token: _token);
     }
+
+    if(_uuidToIndexClients.containsKey(client.uuid)) return;
 
     clients.add(client);
     _uuidToIndexClients.addAll({client.uuid: clients.length - 1});
@@ -215,11 +217,23 @@ class APIValues {
     selfClient = AClient.fromJSON(response.body[APIJsonKeys.ClientsList][0]);
 
     // Fetching profile picture (avatar)
-    selfClient.avatar = await APIManager.fetchImage(route: selfClient.avatar_route, token: _token);
+    selfClient.avatar = APIManager.fetchImage(route: selfClient.avatar_route, token: _token);
 
     // Requesting for an open WebSocket connection
     this.ws.send('#' + selfClient.uuid);
 
+    return true;
+  }
+
+  Future<bool> registerAvatar({File avatarFile, Function() onConfirmed}) async {
+    String b64 = base64Encode(avatarFile.readAsBytesSync());
+    FetchResponse response = await APIManager.send(route: APIRoutes.Clients + "/" + APIRoutes.Avatar + "/" + APIRoutes.Register, params: {'base_64': b64}, token: _token);
+    if(response.state != FetchResponseState.OK) return false;
+
+    // Fetching profile picture (avatar)
+    cacheClient(selfClient, cacheAvatar: true);
+
+    if(onConfirmed != null) onConfirmed();
     return true;
   }
 

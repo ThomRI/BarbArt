@@ -6,12 +6,17 @@ import '../main.dart';
 import '../utils.dart';
 
 // ignore: must_be_immutable
-class PageListHeader extends StatelessWidget {
+class PageListHeader extends StatefulWidget {
 
   List pagesList;
 
   PageListHeader({Key key, this.pagesList}) : super(key: key);
 
+  @override
+  _PageListHeaderState createState() => _PageListHeaderState();
+}
+
+class _PageListHeaderState extends State<PageListHeader> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -51,28 +56,35 @@ class PageListHeader extends StatelessWidget {
             Positioned(
               left: 10,
               top: 10,
-              child: Container(
-                padding: EdgeInsets.all(5.0),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(5.0)
-                ),
-                child: Row(
-                  children: <Widget>[
-                    CircleAvatar(
+              child: GestureDetector(
+                onTap: () async {
+                  await Navigator.of(context).pushNamed('/profile');
+                  this.setState(() { });
+                },
 
-                      child: Image(image: gAPI.selfClient.avatar),
-                      maxRadius: 15.0,
-                    ),
-
-                    Container(
-                      margin: EdgeInsets.only(left: 5.0),
-                      child: Text(
-                        gAPI.selfClient.firstname,
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                child: Container(
+                  padding: EdgeInsets.all(5.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(5.0)
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      CircleAvatar(
+                        backgroundImage: gAPI.selfClient.avatar,
+                        backgroundColor: kDefaultCircleAvatarBackgroundColor,
+                        radius: 15.0,
                       ),
-                    )
-                  ],
+
+                      Container(
+                        margin: EdgeInsets.only(left: 5.0),
+                        child: Text(
+                          gAPI.selfClient.firstname,
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               )
             ),

@@ -63,9 +63,9 @@ class _SocialPostItemState extends State<SocialPostItem> {
             children: <Widget>[
               
               CircleAvatar(
-
                 radius: 25,
                 backgroundImage: author.avatar,
+                backgroundColor: kDefaultCircleAvatarBackgroundColor,
               ),
               SizedBox(width: 10,),
 

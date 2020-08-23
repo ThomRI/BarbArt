@@ -7,7 +7,7 @@ class PulsatingImage extends StatefulWidget {
   final double beginSize, endSize;
   final int milliseconds;
 
-  const PulsatingImage({Key key, this.image, this.beginSize, this.endSize, this.milliseconds}) : super(key: key);
+  const PulsatingImage({Key key, this.image, this.beginSize, this.endSize, this.milliseconds = 1000}) : super(key: key);
 
   @override
   _PulsatingImageState createState() => new _PulsatingImageState(this.beginSize, this.endSize, this.milliseconds);

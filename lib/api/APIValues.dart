@@ -34,21 +34,23 @@ class APIJsonKeys {
 }
 
 class APIRoutes {
-  static const Events       = "events";
-  static const EventsGoing  = "events/going";
+  static const Authentication = "auth";
 
-  static const Clubs        = "clubs";
+  static const Events         = "events";
+  static const EventsGoing    = "events/going";
 
-  static const Clients      = "clients";
-  static const Avatar       = "avatar";
+  static const Clubs          = "clubs";
 
-  static const Posts        = "posts";
-  static const PostsLikes   = "posts/likes";
+  static const Clients        = "clients";
+  static const Avatar         = "avatar";
 
-  static const Music        = "music";
+  static const Posts          = "posts";
+  static const PostsLikes     = "posts/likes";
 
-  static const Register     = "register";
-  static const Delete       = "delete";
+  static const Music          = "music";
+
+  static const Register       = "register";
+  static const Delete         = "delete";
 }
 
 /// Used to declare flags for the API. For example, when re-fetching everything from server, only one update method should be called with the correct flag to indicate what to update.
@@ -163,6 +165,28 @@ class APIValues {
     if(onAuthenticated != null) onAuthenticated();
 
     return true;
+  }
+
+  /// Is used to check the validity of the token with the server
+  Future<bool> checkToken() async {
+    if(_token == "") { // Loading token from file if the cached token is empty.
+      if(!(await loadToken())) {
+        return false; // If loading from the file failed, don't even try to check the token : it's empty.
+      }
+    }
+
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.Authentication, token: token ?? _token);
+    if(response.state != FetchResponseState.OK) return false;
+
+    // Saving UUID
+    selfClient.uuid = response.body['uuid'];
+
+    return true;
+  }
+
+  Future<bool> attemptAutoLogin() async {
+    // Checking the token
+    return await APIManager.pingServer() && await checkToken();
   }
 
   // Always call this function to update, with the desired updates as the flag.
@@ -336,10 +360,7 @@ class APIValues {
 
     // Updating the events list
     musicRegistrations.clear();
-    (response.body[APIJsonKeys.Registrations] as List<dynamic>).forEach((eventJSON) {
-      AEvent registration = new AEvent.fromJSON(eventJSON);
-      musicRegistrations.add(registration);
-    });
+    (response.body[APIJsonKeys.Registrations] as List<dynamic>).forEach((eventJSON) {musicRegistrations.add(new AEvent.fromJSON(eventJSON));});
 
     // Updating the DateTime mapping
     mappedMusicRegistrationsIndicesByDay.clear();
@@ -400,8 +421,10 @@ class APIValues {
     // Serializing data
     Map<String, dynamic> json = new Map<String, dynamic>();
 
-    /* Initializing JSON arrays */
+    /* Initializing JSON arrays and values */
     json.addAll({
+      'token': _token,
+      'self_client': jsonEncode(selfClient.toJSON()),
       APIJsonKeys.ClientsList: new List<Map<String, dynamic>>(),
       APIJsonKeys.EventsList: new List<Map<String, dynamic>>(),
       APIJsonKeys.ClubsList: new List<Map<String, dynamic>>(),
@@ -418,5 +441,34 @@ class APIValues {
 
     // Writing back into the file
     file.writeAsString(jsonEncode(json));
+  }
+
+  // Loads the token. Returns true iff the token was successfully loaded from the API_SAVEFILE.
+  // This is a different function because token has to be loaded independently of the rest to provide fast auto authentication
+  // TODO: Only load the saved file once.
+  Future<bool> loadToken() async {
+    File file = new File((await appLocalPath) + "/" + API_SAVEFILE);
+    if(!file.existsSync()) return false;
+
+    Map<String, dynamic> json = jsonDecode(file.readAsStringSync());
+
+    if(!json.containsKey('token')) return false;
+
+    // Updating cached token
+    _token = json['token'];
+
+    return true;
+  }
+
+  // For now only loads the selfClient for login autocompletion // TODO: Load everything
+  Future<bool> load() async {
+    File file = new File((await appLocalPath) + "/" + API_SAVEFILE);
+    if(!file.existsSync()) return false;
+
+    Map<String, dynamic> json = jsonDecode(file.readAsStringSync());
+    if(!json.containsKey('self_client')) return false;
+
+    selfClient = AClient.fromJSON(jsonDecode(json['self_client']));
+    return true;
   }
 }

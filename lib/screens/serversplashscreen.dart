@@ -33,20 +33,22 @@ class _ServerSplashScreenState extends State<ServerSplashScreen> {
       gAPI.save();
       if(onDone != null) onDone();
     });
+
   }
 
   @override
   void initState() {
     super.initState();
+
+    this.initAPI(
+        onDone: () {
+          Navigator.pushReplacementNamed(context, widget.nextPageNamedRoute);
+        }
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    this.initAPI(
-      onDone: () {
-        Navigator.pushReplacementNamed(context, widget.nextPageNamedRoute);
-      }
-    );
 
     return Container(
         width: deviceSize(context).width,

@@ -4,7 +4,9 @@ import 'dart:math';
 import 'package:barbart/api/APIManager.dart';
 import 'package:barbart/api/APIValues.dart';
 import 'package:barbart/components/ColoredButton.dart';
+import 'package:barbart/components/ControlledCarousel.dart';
 import 'package:barbart/constants.dart';
+import 'package:carousel_slider/carousel_controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,6 +20,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -49,7 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             /* Main Column */
             Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
 
                 /* Avatar */
@@ -123,9 +126,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                             /* Change password button */
                             ColoredButton(
-                              text: "Change password",
-                              iconData: Icons.lock,
-                              enableColor: false,
+                                text: "Change password",
+                                iconData: Icons.lock,
+                                enableColor: false,
+
+                                onTap: () {
+
+                                  /* ######################################### */
+                                  /* ###### HERE CHANGE PASSWORD ACTION ###### */
+                                  /* ######################################### */
+
+
+                                }
                             ),
 
                             /* Clubs you follow button */
@@ -133,6 +145,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               text: "Clubs you follow",
                               iconData: Icons.grid_on,
                               enableColor: false,
+                              enabled: false,
                             )
                           ],
                         ),

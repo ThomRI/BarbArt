@@ -35,6 +35,8 @@ class _MusicPageState extends State<MusicPage> {
   List<FlutterWeekViewEvent> _calendarEvents;
   DateTime _selectedDay;
 
+  bool _deletePending = false; // Waiting for the server to actually delete the slot.
+
   Future<void> refresh({Function onDone}) async {
     _selectedDay = (widget._controller.selectedDay ?? extractDate(DateTime.now())).toLocal();
 
@@ -147,8 +149,8 @@ class _MusicPageState extends State<MusicPage> {
                 bottom: 30,
                 right: 10,
                 child: FloatingActionButton(
-                  backgroundColor: kPrimaryColor,
-                  child: const Icon(Icons.add),
+                  backgroundColor: _deletePending ? Colors.white : kPrimaryColor,
+                  child: _deletePending ? CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.red),) : const Icon(Icons.add),
                   onPressed: () {
                     EventRegistrationDialog.show(context, day: _selectedDay, title: Text("Time slot"), onConfirmed: (DateTime beginTime, DateTime endTime) {
 
@@ -252,6 +254,13 @@ class _MusicPageState extends State<MusicPage> {
                   title: Text("Delete slot", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                   onTap: () {
 
+                    Navigator.of(bc).pop();
+
+                    // Setting the state as pending...
+                    this.setState(() {
+                      _deletePending = true;
+                    });
+
                     /* ####################################### */
                     /* ###### HERE SLOT DELETION ACTION ###### */
                     /* ####################################### */
@@ -259,8 +268,7 @@ class _MusicPageState extends State<MusicPage> {
                     gAPI.deleteMusicRegistration(
                       registration,
                       onConfirmed: () {
-                        Navigator.of(bc).pop();
-
+                        _deletePending = false;
 
                         // Refreshing
                         // TODO: Only delete the event and don't refresh everything with the server.

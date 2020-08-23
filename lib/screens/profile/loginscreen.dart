@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:barbart/api/APIManager.dart';
 import 'package:barbart/components/ColoredButton.dart';
 import 'package:barbart/components/mainbody.dart';
 import 'package:barbart/constants.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
 
 import '../../main.dart';
+import '../mainscreen.dart';
 import '../serversplashscreen.dart';
 
 class _LoginScreenConstants {
@@ -35,15 +37,28 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordFieldController = new TextEditingController();
 
   bool _authFailedState = false;
+  bool _autoAuthState   = false;
 
   @override
   void initState() {
     super.initState();
 
-    // TODO: Test here if credentials are cached in a file to skip this page (auto auth)
+    /* Auto authentication test : token validity test */
+    print("Attempting to auto auth...");
+    gAPI.attemptAutoLogin().then((success) {
+      if(!success) {
+        print("Auto auth failed.");
+        return;
+      }
 
-    // For now, just use the credentials passed as the widget constructor's parameters.
-    _emailFieldController.text = widget.autoAuthEmail;
+      // Pushing after the frame if built avoids to break the states tree.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        MainScreen.pushToApp(context);
+      });
+    });
+
+    // Using API cached email if existing.
+    _emailFieldController.text = gAPI.selfClient.email ?? widget.autoAuthEmail;
     _passwordFieldController.text = widget.autoAuthPassword;
   }
 
@@ -162,11 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       onAuthenticated: () {
                         print("Authenticated, uuid: " + gAPI.selfClient.uuid.toString());
-
-                        // Launching the server splash screen that will update everything
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ServerSplashScreen(
-                          nextPageNamedRoute: '/MainBody', // Loading the Main Body when splash screen loading is done.
-                        )));
+                        MainScreen.pushToApp(context);
                       },
 
                       onAuthenticationFailed: () {

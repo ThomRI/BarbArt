@@ -9,6 +9,11 @@ import 'package:http/http.dart';
 class APIManager {
   APIManager();
 
+  /// Returns true iff the server is responding
+  static Future<bool> pingServer() async {
+    return (await fetch(route: 'ping', token: null)).state == FetchResponseState.OK;
+  }
+
   static Future<FetchResponse> register({ @required String email,
                                           @required String password,
                                           @required String firstname,

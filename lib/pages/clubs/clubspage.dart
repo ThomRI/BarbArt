@@ -1,4 +1,5 @@
 import 'package:barbart/components/AbstractPageComponent.dart';
+import 'package:barbart/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -33,8 +34,11 @@ class ClubsPage extends AbstractPageComponent{
 class _ClubsPageState extends State<ClubsPage> {
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
+    return Image(
+      image: AssetImage("assets/comingsoon.png"),
+      //width: deviceSize(context).width,
+      fit: BoxFit.scaleDown,
+    );
   }
 
 }

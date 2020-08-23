@@ -12,10 +12,18 @@ class ColoredButton extends StatelessWidget {
   final IconData iconData;
   final bool enableColor;
   final Alignment iconAlignment;
+  final bool enabled;
 
   bool _pressed = false;
 
-  ColoredButton({Key key, this.onTap, this.text = "", this.backgroundColor = kPrimaryColor, this.iconData, this.enableColor = true, this.iconAlignment = Alignment.centerLeft}) : super(key: key);
+  ColoredButton({ Key key,
+                  this.onTap,
+                  this.text = "",
+                  this.backgroundColor = kPrimaryColor,
+                  this.iconData,
+                  this.enableColor = true,
+                  this.iconAlignment = Alignment.centerLeft,
+                  this.enabled = true}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +38,9 @@ class ColoredButton extends StatelessWidget {
             width: deviceSize(context).width * kDefaultButtonWidthRatio,
             height: 50,
             decoration: BoxDecoration(
-              border: (this.enableColor) ? null
+              border: this.enableColor ? null
                   : Border.all(
-                  color: kPrimaryColor,
+                  color: this.enabled ? kPrimaryColor : Colors.grey,
                   style: BorderStyle.solid,
                   width: 1
               ),
@@ -48,7 +56,7 @@ class ColoredButton extends StatelessWidget {
                   alignment: this.iconAlignment,
                   child: Container(
                       padding: EdgeInsets.only(left: 15, right: 15),
-                      child: Icon(this.iconData, color: this.enableColor ? Colors.white : kPrimaryColor)
+                      child: Icon(this.iconData, color: this.enabled ? (this.enableColor ? Colors.white : kPrimaryColor) : Colors.grey),
                   ),
                 ),
 
@@ -56,7 +64,7 @@ class ColoredButton extends StatelessWidget {
                     child: Text(
                         this.text,
                         style: TextStyle(
-                          color: this.enableColor ? Colors.white : kPrimaryColor,
+                          color: this.enabled ? (this.enableColor ? Colors.white : kPrimaryColor) : Colors.grey,
                           fontWeight: FontWeight.bold,
                         )
                     )

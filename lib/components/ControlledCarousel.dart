@@ -4,9 +4,9 @@ import 'package:flutter/cupertino.dart';
 // ignore: must_be_immutable
 class ControlledCarousel extends StatefulWidget {
   List itemList;
-  bool enabled = true;
-  final CarouselController controller = new CarouselController();
-  ControlledCarousel({this.itemList, this.enabled});
+  final bool enabled;
+  final CarouselController controller;
+  ControlledCarousel({Key key, this.itemList, this.enabled = true, this.controller}) : super(key: key);
 
   @override
   State<ControlledCarousel> createState() => ControlledCarouselState();
@@ -19,13 +19,16 @@ class ControlledCarouselState extends State<ControlledCarousel> {
     super.initState();
   }
 
+  CarouselController get controller => widget.controller; // Accessible by state key
+
   @override
   Widget build(BuildContext context) {
     return CarouselSlider(
         options: CarouselOptions(
+          enableInfiniteScroll: false,
           carouselController: widget.controller,
           scrollPhysics: (widget.enabled) ? ScrollPhysics() : NeverScrollableScrollPhysics(),
-          height: 100,
+          height: 150,
           aspectRatio: 16/9,
           initialPage: 0,
         ),

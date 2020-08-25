@@ -129,7 +129,7 @@ class AEvent extends APIStructure {
   @override
   factory AEvent.fromJSON(Map<String, dynamic> json) => AEvent(
     id:                 json['id'] ?? -1,
-    title:              json["title"] ?? "",
+    title:              json["title"] ?? null,
     dateTimeBegin:      DateTime.parse(json["datetime_begin"]).toLocal() ?? DateTime.now(), // DateTime is received as UTC from server
     dateTimeEnd:        DateTime.parse(json["datetime_end"]).toLocal() ?? DateTime.now(), // DateTime is received as UTC from server
     location:           json["location"] ?? "",

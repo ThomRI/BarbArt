@@ -47,3 +47,7 @@ String ago(DateTime when) {
 
   return delta.inSeconds.toString() + " second" + ((delta.inSeconds > 1) ? "s" : "");
 }
+
+DateTime changeDate(DateTime from, DateTime date) {
+  return DateTime(date.year, date.month, date.day, from.hour, from.minute, from.second, from.millisecond, from.microsecond);
+}

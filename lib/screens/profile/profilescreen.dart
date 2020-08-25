@@ -13,6 +13,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../main.dart';
 import '../../utils.dart';
+import '../mainscreen.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -157,6 +158,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ColoredButton(
                         text: "Log out",
                         iconData: Icons.cancel,
+
+                        onTap: () {
+
+                          /* ################################# */
+                          /* ###### HERE LOG OUT ACTION ###### */
+                          /* ################################# */
+
+                          gAPI.logout();
+                          Navigator.of(context).pushReplacementNamed('/login');
+                        },
                       )
 
                     ],

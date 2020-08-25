@@ -18,19 +18,20 @@ import 'APIManager.dart';
 typedef VoidCallback = void Function();
 
 class APIJsonKeys {
-  static const EventsList         = "events";
-  static const Event              = "events";
+  static const EventsList             = "events";
+  static const Event                  = "events";
 
-  static const ClubsList          = "clubs";
-  static const Club               = "club";
+  static const ClubsList              = "clubs";
+  static const Club                   = "club";
 
-  static const ClientsList        = "clients";
-  static const Client             = "client";
+  static const ClientsList            = "clients";
+  static const Client                 = "client";
 
-  static const PostsList          = "posts";
-  static const Post               = "post";
+  static const PostsList              = "posts";
+  static const Post                   = "post";
 
-  static const Registrations      = "registrations";
+  static const Registrations          = "registrations";
+  static const PermanentRegistrations = "permanentRegistrations";
 }
 
 class APIRoutes {
@@ -187,6 +188,13 @@ class APIValues {
   Future<bool> attemptAutoLogin() async {
     // Checking the token
     return await APIManager.pingServer() && await checkToken();
+  }
+
+  Future<void> logout() async {
+    File tokenFile = new File((await appLocalPath) + "/" + API_TOKEN_SAVEFILE);
+    if(tokenFile.existsSync()) tokenFile.deleteSync();
+
+    _token = "";
   }
 
   // Always call this function to update, with the desired updates as the flag.
@@ -348,6 +356,13 @@ class APIValues {
   List<AEvent> musicRegistrations = new List<AEvent>();
   Map<DateTime, List<int>> mappedMusicRegistrationsIndicesByDay = new Map<DateTime, List<int>>();
 
+  // Map< Day of week number, List<Permanent Registrations that day> >
+  Map<int, List<AEvent>> mappedMusicPermanentRegistrations = Map.fromIterable(
+    [for(int day = DateTime.monday;day <= DateTime.sunday;day++) day], // List of days, alternatively List<int>.generate(7, (i) => i + 1)
+    key: (k) => k,
+    value: (k) => new List<AEvent>(),
+  ); // No need to save a list because the only use of permanent registrations is to be recurrent by day.
+
   // Returns false iff there was an authentication error
   /// Updates the music reservations starting from today
   Future<bool> _updateMusicReservations() async {
@@ -371,6 +386,13 @@ class APIValues {
       }
       mappedMusicRegistrationsIndicesByDay[extracted].add(i);
     }
+
+    // Dealing with permanent registrations
+    for(int day = DateTime.monday; day <= DateTime.sunday; day++) mappedMusicPermanentRegistrations[day].clear(); // Clearing each day-corresponding list.
+    (response.body[APIJsonKeys.PermanentRegistrations] as List<dynamic>).forEach((eventJSON) {
+      AEvent event = new AEvent.fromJSON(eventJSON);
+      mappedMusicPermanentRegistrations[event.dateTimeBegin.weekday].add(event);
+    });
 
     // Caching clients
     (response.body[APIJsonKeys.ClientsList] as List<dynamic>).forEach((clientJSON) {this.cacheClient(new AClient.fromJSON(clientJSON), cacheAvatar: false);});
@@ -423,7 +445,6 @@ class APIValues {
 
     /* Initializing JSON arrays and values */
     json.addAll({
-      'token': _token,
       'self_client': jsonEncode(selfClient.toJSON()),
       APIJsonKeys.ClientsList: new List<Map<String, dynamic>>(),
       APIJsonKeys.EventsList: new List<Map<String, dynamic>>(),
@@ -441,13 +462,26 @@ class APIValues {
 
     // Writing back into the file
     file.writeAsString(jsonEncode(json));
+
+    /* Saving token */
+    saveToken();
+  }
+
+  Future<void> saveToken() async {
+    File file = new File((await appLocalPath) + "/" + API_TOKEN_SAVEFILE);
+
+    if(file.existsSync()) file.deleteSync();
+
+    file.writeAsString(jsonEncode({
+      'token': _token
+    }));
   }
 
   // Loads the token. Returns true iff the token was successfully loaded from the API_SAVEFILE.
   // This is a different function because token has to be loaded independently of the rest to provide fast auto authentication
   // TODO: Only load the saved file once.
   Future<bool> loadToken() async {
-    File file = new File((await appLocalPath) + "/" + API_SAVEFILE);
+    File file = new File((await appLocalPath) + "/" + API_TOKEN_SAVEFILE);
     if(!file.existsSync()) return false;
 
     Map<String, dynamic> json = jsonDecode(file.readAsStringSync());
@@ -456,6 +490,8 @@ class APIValues {
 
     // Updating cached token
     _token = json['token'];
+
+    print(json);
 
     return true;
   }

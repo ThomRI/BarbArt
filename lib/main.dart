@@ -1,5 +1,6 @@
 import 'package:barbart/api/APIValues.dart';
 import 'package:barbart/constants.dart';
+import 'package:barbart/screens/profile/loginscreen.dart';
 import 'package:barbart/screens/profile/profilescreen.dart';
 import 'package:barbart/screens/profile/signupscreen.dart';
 import 'package:barbart/screens/serversplashscreen.dart';
@@ -54,6 +55,7 @@ class MyApp extends StatelessWidget {
         '/' : (context) => MainScreen(),
         '/MainBody' : (context) => MainBody(),
         '/profile'  : (context) => ProfileScreen(),
+        '/login'    : (context) => LoginScreen(),
         '/signup'   : (context) => SignupScreen(),
         '/settings' : (context) => SettingsScreen(),
       },

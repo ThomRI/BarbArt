@@ -23,4 +23,6 @@ const API_BASEHOST = "192.168.43.203";
 const API_PORT = 3000;
 String API_BASEURL = "http://" + API_BASEHOST + ":" + API_PORT.toString();
 String API_WS_BASEURL = "ws://" + API_BASEHOST + ":" + API_PORT.toString();
+
 const API_SAVEFILE = "api.json";
+const API_TOKEN_SAVEFILE = "token.api.json";

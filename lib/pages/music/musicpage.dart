@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:barbart/api/APIValues.dart';
 import 'package:barbart/api/structures.dart';
@@ -87,7 +88,7 @@ class _MusicPageState extends State<MusicPage> {
                       startDay: extractDate(DateTime.now()),
                       initialCalendarFormat: CalendarFormat.week,
                       calendarStyle: CalendarStyle(
-                        canEventMarkersOverflow: true,
+                        canEventMarkersOverflow: false,
                         todayColor: Colors.orange,
                         selectedColor: kPrimaryColor,
                         todayStyle: TextStyle(
@@ -164,7 +165,7 @@ class _MusicPageState extends State<MusicPage> {
                         endTime: endTime,
                         onConfirmed: (registration) {
                           this.setState(() {
-                            _calendarEvents.add(_generateInternalEvent(gAPI.musicRegistrations.length - 1)); // Generating last added registration
+                            _calendarEvents.add(_generateInternalEvent(gAPI.musicRegistrations.last)); // Generating last added registration
                           });
                         }
                       );
@@ -182,15 +183,14 @@ class _MusicPageState extends State<MusicPage> {
     );
   }
 
-  FlutterWeekViewEvent _generateInternalEvent(int registrationLocalIndex) {
-    AEvent registration = gAPI.musicRegistrations[registrationLocalIndex];
+  FlutterWeekViewEvent _generateInternalEvent(AEvent registration, {DateTime dayOverride, bool permanent = false}) {
     return new FlutterWeekViewEvent(
-        title: gAPI.clientFromUUID(registration.clientUUID).toString(),
+        title: registration.title ?? gAPI.clientFromUUID(registration.clientUUID).toString(),
         description: registration.description,
-        start: registration.dateTimeBegin,
-        end: registration.dateTimeEnd,
+        start: (dayOverride != null) ? changeDate(registration.dateTimeBegin, dayOverride) : registration.dateTimeBegin, // Changing the date to match the wanted day, but keeping the time.
+        end: (dayOverride != null) ? changeDate(registration.dateTimeEnd, dayOverride) : registration.dateTimeEnd,
 
-        backgroundColor: kPrimaryColor.withOpacity(0.5),
+        backgroundColor: (permanent ? Colors.orange : kPrimaryColor).withOpacity(0.5),
 
         /* Calendar event item content */
         eventTextBuilder: (event, context, dayView, height, width) => Row(
@@ -205,7 +205,7 @@ class _MusicPageState extends State<MusicPage> {
 
             Expanded(
                 child: Text(
-                    timeToString(event.start) + " - " + timeToString(event.end),
+                    timeToString(event.start) + " - " + timeToString(event.end) + (permanent ? '\n(Permanent)' : ''),
                     textAlign: TextAlign.right,
                     style: TextStyle(
                       color: Colors.grey[200],
@@ -231,12 +231,18 @@ class _MusicPageState extends State<MusicPage> {
   List<FlutterWeekViewEvent> _generateInternalEventList(DateTime day) {
     List<FlutterWeekViewEvent> list = new List<FlutterWeekViewEvent>();
 
+    /* Normal registrations */
     DateTime extracted = extractDate(day); // Wipes out the hour,min,sec
     if(gAPI.mappedMusicRegistrationsIndicesByDay.containsKey(extracted)) {
       gAPI.mappedMusicRegistrationsIndicesByDay[extracted].forEach((index) { // Loop here
-        list.add(_generateInternalEvent(index));
+        list.add(_generateInternalEvent(gAPI.musicRegistrations[index]));
       });
     }
+
+    /* Permanent registrations */
+    gAPI.mappedMusicPermanentRegistrations[extracted.weekday].forEach((registration) {
+      list.add(_generateInternalEvent(registration, dayOverride: extracted, permanent: true));
+    });
 
     return list;
   }

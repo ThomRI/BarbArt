@@ -46,6 +46,7 @@ class _PageListHeaderState extends State<PageListHeader> {
                 alignment: Alignment.topRight,
                 icon: Icon(Icons.settings, color: Colors.white),
                 onPressed: () {
+                  return; // TODO: Create the setting page !
                   Navigator.of(context).pushNamed('/settings');
                 },
               ),
@@ -174,7 +175,10 @@ class PageListState extends State<PageList> {
             child: Row(
               //mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[ // ITEM CONTENT HERE
-                widget.pagesList[index].icon,
+                Container(
+                  margin: EdgeInsets.only(right: 3),
+                  child: widget.pagesList[index].icon,
+                ),
 
                 // Uncomment to show page name
                 Visibility(
@@ -186,7 +190,7 @@ class PageListState extends State<PageList> {
                 ),
               ],
             ),
-            margin: EdgeInsets.symmetric(horizontal: dp(context, kDefaultPadding / 6)),
+            margin: EdgeInsets.symmetric(horizontal: dp(context, 5)),
             padding: EdgeInsets.symmetric(horizontal: kDefaultPadding),
 
             decoration: BoxDecoration(

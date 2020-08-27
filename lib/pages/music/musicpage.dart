@@ -20,7 +20,7 @@ class MusicPage extends AbstractPageComponent {
   CalendarController _controller = new CalendarController(); // It's important to keep the controller here, so that it is kept between different states
 
   @override
-  String get name => "Salle musique";
+  String get name => "Music";
 
   @override
   Icon get icon => Icon(Icons.music_note, color: Colors.white);
@@ -153,7 +153,7 @@ class _MusicPageState extends State<MusicPage> {
                   backgroundColor: _deletePending ? Colors.white : kPrimaryColor,
                   child: _deletePending ? CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.red),) : const Icon(Icons.add),
                   onPressed: () {
-                    EventRegistrationDialog.show(context, day: _selectedDay, title: Text("Time slot"), onConfirmed: (DateTime beginTime, DateTime endTime) {
+                    EventRegistrationDialog.show(context, day: _selectedDay, title: Text("Registration"), onConfirmed: (DateTime beginTime, DateTime endTime) {
 
                       /* ########################################### */
                       /* ###### HERE SLOT REGISTRATION ACTION ###### */
@@ -257,7 +257,7 @@ class _MusicPageState extends State<MusicPage> {
               children: <Widget>[
                 ListTile(
                   leading: const Icon(Icons.delete, color: Colors.red),
-                  title: Text("Delete slot", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  title: Text("Delete registration", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                   onTap: () {
 
                     Navigator.of(bc).pop();

@@ -11,7 +11,7 @@ class HomePage extends AbstractPageComponent{
   HomePage({Key key}) : super(key: key);
 
   @override
-  String get name => "Accueil";
+  String get name => "Home";
 
   @override
   Icon get icon => Icon(Icons.home, color: Colors.white);

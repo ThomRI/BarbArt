@@ -22,6 +22,12 @@ class MainScreen extends StatefulWidget {
     )));
   }
 
+  // Loads back the login page after clearing the navigation queue
+  static void pushToLogin(BuildContext context) {
+    Navigator.of(context).popUntil((route) => route.isFirst); // Clearing the queue
+    Navigator.of(context).pushReplacementNamed('/login');
+  }
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }

@@ -166,7 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           /* ################################# */
 
                           gAPI.logout();
-                          Navigator.of(context).pushReplacementNamed('/login');
+                          MainScreen.pushToLogin(context);
                         },
                       )
 

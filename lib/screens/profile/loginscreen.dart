@@ -147,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
           /* Eventual auth failed message */
           Container(
-            margin: _authFailedState ? EdgeInsets.symmetric(vertical: 10.0) : null,
+            margin: _authFailedState ? EdgeInsets.only(top: 5.0) : null,
             child: Text(
               _authFailedState ? "Authentication failed" : "",
               style: TextStyle(color: _authFailedState ? Colors.red: kPrimaryColor),

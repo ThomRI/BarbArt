@@ -60,7 +60,8 @@ class _SquareDayViewState extends State<SquareDayView> {
     dates.sort((a, b) => (widget.sortingMode == SortingMode.INCREASING) ? a.compareTo(b) : b.compareTo(a)); // Sorting by date
 
     return Container(
-      margin: EdgeInsets.only(top: 65, left: 5, right: 5),
+      margin: EdgeInsets.only(top: 65, left: 10, right: 10),
+
       child: RefreshIndicator(
         onRefresh: () async {
           gAPI.update(APIFlags.EVENTS, onUpdateDone: () {
@@ -71,70 +72,67 @@ class _SquareDayViewState extends State<SquareDayView> {
           padding: EdgeInsets.only(top: 5, bottom: 40),
           itemCount: dates.length,
           itemBuilder: (BuildContext context, int dateIndex) {
-            return Card(
-                //shadowColor: (dates[dateIndex].day < 3) ? Colors.green : Colors.black,
-                elevation: 0.5,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5.0)
-                ),
-
-                child: Container(
-                  padding: EdgeInsets.only(left: 10, right: 10),
-                  child: Column(
+            // Former cards as container now
+            return Container(
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(width: 2, color: Colors.grey[200])),
+              ),
+              padding: EdgeInsets.only(bottom: 10),
+              child: Column(
+                children: <Widget>[
+                  Row( // Calendar icon + day text row
                     children: <Widget>[
-                      Row( // Calendar icon + day text row
-                        children: <Widget>[
-                          // Calendar icon
-                          Container(
-                            child: Icon(Icons.calendar_today, color: (dates[dateIndex] == today) ? Colors.red.withOpacity(0.7) : kPrimaryColor),
-                            padding: EdgeInsets.all(5),
-                          ),
-
-                          // Day text container
-                          Container(
-                              width: deviceSize(context).width * 0.3333, // 1/3 of the width
-                              alignment: Alignment.centerLeft,
-                              padding: EdgeInsets.only(
-                                  top: 5,
-                                  right: 5,
-                                  left: 0,
-                                  bottom: 5
-                              ),
-                              child:  Text(
-                                DateFormat("EEEE").format(dates[dateIndex]),
-                                textAlign: TextAlign.right,
-                                style: TextStyle(
-                                    color: (dates[dateIndex] == today) ? Colors.red.withOpacity(0.7) : kPrimaryColor,
-                                    fontStyle: FontStyle.italic
-                                ),
-
-                                textScaleFactor: 2,
-                              )
-                          ),
-
-                          Expanded(
-                            child: Text(
-                              DateFormat("dd/MM").format(dates[dateIndex]),
-                              textAlign: TextAlign.right,
-                              style: TextStyle(
-                                  color: Colors.grey,
-                                  fontStyle: FontStyle.italic
-                              ),
-
-                              textScaleFactor: 1.5,
-                            ),
-                          )
-
-                        ],
+                      // Calendar icon
+                      Container(
+                        child: Icon(Icons.calendar_today, color: (dates[dateIndex] == today) ? Colors.red.withOpacity(0.7) : kPrimaryColor),
+                        padding: EdgeInsets.all(5),
                       ),
 
-                      _ListDayView(
-                        eventIdList: dateEventMap[dates[dateIndex]],
+                      // Day text container
+                      Container(
+                          width: deviceSize(context).width * 0.3333, // 1/3 of the width
+                          alignment: Alignment.centerLeft,
+                          padding: EdgeInsets.only(
+                              top: 5,
+                              right: 5,
+                              left: 0,
+                              bottom: 5
+                          ),
+                          child:  Text(
+                            DateFormat("EEEE").format(dates[dateIndex]),
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                                color: (dates[dateIndex] == today) ? Colors.red.withOpacity(0.7) : kPrimaryColor,
+                                fontStyle: FontStyle.italic,
+                                fontSize: 13
+                            ),
+
+                            textScaleFactor: 2,
+                          )
+                      ),
+
+                      Expanded(
+                        child: Text(
+                          DateFormat("dd/MM").format(dates[dateIndex]),
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                              color: Colors.grey,
+                              fontStyle: FontStyle.italic
+                          ),
+
+                          textScaleFactor: 1.5,
+                        ),
                       )
-                      // Actual grid of event for the date pointed buu the item builder index
+
                     ],
                   ),
-                )
+
+                  _ListDayView(
+                    eventIdList: dateEventMap[dates[dateIndex]],
+                  )
+                  // Actual grid of event for the date pointed buu the item builder index
+                ],
+              ),
             );
           },
         ),

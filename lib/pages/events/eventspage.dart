@@ -19,7 +19,7 @@ class EventsPage extends AbstractPageComponent {
   Icon get logo => Icon(Icons.people, color: Colors.white, size: 100);
 
   @override
-  String get name => "Évènements";
+  String get name => "Events";
 
   @override
   _EventsPageState createState() => _EventsPageState();

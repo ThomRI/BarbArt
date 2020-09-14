@@ -40,7 +40,7 @@ class _PageListHeaderState extends State<PageListHeader> {
           children: <Widget>[
 
             /* Settings icon */
-            Positioned(
+            /*Positioned(
               right: 0,
               child: IconButton(
                 alignment: Alignment.topRight,
@@ -50,7 +50,7 @@ class _PageListHeaderState extends State<PageListHeader> {
                   Navigator.of(context).pushNamed('/settings');
                 },
               ),
-            ),
+            ),*/
 
 
             /* Avatar */
@@ -95,11 +95,11 @@ class _PageListHeaderState extends State<PageListHeader> {
               child: Align(
                 alignment: Alignment.topCenter,
                 child: Container(
-                  margin: EdgeInsets.only(top: dp(context, 10)),
+                  margin: EdgeInsets.only(top: 35),
                   child: Image(
                     image: AssetImage("assets/logo_clipped.png"),
                     fit: BoxFit.cover,
-                    width: dp(context, 50),
+                    width: deviceSize(context).height * HEADER_HEIGHT_SCREEN_RATIO * 0.6, // 60% of the header size
                   ),
                 ),
               ),
@@ -172,6 +172,15 @@ class PageListState extends State<PageList> {
           },
           child: Container( // CLICKABLE ITEM CONTAINER
             alignment: Alignment.center,
+            margin: EdgeInsets.symmetric(horizontal: deviceSize(context).width / 20),
+            padding: EdgeInsets.symmetric(horizontal: kDefaultPadding),
+
+            decoration: BoxDecoration(
+              color: index == displayIndex ? Colors.white.withOpacity(0.4) : Colors.transparent,
+              borderRadius: BorderRadius.circular(6),
+            ),
+
+
             child: Row(
               //mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[ // ITEM CONTENT HERE
@@ -190,13 +199,7 @@ class PageListState extends State<PageList> {
                 ),
               ],
             ),
-            margin: EdgeInsets.symmetric(horizontal: dp(context, 5)),
-            padding: EdgeInsets.symmetric(horizontal: kDefaultPadding),
 
-            decoration: BoxDecoration(
-              color: index == displayIndex ? Colors.white.withOpacity(0.4) : Colors.transparent,
-              borderRadius: BorderRadius.circular(6),
-            ),
 
           ),
         ),

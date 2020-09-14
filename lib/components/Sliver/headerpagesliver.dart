@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../constants.dart';
+import '../../utils.dart';
 import '../pagelistheader.dart';
 
 /// Used to interact with callback functions
@@ -46,7 +47,6 @@ class HeaderPageSliver extends StatefulWidget {
 class HeaderPageSliverState extends State<HeaderPageSliver> {
   final headerPageListKey = new GlobalKey<PageListState>();
   final bodyPageListKey = new GlobalKey<PageListBodyState>();
-  final double expandedHeight = 230;
 
   bool verticalScrollEnabled = true;
 
@@ -59,7 +59,7 @@ class HeaderPageSliverState extends State<HeaderPageSliver> {
   }
 
   void _collapse({Duration duration = kDefaultTransitionDuration}) {
-    controller.animateTo(expandedHeight, duration: duration, curve: Curves.easeIn);
+    controller.animateTo(deviceSize(context).height * HEADER_HEIGHT_SCREEN_RATIO, duration: duration, curve: Curves.easeIn);
   }
 
   void _expand({Duration duration = kDefaultTransitionDuration}) {
@@ -130,7 +130,7 @@ class HeaderPageSliverState extends State<HeaderPageSliver> {
 
         slivers: <Widget>[
           SliverAppBar(
-            expandedHeight: this.expandedHeight,
+            expandedHeight: deviceSize(context).height * HEADER_HEIGHT_SCREEN_RATIO,
             pinned: true, // Whether or not the header should always be shown (in its minimized form)
             floating: false, // Show the header each time we scroll back up (instead of waiting the top of the page)
             bottom: PreferredSize(
@@ -169,7 +169,7 @@ class HeaderPageSliverState extends State<HeaderPageSliver> {
 
                 onScroll: (double scrollValue) {
                   if(widget.headerFollowFirstPage && scrollValue <= 1.0) {
-                    controller.jumpTo(expandedHeight * scrollValue);
+                    controller.jumpTo(deviceSize(context).height * HEADER_HEIGHT_SCREEN_RATIO * scrollValue);
                   }
 
                   widget.onPageScroll(scrollValue); // Calling the provided callback.

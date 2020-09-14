@@ -29,7 +29,7 @@ class _ServerSplashScreenState extends State<ServerSplashScreen> {
     }
 
     /* API Authentication */
-    gAPI.update(APIFlags.EVENTS | APIFlags.PROFILE | APIFlags.SOCIAL_POSTS | APIFlags.MUSIC_RESERVATIONS, onUpdateDone: () {
+    gAPI.update(APIFlags.EVENTS | APIFlags.PROFILE | APIFlags.SOCIAL_POSTS | APIFlags.MUSIC_RESERVATIONS | APIFlags.CLUBS, onUpdateDone: () {
       gAPI.save();
       if(onDone != null) onDone();
     });
@@ -49,7 +49,6 @@ class _ServerSplashScreenState extends State<ServerSplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
         width: deviceSize(context).width,
         height: deviceSize(context).height,
@@ -59,8 +58,8 @@ class _ServerSplashScreenState extends State<ServerSplashScreen> {
           children: <Widget>[
             PulsatingImage(
               image: AssetImage("assets/logo_clipped_sd.png"),
-              beginSize: dp(context, 60),
-              endSize: dp(context, 80),
+              beginSize: 157,
+              endSize: 210,
               milliseconds: 400,
             ),
           ],

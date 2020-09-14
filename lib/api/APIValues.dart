@@ -52,20 +52,32 @@ class APIRoutes {
 
   static const Register       = "register";
   static const Delete         = "delete";
+
+  static const Check          = "check";
+  static const Update         = "update";
 }
 
 /// Used to declare flags for the API. For example, when re-fetching everything from server, only one update method should be called with the correct flag to indicate what to update.
 class APIFlags {
-  static const EVENTS             = 1 << 0; // 0001
-  static const CLUBS              = 1 << 1; // 0010
+  // ---- UPDATE RELATED CODES (FROM 0 to 14) ----
+  static const EVENTS               = 1 << 0; // 0001
+  static const CLUBS                = 1 << 1; // 0010
 
-  static const PROFILE            = 1 << 2; // 0100 // The user's profile, the self client.
+  static const PROFILE              = 1 << 2; // 0100 // The user's profile, the self client.
 
-  static const SOCIAL_POSTS       = 1 << 3; // 1000
+  static const SOCIAL_POSTS         = 1 << 3; // 1000
 
-  static const MUSIC_RESERVATIONS = 1 << 4; // 0001 0000
+  static const MUSIC_RESERVATIONS   = 1 << 4; // 0001 0000
 
-  static const EVERYTHING         = 0x11111111;
+  static const UPDATE_ENDCODE       = 1 << 15; // Last code for update (this particular one is thus not available)
+
+  static const EVERYTHING           = 0x1111111111111111;
+
+  // ---- NON UPDATE RELATED CODES (FROM 16 to 31) ----
+  static const SOCIAL_POST_LIKES     = 1 << 16;
+
+  static const NON_UPDATE_ENDCODE   = 1 << 31; // Last code for non update related codes (this particular one is thus not available)
+
 }
 
 class APIConfig {
@@ -84,7 +96,7 @@ class APIValues {
     'HomePage'  : HomePage(),
     'EventsPage': EventsPage(),
     'MusicPage' : MusicPage(),
-    'ClubsPage' : ClubsPage(),
+    //'ClubsPage' : ClubsPage(),
   };
 
   Map<int, String> updateCodeMap = {
@@ -100,6 +112,10 @@ class APIValues {
 
   String _token = "";
 
+  /* ############################## */
+  /* ######### WEB SOCKET ######### */
+  /* ############################## */
+
   /* Web Socket API */
   APIWebSocket ws = new APIWebSocket();
 
@@ -110,22 +126,23 @@ class APIValues {
     });
   }
 
-  /* ############################## */
-  /* ######### WEB SOCKET ######### */
-  /* ############################## */
-
   void _handleWSMessage(dynamic message) {
-    int code;
+    Map<String, dynamic> json = jsonDecode(message);
+    if(!json.containsKey("code")) return;
 
-    try {
-      code = int.parse(message);
-    } catch(e) {
-      print("[WARNING] Failed to parse code from server (WebSocket). Ignoring it.");
+    if(json['code'] < APIFlags.UPDATE_ENDCODE) { // Should update
+      update(json['code']);
+      pages[updateCodeMap[json['code']]].notifier.notify();
+
       return;
     }
 
-    update(code);
-    pages[updateCodeMap[code]].notifier.notify();
+    // From here the code should be something else than an update
+    switch(json['code']) {
+      case APIFlags.SOCIAL_POST_LIKES: { // Number of likes on a particular post has been updated. This is update related but is not a global update of every likes and thus is here instead of in the update pipeline.
+        this.socialPosts[json['post_id']].nbrLikesNotifier.value = json['nbr_likes'];
+      } break;
+    }
   }
 
   String get token => _token;
@@ -168,6 +185,31 @@ class APIValues {
     return true;
   }
 
+  Future<bool> checkCredentials({@required String password, Function(bool success) onConfirmed}) async {
+    FetchResponse response = await APIManager.send(route: APIRoutes.Authentication + "/" + APIRoutes.Check, token: _token, params: {'password': password});
+
+    bool success = response.state == FetchResponseState.OK;
+    if(onConfirmed != null) onConfirmed(success);
+
+    return success;
+  }
+
+  Future<bool> updateCredentials({String email, String password, String lastname, String firstname, Function(bool success) onConfirmed}) async {
+    Map<String, String> params = new Map<String, String>();
+
+    if(email != null) params.addAll({'email': email});
+    if(password != null) params.addAll({'password': password});
+    if(lastname != null) params.addAll({'lastname': lastname});
+    if(firstname != null) params.addAll({'firstname': firstname});
+
+    FetchResponse response = await APIManager.send(route: APIRoutes.Authentication + "/" + APIRoutes.Update, token: _token, params: params);
+
+    bool success = response.state == FetchResponseState.OK;
+    if(onConfirmed != null) onConfirmed(success);
+
+    return success;
+  }
+
   /// Is used to check the validity of the token with the server
   Future<bool> checkToken() async {
     if(_token == "") { // Loading token from file if the cached token is empty.
@@ -199,10 +241,10 @@ class APIValues {
 
   // Always call this function to update, with the desired updates as the flag.
   /// Match local data with server according to the given flag.
-  void update(int flag, {Function authNotAliveCallback, Function onUpdateDone}) async {
+    void update(int flag, {Function authNotAliveCallback, Function onUpdateDone}) async {
     bool authStillAlive = true;
     if(flag & APIFlags.EVENTS != 0)             authStillAlive &= await _updateEvents();
-    if(flag & APIFlags.CLUBS != 0)              authStillAlive &= await _updateClubs();
+    if(flag & APIFlags.CLUBS != 0)              authStillAlive &= await _updateClubs(); // Must be updated before the profile to retrieve correctly the client's clubs
     if(flag & APIFlags.PROFILE != 0)            authStillAlive &= await _updateProfile();
     if(flag & APIFlags.SOCIAL_POSTS != 0)       authStillAlive &= await _updateSocialPosts();
     if(flag & APIFlags.MUSIC_RESERVATIONS != 0) authStillAlive &= await _updateMusicReservations();
@@ -251,8 +293,8 @@ class APIValues {
     // Fetching profile picture (avatar)
     selfClient.avatar = APIManager.fetchImage(route: selfClient.avatar_route, token: _token);
 
-    // Requesting for an open WebSocket connection
-    this.ws.send('#' + selfClient.uuid);
+    // Requesting an open WebSocket connection
+    this.ws.uuid = selfClient.uuid; // Setting the websocket uuid so that it can be authenticated.
 
     return true;
   }
@@ -307,7 +349,7 @@ class APIValues {
   /* ########## CLUBS ########### */
   /* ############################ */
 
-  List<AClub> clubs = new List<AClub>();
+  Map<int, AClub> clubs = new Map<int, AClub>(); // To store the same ids than the server
 
   Future<bool> _updateClubs() async {
     // Fetching events from server
@@ -319,7 +361,11 @@ class APIValues {
 
     // Fetch succeeded : updating cached list
     clubs.clear();
-    (response.body[APIJsonKeys.ClubsList] as List<dynamic>).forEach((clubJSON) {clubs.add(new AClub.fromJSON(clubJSON));});
+    (response.body[APIJsonKeys.ClubsList] as List<dynamic>).forEach((clubJSON) {
+      // Storing the club with the same ID than the server
+      AClub club = new AClub.fromJSON(clubJSON);
+      clubs.addAll({club.id: club});
+    });
 
     return true;
   }
@@ -328,7 +374,7 @@ class APIValues {
   /* ########## SOCIAL POSTS ########### */
   /* ################################### */
 
-  List<ASocialPost> socialPosts = new List<ASocialPost>();
+  Map<int, ASocialPost> socialPosts = new Map<int, ASocialPost>();
 
   Future<bool> _updateSocialPosts() async {
     FetchResponse response = await APIManager.fetch(route: APIRoutes.Posts, params: {'begin_datetime': config.postsBeginTime.toString(), 'end_datetime': config.postsEndTime.toString()}, token: _token);
@@ -338,10 +384,14 @@ class APIValues {
     if(!config.forceRequests && response.state == FetchResponseState.OK_NOT_NEEDED) return true;
 
     socialPosts.clear();
-    (response.body[APIJsonKeys.PostsList] as List<dynamic>).forEach((socialPostJSON) {socialPosts.add(new ASocialPost.fromJSON(socialPostJSON));});
+    (response.body[APIJsonKeys.PostsList] as List<dynamic>).forEach((socialPostJSON) {
+      ASocialPost post = new ASocialPost.fromJSON(socialPostJSON);
+      socialPosts.addAll({post.id: post});
+    });
 
     /* Caching the authors of the posts in the cached client list */
     (response.body[APIJsonKeys.ClientsList] as List<dynamic>).forEach((clientJSON) {this.cacheClient(new AClient.fromJSON(clientJSON), cacheAvatar: true);});
+
     return true;
   }
 
@@ -458,7 +508,7 @@ class APIValues {
     for(AEvent ev in this.events) json[APIJsonKeys.EventsList].add(ev.toJSON());
 
     // Clubs
-    for(AClub cl in this.clubs) json[APIJsonKeys.ClubsList].add(cl.toJSON());
+    for(AClub cl in this.clubs.values) json[APIJsonKeys.ClubsList].add(cl.toJSON());
 
     // Writing back into the file
     file.writeAsString(jsonEncode(json));
@@ -490,8 +540,6 @@ class APIValues {
 
     // Updating cached token
     _token = json['token'];
-
-    print(json);
 
     return true;
   }

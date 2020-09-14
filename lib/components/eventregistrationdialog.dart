@@ -31,6 +31,7 @@ class EventRegistrationDialog {
                 /* Validation button */
                 MessageLoadingButton(
                   key: validationKey,
+                  width: 200,
                   errorMessage: "Invalid times",
                   onPressed: () async {
                     bool success = true; // If no onConfirmed function provided, assume success.

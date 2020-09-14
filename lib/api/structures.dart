@@ -27,10 +27,16 @@ class AClient extends APIStructure {
   dynamic avatar = new AssetImage("assets/profile_generic.png");
   String avatar_route;
 
-
+  List<int> clubsIDs = new List<int>();
 
   // ignore: non_constant_identifier_names
-  AClient({this.uuid = "", this.email = "", this.avatar_route = "", this.firstname, this.lastname});
+  AClient({this.uuid = "", this.email = "", this.avatar_route = "", this.firstname, this.lastname, String clubsArrayStr = ""}) {
+    // Populating clubs IDs
+    if(clubsArrayStr.length == 0) return;
+    clubsArrayStr.split(",").forEach((clubIDstr) {
+      clubsIDs.add(int.parse(clubIDstr));
+    });
+  }
 
   // Set this client as a generic non-authenticated client
   void genericify() {
@@ -49,7 +55,8 @@ class AClient extends APIStructure {
     firstname: json['firstname'] ?? "",
     lastname: json['lastname'] ?? "",
     email: json['email'] ?? "",
-    avatar_route: json['avatar_route'] ?? ""
+    avatar_route: json['avatar_route'] ?? "",
+    clubsArrayStr: json['clubs_ids'] ?? ""
   );
 
   @override
@@ -74,9 +81,11 @@ class AEvent extends APIStructure {
   int nbrPeopleGoing    = 0,
       nbrPlaceAvailable = 0;
 
+  bool weekPermanent;
+
   DateTime  dateTimeBegin, dateTimeEnd;
 
-  dynamic image = AssetImage("assets/event.png");
+  dynamic image;
 
   AEvent({this.id,
           this.title,
@@ -87,10 +96,28 @@ class AEvent extends APIStructure {
           this.imageUrl,
           this.nbrPeopleGoing,
           this.nbrPlaceAvailable,
-          this.clientUUID}) : super();
+          this.clientUUID,
+          this.weekPermanent = false}) : super() {
+
+    image = (imageUrl != null) ? NetworkImage(imageUrl) : AssetImage("assets/event.png");
+  }
+
+  factory AEvent.clone(AEvent other) => AEvent(
+      id: other.id,
+      title: other.title,
+      dateTimeBegin: other.dateTimeBegin,
+      dateTimeEnd: other.dateTimeEnd,
+      location: other.location,
+      description: other.description,
+      imageUrl: other.imageUrl,
+      nbrPeopleGoing: other.nbrPeopleGoing,
+      nbrPlaceAvailable: other.nbrPlaceAvailable,
+      clientUUID: other.clientUUID,
+      weekPermanent: other.weekPermanent,
+    );
 
   String toString() {
-    return "{${this.title}, ${this.dateTimeBegin}}";
+    return "{${this.title}, ${this.dateTimeBegin}, ${this.dateTimeEnd}}";
   }
 
   String timesToString() {
@@ -117,7 +144,7 @@ class AEvent extends APIStructure {
     if(response.state != FetchResponseState.OK) success = false;
 
     if(success) { // Instead of making a full update, we can just adapt the values here as we know what happened server-side. TODO : Maybe unify the API here ?
-      this.nbrPeopleGoing += (going) ? 1 : -1;
+      this.nbrPeopleGoing += going ? 1 : -1;
     }
 
     if(onConfirmed != null) onConfirmed(success);
@@ -155,25 +182,35 @@ class AEvent extends APIStructure {
 }
 
 class AClub extends APIStructure {
-  String  name;
-  int     availableSlots,
-          totalSlots;
+  int     id;
+  String  title;
+  int     nbrMembers;
 
-  List<AClient> _clients; // Client that are subscribed to the club
+  DateTime  dateTimeMeetingBegin,
+            dateTimeMeetingEnd;
 
-  AClub({this.name, this.availableSlots, this.totalSlots});
+  //List<AClient> _clients; // Client that are subscribed to the club
+
+  AClub({this.id, this.title, this.nbrMembers, this.dateTimeMeetingBegin, this.dateTimeMeetingEnd});
 
   @override
   factory AClub.fromJSON(Map<String, dynamic> json) => AClub(
-    name: "",
-    availableSlots: 0,
-    totalSlots: 0
+    id: json['id'] ?? -1,
+    title: json['title'] ?? "",
+    dateTimeMeetingBegin: json['datetime_meeting_begin'] != null ? DateTime.parse(json['datetime_meeting_begin']).toLocal() : null,
+    dateTimeMeetingEnd: json['datetime_meeting_end'] != null ? DateTime.parse(json['datetime_meeting_end']).toLocal() : null,
   );
 
   @override
   Map<String, dynamic> toJSON() {
+    return null;
     // TODO: implement toJSON
     throw UnimplementedError();
+  }
+
+  @override
+  String toString() {
+    return "{id: " + id.toString() + ", title: " + title + ", dateTimeMeetingBegin: " + dateTimeMeetingBegin.toString() + ", dateTimeMeetingEnd: " + dateTimeMeetingEnd.toString() + "}";
   }
 }
 
@@ -218,10 +255,13 @@ class ASocialPost extends APIStructure {
   DateTime datetime;
   List<String> tags;
 
-  int nbrLikes    = 0,
-      nbrComments = 0;
+  ValueNotifier<int>  nbrLikesNotifier    = ValueNotifier<int>(0), // Should notify UI when changed
+                      nbrCommentsNotifier = ValueNotifier<int>(0);
 
-  ASocialPost({this.id, this.clientUUID, this.title, this.body, this.datetime, this.tags, this.nbrLikes, this.nbrComments});
+  ASocialPost({this.id, this.clientUUID, this.title, this.body, this.datetime, this.tags, int nbrLikes, int nbrComments}) {
+    nbrLikesNotifier.value = nbrLikes;
+    nbrCommentsNotifier.value = nbrComments;
+  }
 
   @override
   factory ASocialPost.fromJSON(Map<String, dynamic> json) => ASocialPost(
@@ -242,7 +282,7 @@ class ASocialPost extends APIStructure {
     if(response.state != FetchResponseState.OK) success = false;
 
     if(success) { // Instead of making a full update, we can just adapt the values here as we know what happened server-side. TODO : Maybe unify the API here ?
-      this.nbrLikes += liked ? 1 : -1;
+      this.nbrLikesNotifier.value += liked ? 1 : -1;
     }
 
     if(onConfirmed != null) onConfirmed(success);

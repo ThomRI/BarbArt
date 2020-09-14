@@ -61,7 +61,7 @@ class APIManager {
   /// force param is used to force re-parsing even if we already had the same server response last time.
   /// params are the GET request parameters.
   static Future<FetchResponse> fetch({@required String route, @required String token, Map<String, String> params}) async {
-    Map<String, dynamic> json = jsonDecode((await get(new Uri(scheme: "http", host: API_BASEHOST, port: API_PORT, queryParameters: params, path: route), headers: {HttpHeaders.authorizationHeader: token})).body);
+    Map<String, dynamic> json = jsonDecode((await get(new Uri(scheme: "https", host: API_BASEHOST, port: API_PORT, queryParameters: params, path: route), headers: {HttpHeaders.authorizationHeader: token})).body);
     return _validateResponse(json);
   }
 

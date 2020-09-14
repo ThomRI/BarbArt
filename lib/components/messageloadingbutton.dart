@@ -8,7 +8,9 @@ class MessageLoadingButton extends StatefulWidget {
   final Future<bool> Function() onPressed; // returns true for success, false otherwise.
   final String errorMessage;
 
-  const MessageLoadingButton({Key key, this.errorMessage, this.onPressed}) : super(key: key);
+  final double width;
+
+  const MessageLoadingButton({Key key, this.errorMessage, this.onPressed, this.width}) : super(key: key);
 
   @override
   MessageLoadingButtonState createState() => MessageLoadingButtonState();
@@ -36,6 +38,7 @@ class MessageLoadingButtonState extends State<MessageLoadingButton> {
 
         /* Button */
         RoundedLoadingButton(
+          width: widget.width,
           controller: controller,
           child: const Text("Confirm", style: TextStyle(color: Colors.white)),
           onPressed: () {

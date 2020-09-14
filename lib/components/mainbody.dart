@@ -14,7 +14,7 @@ class MainBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: HeaderPageSliver(
-        pagesList: [gAPI.pages['HomePage'], gAPI.pages['EventsPage'], gAPI.pages['MusicPage'], gAPI.pages['ClubsPage']],
+        pagesList: gAPI.pages.values.toList(),
 
         onPageChanged: (int index) {
           if(index == 0)  return SliverActions.ExpandAndStay;

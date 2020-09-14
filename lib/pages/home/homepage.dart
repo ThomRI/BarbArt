@@ -1,4 +1,5 @@
 import 'package:barbart/api/APIValues.dart';
+import 'package:barbart/api/structures.dart';
 import 'package:barbart/components/AbstractPageComponent.dart';
 import 'package:barbart/components/SocialPostItem.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/rendering.dart';
 
 import '../../main.dart';
 
+// ignore: must_be_immutable
 class HomePage extends AbstractPageComponent{
   HomePage({Key key}) : super(key: key);
 
@@ -25,8 +27,6 @@ class HomePage extends AbstractPageComponent{
 }
 
 class _HomePageState extends State<HomePage> {
-  bool _pending = true; // Waiting for the server
-
   @override
   void initState() {
     super.initState();
@@ -34,8 +34,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    List<ASocialPost> posts = gAPI.socialPosts.values.toList();
     return Container(
-      child: gAPI.socialPosts.length > 0 ?
+      child: posts.length > 0 ?
         RefreshIndicator(
           onRefresh: () async {
             gAPI.update(APIFlags.SOCIAL_POSTS, onUpdateDone: () {
@@ -44,9 +45,9 @@ class _HomePageState extends State<HomePage> {
           },
           child: ListView.builder(
             padding: EdgeInsets.only(top: 10.0, bottom: 230),
-            itemCount: gAPI.socialPosts.length,
+            itemCount: posts.length,
             itemBuilder: (BuildContext context, int index) {
-              return SocialPostItem(socialPostLocalId: index,);
+              return SocialPostItem(socialPost: posts[index],);
             },
           ),
         ) : Center(

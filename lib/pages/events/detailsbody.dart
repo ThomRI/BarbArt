@@ -1,3 +1,4 @@
+import 'package:barbart/api/structures.dart';
 import 'package:barbart/components/TextIcon.dart';
 import 'package:barbart/constants.dart';
 import 'package:barbart/utils.dart';
@@ -8,9 +9,9 @@ import 'package:intl/intl.dart';
 import '../../main.dart';
 
 class DetailsBody extends StatefulWidget {
-  final int eventId;
+  final AEvent event;
 
-  const DetailsBody({Key key, @required this.eventId}) : super(key: key);
+  const DetailsBody({Key key, @required this.event}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => new _DetailsBodyState();
@@ -26,7 +27,7 @@ class _DetailsBodyState extends State<DetailsBody> {
 
     pending = true;
     /* Fetching if the client is going */
-    gAPI.events[widget.eventId].isGoing(
+    widget.event.isGoing(
         gAPI.selfClient,
         onConfirmed: (bool going) {
           this.setState(() {
@@ -48,7 +49,7 @@ class _DetailsBodyState extends State<DetailsBody> {
             return;
 
           // Requesting server, asynchronously with a callback function when we get the response;
-          gAPI.events[widget.eventId].setGoing(
+          widget.event.setGoing(
             gAPI.selfClient,
             going: !localGoing, // We request the opposite of the current state.
             onConfirmed: (success) {
@@ -75,7 +76,7 @@ class _DetailsBodyState extends State<DetailsBody> {
 
           /* Event Image */
           Hero(
-            tag: 'event: ${gAPI.events[widget.eventId].id}',
+            tag: 'event: ${widget.event.id}',
             child: ClipPath(
               clipper: _mainImageClipper(),
               child: Container(
@@ -83,7 +84,7 @@ class _DetailsBodyState extends State<DetailsBody> {
                 height: 200,
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: gAPI.events[widget.eventId].image,
+                    image: widget.event.image,
                     fit: BoxFit.cover,
                   )
                 ),
@@ -95,14 +96,14 @@ class _DetailsBodyState extends State<DetailsBody> {
           Column(
             children: <Widget>[
               Hero(
-                tag: 'eventText: ${gAPI.events[widget.eventId].id}',
+                tag: 'eventText: ${widget.event.id}',
                 child: Container(
                   height: 40,
                   alignment: Alignment.center,
                   child: RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                      text: ' ${gAPI.events[widget.eventId].title} \n',
+                      text: ' ${widget.event.title} \n',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
@@ -123,7 +124,7 @@ class _DetailsBodyState extends State<DetailsBody> {
                   ),
                   RichText(
                     text: TextSpan(
-                      text: DateFormat("EEEE dd/MM").format(gAPI.events[widget.eventId].dateTimeBegin) + " : " + timeToString(gAPI.events[widget.eventId].dateTimeBegin),
+                      text: DateFormat("EEEE dd/MM").format(widget.event.dateTimeBegin) + " : " + timeToString(widget.event.dateTimeBegin),
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -154,19 +155,19 @@ class _DetailsBodyState extends State<DetailsBody> {
                     /* Event number of people going */
                     TextIcon(
                       icon: Icon(Icons.check_circle, color: Colors.green),
-                      text: Text(gAPI.events[widget.eventId].nbrPeopleGoing.toString(), style: TextStyle(fontSize: 20)),
+                      text: Text(widget.event.nbrPeopleGoing.toString(), style: TextStyle(fontSize: 20)),
                     ),
 
                     /* Event Place */
                     TextIcon(
                       icon: Icon(Icons.place),
-                      text: Text(gAPI.events[widget.eventId].location.toString(), style: TextStyle(fontSize: 20)),
+                      text: Text(widget.event.location.toString(), style: TextStyle(fontSize: 20)),
                     ),
 
                     /* Event number of places available */
                     TextIcon(
                       icon: Icon(Icons.event_seat, color: Colors.brown[400]),
-                      text: Text(gAPI.events[widget.eventId].nbrPlaceAvailable.toString(), style: TextStyle(fontSize: 20)),
+                      text: Text(widget.event.nbrPlaceAvailable.toString(), style: TextStyle(fontSize: 20)),
                     )
                   ],
                 )
@@ -198,9 +199,9 @@ class _DetailsBodyState extends State<DetailsBody> {
           /* Description */
           Center(
             child: Container(
-              margin: EdgeInsets.only(top: 20),
+              margin: EdgeInsets.only(top: 20, bottom: 75),
               width: deviceSize(context).width * 0.9,
-              child: Text(gAPI.events[widget.eventId].description)
+              child: Text(widget.event.description)
             ),
           )
         ],

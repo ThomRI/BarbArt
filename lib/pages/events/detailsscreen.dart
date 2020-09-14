@@ -1,3 +1,4 @@
+import 'package:barbart/api/structures.dart';
 import 'package:barbart/pages/events/detailsbody.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,20 +7,20 @@ import '../../constants.dart';
 import '../../main.dart';
 
 class DetailsScreen extends StatelessWidget {
-  final int eventId;
+  final AEvent event;
 
-  DetailsScreen({@required this.eventId});
+  DetailsScreen({@required this.event});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBackgroundColor,
       appBar: AppBar(
-        title: Text(gAPI.events[eventId].title),
+        title: Text(event.title),
       ),
 
       body: DetailsBody(
-        eventId: this.eventId,
+        event: this.event,
       ),
     );
   }

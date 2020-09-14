@@ -1,4 +1,3 @@
-import 'package:barbart/utils.dart';
 import 'package:flutter/material.dart';
 
 //const kBackgroundColor = const Color(0xFF072d25);
@@ -18,10 +17,16 @@ const kDefaultTransitionDuration = const Duration(milliseconds: 100);
 
 const double kLogoSize = 135;
 
+/* Header constants */
+const double HEADER_HEIGHT_SCREEN_RATIO = 0.3;
+
+/* Math constants */
+const double MS_IN_ONE_DAY = 86400000.0;
+
 /* API */
-const API_BASEHOST = "192.168.43.203";
-const API_PORT = 3000;
-String API_BASEURL = "http://" + API_BASEHOST + ":" + API_PORT.toString();
+const API_BASEHOST = "barbart.herokuapp.com";
+const API_PORT = 443;
+String API_BASEURL = "https://" + API_BASEHOST + ":" + API_PORT.toString();
 String API_WS_BASEURL = "ws://" + API_BASEHOST + ":" + API_PORT.toString();
 
 const API_SAVEFILE = "api.json";

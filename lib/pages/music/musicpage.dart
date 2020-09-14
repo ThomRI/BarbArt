@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:ffi';
 
 import 'package:barbart/api/APIValues.dart';
 import 'package:barbart/api/structures.dart';
 import 'package:barbart/components/AbstractPageComponent.dart';
 import 'package:barbart/components/eventregistrationdialog.dart';
-import 'package:barbart/components/updatenotifier.dart';
 import 'package:barbart/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

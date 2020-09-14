@@ -23,15 +23,15 @@ class _SocialPostItemUIState {
 }
 
 class SocialPostItem extends StatefulWidget {
-  final int socialPostLocalId;
+  final ASocialPost socialPost;
 
-  const SocialPostItem({Key key, this.socialPostLocalId}) : super(key: key);
+  const SocialPostItem({Key key, this.socialPost}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _SocialPostItemState();
+  State<StatefulWidget> createState() => SocialPostItemState();
 }
 
-class _SocialPostItemState extends State<SocialPostItem> {
+class SocialPostItemState extends State<SocialPostItem> {
   _SocialPostItemUIState UIState = new _SocialPostItemUIState();
 
   @override
@@ -39,7 +39,7 @@ class _SocialPostItemState extends State<SocialPostItem> {
     super.initState();
 
     /* Fetching if the client has liked this post */
-    gAPI.socialPosts[widget.socialPostLocalId].hasLiked(
+    widget.socialPost.hasLiked(
       gAPI.selfClient,
       onConfirmed: (bool liked) {
         this.setState(() {
@@ -47,12 +47,16 @@ class _SocialPostItemState extends State<SocialPostItem> {
         });
       }
     );
+
+    /* Updating when the number of likes has been updated */
+    widget.socialPost.nbrLikesNotifier.addListener(() {
+      if(this.mounted) this.setState(() {}); // Redrawing this post
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    ASocialPost socialPost = gAPI.socialPosts[widget.socialPostLocalId];
-    AClient author = gAPI.clientFromUUID(socialPost.clientUUID);
+    AClient author = gAPI.clientFromUUID(widget.socialPost.clientUUID);
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.0),
@@ -75,7 +79,7 @@ class _SocialPostItemState extends State<SocialPostItem> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Text(author.firstname + " " + author.lastname, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                  Text(ago(socialPost.datetime) + " ago.", style: TextStyle(fontSize: 15, color: Colors.grey)),
+                  Text(ago(widget.socialPost.datetime) + " ago.", style: TextStyle(fontSize: 15, color: Colors.grey)),
                 ],
               )
             ],
@@ -85,12 +89,12 @@ class _SocialPostItemState extends State<SocialPostItem> {
           Container(
             margin: EdgeInsets.only(top: 10, bottom: 20),
             child: Tags(
-              itemCount: socialPost.tags.length,
+              itemCount: widget.socialPost.tags.length,
               itemBuilder: (int tagIndex) {
                 return ItemTags(
                   key: Key('itemtag' + tagIndex.toString()),
                   index: tagIndex,
-                  title: socialPost.tags[tagIndex],
+                  title: widget.socialPost.tags[tagIndex],
                   color: kPrimaryColor,
                   elevation: 3,
                   textColor: Colors.white,
@@ -107,8 +111,8 @@ class _SocialPostItemState extends State<SocialPostItem> {
             width: deviceSize(context).width,
             padding: EdgeInsets.all(10.0),
             child: Text(
-              socialPost.body,
-              textAlign: TextAlign.left,
+              widget.socialPost.body,
+              textAlign: TextAlign.justify,
             ),
           ),
 
@@ -134,12 +138,12 @@ class _SocialPostItemState extends State<SocialPostItem> {
                     color: UIState.liked ? Colors.green : Colors.grey[400]
                   ),
 
-                  text: Text(socialPost.nbrLikes.toString() + ' likes'),
+                  text: Text(widget.socialPost.nbrLikesNotifier.value.toString() + ' likes'),
 
                   // Like button pressed
                   onPressed: () {
                     // Notifying the server. If the request failed, we change back the UI.
-                    socialPost.setLike(
+                    widget.socialPost.setLike(
                       gAPI.selfClient,
                       liked: !UIState.liked, // We request the opposite
                       onConfirmed: (bool success) {

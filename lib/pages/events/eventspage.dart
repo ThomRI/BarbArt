@@ -1,4 +1,5 @@
 import 'package:barbart/api/APIValues.dart';
+import 'package:barbart/api/structures.dart';
 import 'package:barbart/components/AbstractPageComponent.dart';
 import 'package:barbart/constants.dart';
 import 'package:barbart/main.dart';
@@ -27,8 +28,40 @@ class EventsPage extends AbstractPageComponent {
 
 class _EventsPageState extends State<EventsPage> {
 
+  /// Generates the events from the clubs FOR NOW THEY ARE ALL PERMANENT
+  // TODO : Handle non permanent club events
+  List<AEvent> generateClubEvents() {
+    List<AEvent> clubEvents = new List<AEvent>();
+    gAPI.selfClient.clubsIDs.forEach((int clubID) {
+      AClub club = gAPI.clubs[clubID];
+
+      if(club.dateTimeMeetingBegin == null || club.dateTimeMeetingEnd == null) return; // No event if no meeting
+
+      clubEvents.add(new AEvent(
+        id: club.id,
+        clientUUID:     gAPI.selfClient.uuid,
+        title:          club.title,
+        dateTimeBegin:  club.dateTimeMeetingBegin,
+        dateTimeEnd:    club.dateTimeMeetingEnd,
+        weekPermanent: true,
+      ));
+    });
+
+    return clubEvents;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SquareDayView();
+    return SquareDayView(
+      sortingMode: SortingMode.DECREASING,
+
+      minimumDateTime: DateTime.now().subtract(Duration(days: 300)),
+
+      mainEventList: gAPI.events,
+      mainText: Text("Events", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+
+      subPermanentEventList: this.generateClubEvents(),
+      subText: Text("Clubs", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))
+    );
   }
 }

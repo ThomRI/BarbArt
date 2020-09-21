@@ -1,3 +1,4 @@
+import 'package:barbart/constants.dart';
 import 'package:barbart/main.dart';
 import 'package:barbart/utils.dart';
 import 'package:flutter/cupertino.dart';
@@ -16,50 +17,45 @@ class _ClubsSelectionScreenState extends State<ClubsSelectionScreen> {
   Widget build(BuildContext context) {
     print(clubs);
     return Scaffold(
+      //backgroundColor: kPrimaryColor,
       appBar: AppBar(
         title: const Text("Clubs selection")
       ),
       body: ListView.builder(
         itemCount:clubs.length,
         itemBuilder: (BuildContext context, int index) {
+          bool added = clubs[clubs.keys.toList()[index]];
           return Container(
-            height: deviceSize(context).height/6,
+            margin: EdgeInsets.only(top: 10, bottom: 10, right: 15, left: 15),
+            padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.black),
+              color: added ? kPrimaryColor : Colors.white,
+              border: Border.all(width: 1, style: BorderStyle.solid, color: kPrimaryColor),
+              borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
-            child: GestureDetector(
-              onTap: (){
-                setState(() {
-                  clubs[clubs.keys.toList()[index]] = !clubs[clubs.keys.toList()[index]];
-                });
-              },
-              child: Stack(
-                children: <Widget>[
-                  Container(
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                          fit: BoxFit.cover,
-                          colorFilter: ColorFilter.mode(clubs[clubs.keys.toList()[index]] ? Colors.lightGreen: Colors.grey, BlendMode.color),
-                          image: AssetImage("assets/images/event"+(index%3+1).toString()+".png"),
-                        )
-                    ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                Container(
+                  width: deviceSize(context).width*2/5,
+                  child: Text(
+                    clubs.keys.toList()[index],
+                    style: TextStyle(fontSize: 35, fontFamily: 'Djoker', color: added ? Colors.white : kPrimaryColor),
                   ),
-                  Center(
-                    child: Container(
-                      padding: EdgeInsets.only(left: 10, right: 10),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(5)),
-                        color: Colors.white.withAlpha(178),
-                      ),
-                      child: Text(
-                        clubs.keys.toList()[index],
-                        style: TextStyle(fontSize: 35, fontFamily: 'Djoker'),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                ),
+                IconButton(
+                  icon: added ? Icon(Icons.check_circle, color: Colors.white): Icon(Icons.add_circle, color: kPrimaryColor),
+                  onPressed: (){
+                    setState(() {
+                      clubs[clubs.keys.toList()[index]] = !added;
+                    });
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.arrow_forward_ios, color: added ? Colors.white : kPrimaryColor),
+                )
+              ],
+            )
           );
         },
       ),

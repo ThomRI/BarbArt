@@ -33,18 +33,7 @@ class _EventsPageState extends State<EventsPage> {
   List<AEvent> generateClubEvents() {
     List<AEvent> clubEvents = new List<AEvent>();
     gAPI.selfClient.clubsIDs.forEach((int clubID) {
-      AClub club = gAPI.clubs[clubID];
-
-      if(club.dateTimeMeetingBegin == null || club.dateTimeMeetingEnd == null) return; // No event if no meeting
-
-      clubEvents.add(new AEvent(
-        id: club.id,
-        clientUUID:     gAPI.selfClient.uuid,
-        title:          club.title,
-        dateTimeBegin:  club.dateTimeMeetingBegin,
-        dateTimeEnd:    club.dateTimeMeetingEnd,
-        weekPermanent: true,
-      ));
+      clubEvents.addAll(gAPI.clubs[clubID].permanentEvents);
     });
 
     return clubEvents;

@@ -17,6 +17,9 @@ const kDefaultTransitionDuration = const Duration(milliseconds: 100);
 
 const double kLogoSize = 135;
 
+/* Music registrations constants */
+const kDaysIntervalRegistrationAllowed = 14; // 2 weeks allowed to register
+
 /* Header constants */
 const double HEADER_HEIGHT_SCREEN_RATIO = 0.3;
 

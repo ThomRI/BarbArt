@@ -93,8 +93,6 @@ class _SquareDayViewState extends State<SquareDayView> {
 
 
     // Dealing with PERMANENT sub events
-    int idCursor = 0;
-
     for(AEvent event in widget.subPermanentEventList) {
       DateTime extractedDate = extractDate(event.dateTimeBegin);
 
@@ -107,7 +105,6 @@ class _SquareDayViewState extends State<SquareDayView> {
         /* Adding the event to be treated as a classic sub event */
         // No need to add the date in the date list, it will be automatically added when dealing with the sub events
         AEvent virtualEvent = AEvent.clone(event);
-        virtualEvent.id = idCursor; idCursor++;
         virtualEvent.dateTimeBegin = DateTime(date.year, date.month, date.day, event.dateTimeBegin.hour, event.dateTimeBegin.minute, event.dateTimeBegin.second);
         virtualEvent.dateTimeEnd = virtualEvent.dateTimeBegin.add(event.dateTimeEnd.difference(event.dateTimeBegin)); // virtual.end = date + (event.end - event.begin)
 
@@ -129,6 +126,9 @@ class _SquareDayViewState extends State<SquareDayView> {
       _subEventMap[extractedDate].add(event);
     }
 
+
+    /* Showing today even if there is no event */
+    if(!dates.contains(today)) dates.add(today);
 
     dates.sort((a, b) => (widget.sortingMode == SortingMode.INCREASING) ? a.compareTo(b) : b.compareTo(a)); // Sorting by date
   }
@@ -152,6 +152,13 @@ class _SquareDayViewState extends State<SquareDayView> {
           itemBuilder: (BuildContext context, int dateIndex) {
 
             return Container(
+
+              /* Date already passed filter */
+              foregroundDecoration: widget.weekDistinction && dates[dateIndex].compareTo(today) < 0 ? BoxDecoration(
+                color: Colors.grey[200],
+                backgroundBlendMode: BlendMode.saturation,
+              ) : null,
+
               decoration: BoxDecoration(
                 border: Border(bottom: BorderSide(width: 2, color: Colors.grey[200])),
               ),
@@ -164,7 +171,14 @@ class _SquareDayViewState extends State<SquareDayView> {
                     children: <Widget>[
                       // Calendar icon
                       Container(
-                        child: Icon(Icons.calendar_today, color: (dates[dateIndex] == today) ? Colors.red.withOpacity(0.7) : kPrimaryColor),
+                        child: (dates[dateIndex] == today) ? Icon(
+                          Icons.event_available,
+                          color: Colors.red,
+                          size: 27
+                        ) : Icon(
+                          Icons.calendar_today,
+                          color: isThisWeek(dates[dateIndex]) ? Colors.red.withOpacity(0.7) : kPrimaryColor,
+                        ),
                         padding: EdgeInsets.all(5),
                       ),
 
@@ -179,10 +193,10 @@ class _SquareDayViewState extends State<SquareDayView> {
                               bottom: 5
                           ),
                           child:  Text(
-                            DateFormat("EEEE").format(dates[dateIndex]),
+                          (dates[dateIndex] == today) ? "Today" : DateFormat("EEEE").format(dates[dateIndex]),
                             textAlign: TextAlign.right,
                             style: TextStyle(
-                                color: (dates[dateIndex] == today) ? Colors.red.withOpacity(0.7) : kPrimaryColor,
+                                color: (dates[dateIndex] == today) ? Colors.red : (isThisWeek(dates[dateIndex]) ? Colors.red.withOpacity(0.7) : kPrimaryColor),
                                 fontStyle: FontStyle.italic,
                                 fontSize: 13
                             ),
@@ -207,60 +221,62 @@ class _SquareDayViewState extends State<SquareDayView> {
                     ],
                   ),
 
-                  Container( // Used to filter the color whilst being able to disable the filter
+                  Column(
+                    children: [
 
-                    /* Date already passed filter */
-                    foregroundDecoration: widget.weekDistinction && dates[dateIndex].compareTo(today) < 0 ? BoxDecoration(
-                      color: Colors.grey[200],
-                      backgroundBlendMode: BlendMode.saturation,
-                    ) : null,
-
-                    child: Column(
-                      children: [
-
-                        /* Main event list */
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              margin: EdgeInsets.only(right: 5),
-                              child: RotatedBox(
-                                quarterTurns: 3,
-                                child: _mainEventMap.containsKey(dates[dateIndex]) ? widget.mainText : Container(),
-                              ),
-                            ),
-
-                            Expanded(
-                              child: _ListDayView(
-                                eventList: _mainEventMap[dates[dateIndex]],
-                                renderMode: _ListDayViewRenderMode.RENDER_MAIN,
-                              ),
-                            ),
-                          ],
+                      (!_mainEventMap.containsKey(dates[dateIndex]) && !_subEventMap.containsKey(dates[dateIndex]))
+                      ? const Text(
+                        "Nothing to do !",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 15,
                         ),
+                      ) : Container(),
 
-                        /* Sub event list */
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              margin: EdgeInsets.only(right: 5),
-                              child: RotatedBox(
-                                quarterTurns: 3,
-                                child: _subEventMap.containsKey(dates[dateIndex]) ? widget.subText : Container(),
-                              ),
+                      /* Main event list */
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            margin: EdgeInsets.only(right: 5),
+                            child: RotatedBox(
+                              quarterTurns: 3,
+                              child: _mainEventMap.containsKey(dates[dateIndex]) ? widget.mainText : Container(),
                             ),
+                          ),
 
-                            Expanded(
-                              child: _ListDayView(
-                                eventList: _subEventMap[dates[dateIndex]],
-                                renderMode: _ListDayViewRenderMode.RENDER_SUB,
-                              ),
+                          Expanded(
+                            child: _ListDayView(
+                              eventList: _mainEventMap[dates[dateIndex]],
+                              renderMode: _ListDayViewRenderMode.RENDER_MAIN,
                             ),
-                          ],
-                        )
-                      ],
-                    ),
+                          ),
+                        ],
+                      ),
+
+                      /* Sub event list */
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            margin: EdgeInsets.only(right: 5),
+                            child: RotatedBox(
+                              quarterTurns: 3,
+                              child: _subEventMap.containsKey(dates[dateIndex]) ? widget.subText : Container(),
+                            ),
+                          ),
+
+                          Expanded(
+                            child: _ListDayView(
+                              eventList: _subEventMap[dates[dateIndex]],
+                              renderMode: _ListDayViewRenderMode.RENDER_SUB,
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
                   )
                   // Actual grid of event for the date pointed buu the item builder index
                 ],
@@ -294,7 +310,7 @@ class _ListDayView extends StatelessWidget {
     if(eventList == null) return Container(); // An empty container if there is nothing to render
 
     return Container(
-      height: (renderMode == _ListDayViewRenderMode.RENDER_MAIN) ? _squareSize : 50, // 1/3 for the sub events
+      height: (renderMode == _ListDayViewRenderMode.RENDER_MAIN) ? _squareSize : 60, // 1/3 for the sub events
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
 
@@ -302,53 +318,69 @@ class _ListDayView extends StatelessWidget {
 
         itemCount: eventList.length,
         itemBuilder: (BuildContext context, int index) {
-          return GestureDetector(
-            // For now, details are only for the main events
-            onTap: (renderMode == _ListDayViewRenderMode.RENDER_MAIN) ? () {
-              Navigator.push(context, FadePageRoute(
-                page: DetailsScreen(
-                  event: eventList[index],
-                )
-              ));
-            } : null,
+          return (renderMode == _ListDayViewRenderMode.RENDER_MAIN) ? _MainItem(event: eventList[index]) : _SubItem(event: eventList[index]);
+        },
+      ),
+    );
+  }
+  
+}
 
-            child: Container(
-              alignment: Alignment.center,
-              padding: EdgeInsets.only(bottom: 5),
-              width: _squareSize,
+class _MainItem extends StatelessWidget {
+  final AEvent event;
 
-              child: Stack(
-                fit: StackFit.expand,
-                children: <Widget>[
-                  Opacity(
+  const _MainItem({Key key, this.event}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    double _squareSize = deviceSize(context).width * 0.40;
+
+    return GestureDetector(
+      // For now, details are only for the main events
+        onTap: () {
+          Navigator.push(context, FadePageRoute(
+              page: DetailsScreen(
+                event: event,
+              )
+          ));
+        },
+
+        child: Container(
+            alignment: Alignment.center,
+            padding: EdgeInsets.only(bottom: 5),
+            width: _squareSize,
+
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                Opacity(
                     opacity: 0.8,
                     child: Hero(
-                      tag: renderMode == _ListDayViewRenderMode.RENDER_MAIN ? 'event: ${eventList[index].id}' : 'eventUnused: ${eventList[index].id}', // Avoid duplicate tags !
-                      child: Container( // Proper event background
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: kPrimaryColor,
-                            width: renderMode == _ListDayViewRenderMode.RENDER_MAIN ? 4 : 2,
-                            style: BorderStyle.solid,
+                        tag: 'event: ${event.id}',
+                        child: Container( // Proper event background
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: kPrimaryColor,
+                              width: 4,
+                              style: BorderStyle.solid,
+                            ),
+
+                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+
+                            image: DecorationImage(
+                              fit: BoxFit.cover,
+                              image: event.image,
+                            ),
                           ),
-
-                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
-
-                          color: (renderMode == _ListDayViewRenderMode.RENDER_SUB) ? Colors.deepOrangeAccent : null,
-                          image: (renderMode == _ListDayViewRenderMode.RENDER_MAIN) ? DecorationImage(
-                            fit: BoxFit.cover,
-                            image: eventList[index].image,
-                          ) : null,
-                        ),
-                      )
+                        )
                     )
-                  ),
+                ),
 
-                  /* Hovering text */
-                  Hero(
-                    tag: renderMode == _ListDayViewRenderMode.RENDER_MAIN ? 'eventText: ${eventList[index].id}' : 'eventTextUnused: ${eventList[index].id}', // Avoid duplicates tags !
-                    child: Container(
+                /* Hovering text */
+                Hero(
+                  tag: 'eventText: ${event.id}',
+                  child: Container(
                       alignment: Alignment.center,
                       margin: EdgeInsets.symmetric(horizontal: 10),
                       child: SingleChildScrollView( // Permits to avoid text overflowing from the square just before AutoSizeText resized it.
@@ -359,41 +391,211 @@ class _ListDayView extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
                             AutoSizeText(
-                              '${eventList[index].title}',
-                              maxLines: 1,
-                              style: TextStyle(
-                                decoration: TextDecoration.none,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                fontSize: renderMode == _ListDayViewRenderMode.RENDER_MAIN ? 30 : 8,
-                                backgroundColor: renderMode == _ListDayViewRenderMode.RENDER_MAIN ? Colors.white.withOpacity(0.5) : null,
-                              )
+                                '${event.title}',
+                                maxLines: 1,
+                                style: TextStyle(
+                                  decoration: TextDecoration.none,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 30,
+                                  backgroundColor: Colors.white.withOpacity(0.5),
+                                )
                             ),
 
                             AutoSizeText(
-                              eventList[index].timesToString(),
-                              maxLines: 1,
-                              style: TextStyle(
-                                decoration: TextDecoration.none,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                fontSize: renderMode == _ListDayViewRenderMode.RENDER_MAIN ? 20 : 5,
-                                backgroundColor: renderMode == _ListDayViewRenderMode.RENDER_MAIN ? Color(0x66FFFFFF) : null,
-                              )
+                                event.timesToString(),
+                                maxLines: 1,
+                                style: TextStyle(
+                                  decoration: TextDecoration.none,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 20,
+                                  backgroundColor: const Color(0x66FFFFFF),
+                                )
                             )
                           ],
                         ),
                       )
 
-                    ),
-                  )
-                ],
-              )
+                  ),
+                )
+              ],
             )
-          );
-        },
-      ),
+        )
     );
   }
-  
+
+}
+
+// ignore: must_be_immutable
+class _SubItem extends StatefulWidget {
+  final AEvent event;
+
+  _SubItem({Key key, this.event}) : super(key: key);
+
+  @override
+  __SubItemState createState() => __SubItemState();
+}
+
+class __SubItemState extends State<_SubItem> {
+  bool _goingState = false;
+  bool _pending = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _pending = true;
+
+    // Fetching whether or not the client is going to the event
+    widget.event.isGoing(
+      gAPI.selfClient,
+      onConfirmed: (bool going) {
+        this.setState(() {
+          _goingState = going;
+          _pending = false;
+        });
+      }
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      // For now, details are only for the main events
+        onTap: () {
+          if(_pending) return;
+
+          this.setState(() {
+            _goingState = !_goingState;
+            _pending = true;
+          });
+
+          /* ####################################### */
+          /* #### HERE CLUB EVENTS GOING ACTION #### */
+          /* ####################################### */
+
+          widget.event.setGoing(
+            gAPI.selfClient,
+            going: _goingState,
+            onConfirmed: (bool success) {
+              this.setState(() {
+                if(!success) _goingState = !_goingState;
+                _pending = false;
+              });
+            }
+          );
+        },
+
+        child: Container(
+            alignment: Alignment.center,
+            padding: EdgeInsets.only(bottom: 5),
+            width: deviceSize(context).width * 0.40,
+
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                /* Pending indicator */
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: _pending ? Container(
+                    margin: EdgeInsets.all(6),
+                    child: SizedBox(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                        strokeWidth: 2,
+                      ),
+
+                      height: 15,
+                      width: 15,
+                    ),
+                  ) : Container(),
+                ),
+
+                /* Background indicator */
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(double.infinity),
+                  )  ,
+
+                  child: Icon(Icons.directions_walk, color: Colors.black, size: 35,),
+                ),
+
+                Opacity(
+                    opacity: 0.8,
+                    child: Container( // Proper event background
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: kPrimaryColor,
+                          width: 2,
+                          style: BorderStyle.solid,
+                        ),
+
+                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+
+                        color: _goingState ? Colors.green : Colors.deepOrangeAccent,
+                      ),
+                    )
+                ),
+
+                /* Hovering text */
+                Hero(
+                  tag: 'eventTextUnused: ${widget.event.id}', // Avoid duplicates tags !
+                  child: Container(
+                      alignment: Alignment.center,
+                      margin: EdgeInsets.symmetric(horizontal: 10),
+                      child: SingleChildScrollView( // Permits to avoid text overflowing from the square just before AutoSizeText resized it.
+                        scrollDirection: Axis.vertical, // Don't change it to horizontal : otherwise the text keeps begin scrollable
+                        physics: NeverScrollableScrollPhysics(),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            AutoSizeText(
+                                '${widget.event.title}',
+                                maxLines: 1,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 8,
+                                )
+                            ),
+
+                            Divider(
+                              height: 5,
+                              indent: 10,
+                              endIndent: 10,
+                            ),
+
+                            AutoSizeText(
+                              widget.event.location,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 5,
+                              )
+                            ),
+
+                            AutoSizeText(
+                                widget.event.timesToString(),
+                                maxLines: 1,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 5,
+                                )
+                            ),
+                          ],
+                        ),
+                      )
+
+                  ),
+                )
+              ],
+            )
+        )
+    );
+  }
 }

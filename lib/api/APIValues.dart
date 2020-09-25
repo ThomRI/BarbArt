@@ -364,6 +364,17 @@ class APIValues {
     (response.body[APIJsonKeys.ClubsList] as List<dynamic>).forEach((clubJSON) {
       // Storing the club with the same ID than the server
       AClub club = new AClub.fromJSON(clubJSON);
+
+      // Fetching events associated with the club
+      (clubJSON[APIJsonKeys.EventsList] as List<dynamic>).forEach((eventJSON) {
+        eventJSON['title'] = club.title;
+
+        AEvent event = new AEvent.fromJSON(eventJSON);
+        event.isFromClub = true;
+
+        club.permanentEvents.add(event);
+      });
+
       clubs.addAll({club.id: club});
     });
 

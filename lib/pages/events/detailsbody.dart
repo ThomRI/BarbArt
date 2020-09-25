@@ -48,14 +48,35 @@ class _DetailsBodyState extends State<DetailsBody> {
           if(pending) // Do nothing, we are waiting for the server.
             return;
 
+          /* ########################### */
+          /* #### HERE GOING ACTION #### */
+          /* ########################### */
+
           // Requesting server, asynchronously with a callback function when we get the response;
           widget.event.setGoing(
             gAPI.selfClient,
             going: !localGoing, // We request the opposite of the current state.
             onConfirmed: (success) {
-              if(!success) return;
+              if(!success) {
+                // Inform the user that there was an error
+                Scaffold.of(context).showSnackBar(SnackBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  content: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 3),
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+
+                    child: const Text("Can't register ! There are most likely no slots left.", textAlign: TextAlign.center,style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                  ),
+                ));
+              }
               this.setState(() {
-                localGoing = !localGoing;
+                if(success) localGoing = !localGoing;
                 pending = false;
               });
             }

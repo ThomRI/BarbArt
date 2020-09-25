@@ -20,6 +20,8 @@ class _PopupMenuItems {
 class _SocialPostItemUIState {
   bool  liked = false,
         commented = false;
+
+  bool pending = false;
 }
 
 class SocialPostItem extends StatefulWidget {
@@ -142,15 +144,22 @@ class SocialPostItemState extends State<SocialPostItem> {
 
                   // Like button pressed
                   onPressed: () {
+
+                    /* ################################### */
+                    /* ######## HERE LIKE ACTION ######### */
+                    /* ################################### */
+
                     // Notifying the server. If the request failed, we change back the UI.
                     widget.socialPost.setLike(
                       gAPI.selfClient,
                       liked: !UIState.liked, // We request the opposite
                       onConfirmed: (bool success) {
-                        this.setState(() { // Always set state regardless of the success state because we have to update the the number of likes if succeeded, and update the UIState if the request was unsuccessful.
+                        if(this.mounted)  this.setState(() { // Always set state regardless of the success state because we have to update the the number of likes if succeeded, and update the UIState if the request was unsuccessful.
                           if(!success) this.UIState.liked = !this.UIState.liked; // If it failed, change back the UI that has been changed the moment the user clicked on the button.
                         });
-                      }
+                      },
+
+                      changeValueOnTrigger: true,
                     );
 
                     // Update the UI regardeless of the server's reaction in case of bad connection. We want the UI to be responsive.

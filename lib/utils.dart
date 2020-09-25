@@ -1,5 +1,8 @@
+import 'package:barbart/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
+
+import 'api/structures.dart';
 
 double dp(BuildContext context, double pixels) {
   return MediaQuery.of(context).devicePixelRatio * pixels;
@@ -50,4 +53,12 @@ String ago(DateTime when) {
 
 DateTime changeDate(DateTime from, DateTime date) {
   return DateTime(date.year, date.month, date.day, from.hour, from.minute, from.second, from.millisecond, from.microsecond);
+}
+
+bool isThisWeek(DateTime date) {
+  DateTime extracted = extractDate(date);
+  DateTime today = extractDate(DateTime.now());
+
+  return extracted.compareTo(today.add(Duration(days: 7))) < 0 && extracted.compareTo(today) >= 0
+          && extracted.weekday >= today.weekday;
 }

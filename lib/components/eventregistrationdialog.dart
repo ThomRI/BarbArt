@@ -3,16 +3,18 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
 
+import '../constants.dart';
 import '../utils.dart';
 import 'messageloadingbutton.dart';
 
 class EventRegistrationDialog {
   // Note: onConfirm returns a Future<bool> so that the validation button can change state when onConfirmed if done.
-  static Future<void> show(BuildContext context, {DateTime day, Text title, Widget headerContent, Future<bool> Function(DateTime beginTime, DateTime endTime) onConfirmed}) async {
+  static Future<void> show(BuildContext context, {DateTime day, Text title, Widget headerContent, Future<bool> Function(DateTime begin, DateTime end,) onConfirmed}) async {
     GlobalKey<MessageLoadingButtonState> validationKey = new GlobalKey<MessageLoadingButtonState>();
-    _RegistrationTimePicker timePicker = new _RegistrationTimePicker(startTime: day, endTime: day);
+    _RegistrationDateTimePicker dateTimePicker = new _RegistrationDateTimePicker(startTime: day, endTime: day, initialDate: day, lastDate: day.add(Duration(days: kDaysIntervalRegistrationAllowed)));
     
     return showDialog<void>(
       context: context,
@@ -26,7 +28,7 @@ class EventRegistrationDialog {
                 headerContent ?? Container(),
 
                 /* Start & End time picker */
-                timePicker,
+                dateTimePicker,
 
                 /* Validation button */
                 MessageLoadingButton(
@@ -35,7 +37,16 @@ class EventRegistrationDialog {
                   errorMessage: "Invalid times",
                   onPressed: () async {
                     bool success = true; // If no onConfirmed function provided, assume success.
-                    if(onConfirmed != null) success = await onConfirmed(timePicker.begin, timePicker.end);
+                    if(onConfirmed != null) {
+                      DateTime pickedDate = dateTimePicker.date;
+                      DateTime pickedBeginTime = dateTimePicker.begin;
+                      DateTime pickedEndTime = dateTimePicker.end;
+
+                      DateTime begin  = new DateTime(pickedDate.year, pickedDate.month, pickedDate.day, pickedBeginTime.hour, pickedBeginTime.minute, pickedBeginTime.second);
+                      DateTime end    = new DateTime(pickedDate.year, pickedDate.month, pickedDate.day, pickedEndTime.hour, pickedEndTime.minute, pickedEndTime.second);
+
+                      success = await onConfirmed(begin, end);
+                    }
 
                     if(success) {
                       Timer(Duration(seconds: 1), () {
@@ -56,25 +67,40 @@ class EventRegistrationDialog {
 
 }
 
-class _RegistrationTimePicker extends StatelessWidget {
+// ignore: must_be_immutable
+class _RegistrationDateTimePicker extends StatelessWidget {
   final DateTime startTime, endTime;
+  final DateTime initialDate, lastDate;
 
   GlobalKey<_CustomTimePickerState> startKey = new GlobalKey<_CustomTimePickerState>();
   GlobalKey<_CustomTimePickerState> endKey = new GlobalKey<_CustomTimePickerState>();
+  GlobalKey<_CustomDatePickerState> dateKey = new GlobalKey<_CustomDatePickerState>();
 
   DateTime get begin  => startKey.currentState.time;
   DateTime get end    => endKey.currentState.time;
+  DateTime get date   => dateKey.currentState.date;
 
-  _RegistrationTimePicker({this.startTime, this.endTime});
+  _RegistrationDateTimePicker({this.startTime, this.endTime, this.initialDate, this.lastDate});
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
+
+        /* Date Row */
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            const Text("Date"),
+            _CustomDatePicker(key: dateKey, firstDate: this.initialDate, lastDate: this.lastDate),
+          ],
+        ),
 
         /* Start row */
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
             const Text("Start at"),
             _CustomTimePicker(key: startKey, initialTime: this.startTime ?? DateTime.now())
@@ -83,7 +109,7 @@ class _RegistrationTimePicker extends StatelessWidget {
 
         /* End row */
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
             const Text("End at"),
             _CustomTimePicker(key: endKey, initialTime: this.endTime ?? DateTime.now()),
@@ -132,6 +158,47 @@ class _CustomTimePickerState extends State<_CustomTimePicker> {
             currentTime: time,
           );
         }
+    );
+  }
+}
+
+class _CustomDatePicker extends StatefulWidget {
+  final DateTime  firstDate,
+                  lastDate;
+
+  const _CustomDatePicker({Key key, this.firstDate, this.lastDate}) : super(key: key);
+
+  @override
+  _CustomDatePickerState createState() => _CustomDatePickerState();
+}
+
+class _CustomDatePickerState extends State<_CustomDatePicker> {
+  DateTime date;
+
+  @override
+  void initState() {
+    super.initState();
+    date = widget.firstDate;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+      child: Text(DateFormat("dd/MM/yyyy").format(date)),
+      onPressed: () async {
+        final DateTime picked = await showDatePicker(
+          context: context,
+          firstDate: widget.firstDate,
+          initialDate: widget.firstDate,
+          lastDate: widget.lastDate,
+        );
+
+        if(picked == null) return;
+
+        this.setState(() {
+          date = picked;
+        });
+      },
     );
   }
 }

@@ -39,6 +39,8 @@ dependencies:
   auto_size_text: ^2.1.0          # Auto rescaling text to fit number of lines constraint
   web_socket_channel: ^1.1.0      # Live communication with server through WebSocket
   image_picker: ^0.6.7+6          # Image Picker
+  fluttertoast: ^7.1.1            # Toast messages
+  clip_shadow: ^0.2.1             # Shadows behind custom clippers
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -86,6 +88,11 @@ flutter:
     - assets/barbart/pic.png
     - assets/barbart/pickaxe.png
     - assets/comingsoon.png
+
+  fonts:
+    - family: Djoker
+      fonts:
+        - asset: assets/DjokerState-EaXZ4.ttf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

@@ -27,7 +27,8 @@ class AClient extends APIStructure {
   dynamic avatar = new AssetImage("assets/profile_generic.png");
   String avatar_route;
 
-  List<int> clubsIDs = new List<int>();
+  List<int> clubsIDs = new List<int>(); // Clubs that the client is member of.
+  bool isClubMember(AClub club) => this.clubsIDs.contains(club.id);
 
   // ignore: non_constant_identifier_names
   AClient({this.uuid = "", this.email = "", this.avatar_route = "", this.firstname, this.lastname, String clubsArrayStr = ""}) {
@@ -76,12 +77,12 @@ class AEvent extends APIStructure {
             description,
             imageUrl,
             location,
-            clientUUID;
+            clientUUID; // Author of the event
 
   int nbrPeopleGoing    = 0,
       nbrPlaceAvailable = 0;
 
-  bool weekPermanent;
+  bool isFromClub = false;
 
   DateTime  dateTimeBegin, dateTimeEnd;
 
@@ -97,7 +98,7 @@ class AEvent extends APIStructure {
           this.nbrPeopleGoing,
           this.nbrPlaceAvailable,
           this.clientUUID,
-          this.weekPermanent = false}) : super() {
+          this.isFromClub = false}) : super() {
 
     image = (imageUrl != null) ? NetworkImage(imageUrl) : AssetImage("assets/event.png");
   }
@@ -113,11 +114,11 @@ class AEvent extends APIStructure {
       nbrPeopleGoing: other.nbrPeopleGoing,
       nbrPlaceAvailable: other.nbrPlaceAvailable,
       clientUUID: other.clientUUID,
-      weekPermanent: other.weekPermanent,
+      isFromClub: other.isFromClub,
     );
 
   String toString() {
-    return "{${this.title}, ${this.dateTimeBegin}, ${this.dateTimeEnd}}";
+    return "{${this.id} : ${this.title}, ${this.dateTimeBegin}, ${this.dateTimeEnd}}";
   }
 
   String timesToString() {
@@ -126,7 +127,7 @@ class AEvent extends APIStructure {
 
   // If the client is going to an event. TODO: Make the same function as isGoing(AEvent, ...) overloaded for clubs.
   Future<bool> isGoing(AClient client, {Function(bool) onConfirmed}) async {
-    FetchResponse response = await APIManager.fetch(route: APIRoutes.EventsGoing + "/get", params: {'id': this.id.toString(), 'uuid': client.uuid}, token: gAPI.token);
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.EventsGoing + "/get", params: {'id': this.id.toString(), 'uuid': client.uuid, 'club': this.isFromClub.toString()}, token: gAPI.token);
 
     bool success = true;
     if(response.state != FetchResponseState.OK) success = false;
@@ -138,7 +139,7 @@ class AEvent extends APIStructure {
   }
 
   Future<bool> setGoing(AClient client, {going = true, Function(bool) onConfirmed}) async {
-    FetchResponse response = await APIManager.fetch(route: APIRoutes.EventsGoing + "/set/" + this.id.toString(), params: {'uuid': client.uuid, 'going': going.toString()}, token: gAPI.token);
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.EventsGoing + "/set/" + this.id.toString(), params: {'uuid': client.uuid, 'going': going.toString(), 'club': this.isFromClub.toString()}, token: gAPI.token);
 
     bool success = true;
     if(response.state != FetchResponseState.OK) success = false;
@@ -186,19 +187,16 @@ class AClub extends APIStructure {
   String  title;
   int     nbrMembers;
 
-  DateTime  dateTimeMeetingBegin,
-            dateTimeMeetingEnd;
+  List<AEvent> permanentEvents = new List<AEvent>();
 
   //List<AClient> _clients; // Client that are subscribed to the club
 
-  AClub({this.id, this.title, this.nbrMembers, this.dateTimeMeetingBegin, this.dateTimeMeetingEnd});
+  AClub({this.id, this.title, this.nbrMembers});
 
   @override
   factory AClub.fromJSON(Map<String, dynamic> json) => AClub(
     id: json['id'] ?? -1,
     title: json['title'] ?? "",
-    dateTimeMeetingBegin: json['datetime_meeting_begin'] != null ? DateTime.parse(json['datetime_meeting_begin']).toLocal() : null,
-    dateTimeMeetingEnd: json['datetime_meeting_end'] != null ? DateTime.parse(json['datetime_meeting_end']).toLocal() : null,
   );
 
   @override
@@ -210,38 +208,43 @@ class AClub extends APIStructure {
 
   @override
   String toString() {
-    return "{id: " + id.toString() + ", title: " + title + ", dateTimeMeetingBegin: " + dateTimeMeetingBegin.toString() + ", dateTimeMeetingEnd: " + dateTimeMeetingEnd.toString() + "}";
-  }
-}
-
-class AClubEvent extends AEvent {
-  @override
-  Map<String, dynamic> toJSON() {
-    // TODO: implement toJSON
-    throw UnimplementedError();
+    return "{id: " + id.toString() + ", title: " + title + "}";
   }
 
-  @override
-  DateTime dateTimeBegin;
+  Future<bool> registerClient({AClient client, bool member, Function(bool success) onConfirmed, bool changeValueOnTrigger = false}) async {
+    bool changedOnTrigger = false;
+    if(changeValueOnTrigger) {
+      if(member && !client.clubsIDs.contains(this.id)) { // If the client should be a member of the club and isn't already
+        client.clubsIDs.add(this.id);
+        changedOnTrigger = true;
+      }
+      else if(!member && client.clubsIDs.contains(this.id)) { // If the client shouldn't be a member of the club and is currently member
+        client.clubsIDs.remove(this.id);
+        changedOnTrigger = true;
+      }
+    }
 
-  @override
-  DateTime dateTimeEnd;
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.Clubs + "/" + APIRoutes.Register, params: {'member': member.toString(), 'club_id': this.id.toString()}, token: gAPI.token);
 
-  @override
-  String description;
+    bool success = true;
+    if(response.state != FetchResponseState.OK) success = false;
 
-  @override
-  int id;
+    // Updating local registration
+    if(success) {
+      if(!changeValueOnTrigger) {
+        if(member && !client.clubsIDs.contains(this.id)) client.clubsIDs.add(this.id); // If the client should be a member of the club and isn't already
+        else if(!member && client.clubsIDs.contains(this.id)) client.clubsIDs.remove(this.id); // If the client shouldn't be a member of the club and is currently member
+      } // else, it already has changed
+    } else { // Failure
+      if(changedOnTrigger) { // Reverse the change
+        if(client.clubsIDs.contains(this.id)) client.clubsIDs.remove(this.id);
+        else if(!client.clubsIDs.contains(this.id)) client.clubsIDs.add(this.id);
+      }
+    }
 
-  @override
-  String imageUrl;
-
-  @override
-  String location;
-
-  @override
-  String title;
-
+    if(onConfirmed != null) onConfirmed(success);
+    return success;
+  }
 }
 
 class ASocialPost extends APIStructure {
@@ -249,6 +252,8 @@ class ASocialPost extends APIStructure {
   String  clientUUID,
           title,
           body;
+
+  bool selfClientLiked;
 
   int id;
 
@@ -258,7 +263,7 @@ class ASocialPost extends APIStructure {
   ValueNotifier<int>  nbrLikesNotifier    = ValueNotifier<int>(0), // Should notify UI when changed
                       nbrCommentsNotifier = ValueNotifier<int>(0);
 
-  ASocialPost({this.id, this.clientUUID, this.title, this.body, this.datetime, this.tags, int nbrLikes, int nbrComments}) {
+  ASocialPost({this.id, this.clientUUID, this.title, this.body, this.datetime, this.tags, this.selfClientLiked, int nbrLikes, int nbrComments}) {
     nbrLikesNotifier.value = nbrLikes;
     nbrCommentsNotifier.value = nbrComments;
   }
@@ -275,14 +280,18 @@ class ASocialPost extends APIStructure {
     nbrComments:  json['nbr_comments'] ?? 0
   );
 
-  Future<bool> setLike(AClient client, {@required bool liked, Function(bool success) onConfirmed}) async {
+  Future<bool> setLike(AClient client, {@required bool liked, Function(bool success) onConfirmed, bool changeValueOnTrigger = false}) async {
+    if(changeValueOnTrigger) this.nbrLikesNotifier.value += liked ? 1 : -1;
+
     FetchResponse response = await APIManager.fetch(route: APIRoutes.PostsLikes + '/set/' + this.id.toString(), params: {'uuid': client.uuid, 'liked': liked.toString()}, token: gAPI.token);
 
     bool success = true;
     if(response.state != FetchResponseState.OK) success = false;
 
     if(success) { // Instead of making a full update, we can just adapt the values here as we know what happened server-side. TODO : Maybe unify the API here ?
-      this.nbrLikesNotifier.value += liked ? 1 : -1;
+      if(!changeValueOnTrigger) this.nbrLikesNotifier.value += liked ? 1 : -1; // If request succeeded and we haven't already updated the value
+    } else if(changeValueOnTrigger) { // Request failed but we changed the value at the beginning
+      this.nbrLikesNotifier.value -= liked ? 1 : -1; // Change back the value
     }
 
     if(onConfirmed != null) onConfirmed(success);

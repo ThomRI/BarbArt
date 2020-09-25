@@ -100,7 +100,7 @@ class AEvent extends APIStructure {
           this.clientUUID,
           this.isFromClub = false}) : super() {
 
-    image = (imageUrl != null) ? NetworkImage(imageUrl) : AssetImage("assets/event.png");
+    image = (imageUrl != null) ? NetworkImage(imageUrl) : AssetImage("assets/event1.png");
   }
 
   factory AEvent.clone(AEvent other) => AEvent(

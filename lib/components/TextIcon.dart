@@ -8,15 +8,19 @@ class TextIcon extends StatelessWidget {
   final Function onPressed;
 
   final EdgeInsets padding;
+  final double height;
+  final double width;
   final BoxDecoration decoration;
 
-  const TextIcon({Key key, this.text, this.icon, this.onPressed, this.padding, this.decoration}) : super(key: key);
+  const TextIcon({Key key, this.text, this.icon, this.onPressed, this.padding, this.decoration, this.height, this.width}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       child: Container(
         padding: this.padding,
+        height: this.height,
+        width: this.width,
         //color: Colors.red,
         decoration: this.decoration,
         child: Row(

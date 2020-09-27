@@ -139,13 +139,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.7.5"
-  flutter_lorem:
-    dependency: "direct dev"
-    description:
-      name: flutter_lorem
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.1.0"
   flutter_native_splash:
     dependency: "direct main"
     description:

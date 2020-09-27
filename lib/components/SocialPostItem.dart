@@ -90,6 +90,11 @@ class SocialPostItemState extends State<SocialPostItem> with SingleTickerProvide
 
   }
 
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     AClient author = gAPI.clientFromUUID(widget.socialPost.clientUUID);

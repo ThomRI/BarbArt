@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'dart:math';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:barbart/api/APIValues.dart';
@@ -437,9 +438,13 @@ class _SubItem extends StatefulWidget {
   __SubItemState createState() => __SubItemState();
 }
 
-class __SubItemState extends State<_SubItem> {
+class __SubItemState extends State<_SubItem> with SingleTickerProviderStateMixin{
   bool _goingState = false;
   bool _pending = false;
+  double waveRadius = 0.0;
+  double waveGap = 100.0;
+  Animation<double> _animation;
+  AnimationController _controller;
 
   @override
   void initState() {
@@ -456,20 +461,43 @@ class __SubItemState extends State<_SubItem> {
           _pending = false;
         });
       }
+
     );
+    print("init" + _goingState.toString());
+
+    _controller = AnimationController(
+        duration: Duration(milliseconds: 300), vsync: this);
+
+
+
+    _controller.addStatusListener((status) {
+    });
+  }
+
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+
+    _animation = Tween(begin: 0.0, end: waveGap).animate(_controller)
+      ..addListener(() {
+        setState(() {
+          waveRadius = _animation.value;
+        });
+      });
+
+    print(_goingState);
+
     return GestureDetector(
       // For now, details are only for the main events
         onTap: () {
           if(_pending) return;
+          _controller.forward();
+          _pending = true;
 
-          this.setState(() {
-            _goingState = !_goingState;
-            _pending = true;
-          });
 
           /* ####################################### */
           /* #### HERE CLUB EVENTS GOING ACTION #### */
@@ -477,10 +505,13 @@ class __SubItemState extends State<_SubItem> {
 
           widget.event.setGoing(
             gAPI.selfClient,
-            going: _goingState,
+            going: !_goingState,
             onConfirmed: (bool success) {
               this.setState(() {
-                if(!success) _goingState = !_goingState;
+                _controller.reset();
+                print("success " + success.toString() );
+                if(success) _goingState = !_goingState;
+                print(_goingState);
                 _pending = false;
               });
             }
@@ -533,9 +564,16 @@ class __SubItemState extends State<_SubItem> {
                         ),
 
                         borderRadius: BorderRadius.all(Radius.circular(10.0)),
-
-                        color: _goingState ? Colors.green : Colors.deepOrangeAccent,
+                        color: _goingState ? Colors.green : Colors.deepOrange,
                       ),
+                      child:ClipRRect(
+                        borderRadius: BorderRadius.all(Radius.circular(7.0)),
+                        child: CustomPaint(
+                          size: Size(double.infinity, double.infinity),
+                          painter: CircleWavePainter(waveRadius, !_goingState ? Colors.green : Colors.deepOrange),
+                        ),
+                      ),
+
                     )
                 ),
 
@@ -597,5 +635,36 @@ class __SubItemState extends State<_SubItem> {
             )
         )
     );
+  }
+}
+
+
+class CircleWavePainter extends CustomPainter {
+  final double waveRadius;
+  final Color color;
+  var wavePaint;
+  CircleWavePainter(this.waveRadius, this.color) {
+    wavePaint = Paint()
+      ..color = this.color
+      ..style = PaintingStyle.fill
+      ..strokeWidth = 2.0
+      ..isAntiAlias = true;
+  }
+  @override
+  void paint(Canvas canvas, Size size) {
+    double centerX = size.width / 2.0;
+    double centerY = size.height / 2.0;
+    double maxRadius = hypot(centerX, centerY);
+
+    var currentRadius = waveRadius;
+
+    canvas.drawCircle(Offset(centerX, centerY), currentRadius, wavePaint, );
+  }
+
+  @override
+  bool shouldRepaint(CircleWavePainter oldDelegate) => false;
+
+  double hypot(double x, double y) {
+    return sqrt(x * x + y * y);
   }
 }

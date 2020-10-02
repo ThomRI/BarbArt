@@ -36,6 +36,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     List<ASocialPost> posts = gAPI.socialPosts.values.toList();
     return Container(
+      margin: EdgeInsets.only(bottom: 10),
       child: posts.length > 0 ?
         RefreshIndicator(
           onRefresh: () async {

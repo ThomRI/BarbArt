@@ -434,12 +434,17 @@ class _SubItem extends StatefulWidget {
   _SubItem({Key key, this.event}) : super(key: key);
 
   @override
-  __SubItemState createState() => __SubItemState();
+  _SubItemState createState() => _SubItemState();
 }
 
-class __SubItemState extends State<_SubItem> {
+class _SubItemState extends State<_SubItem> with SingleTickerProviderStateMixin {
   bool _goingState = false;
   bool _pending = false;
+
+  final double _maxAnimationRadius = 100;
+
+  Animation<double> _animation;
+  AnimationController _animationController;
 
   @override
   void initState() {
@@ -457,6 +462,22 @@ class __SubItemState extends State<_SubItem> {
         });
       }
     );
+
+    _animationController = new AnimationController(duration: Duration(milliseconds: 300), vsync: this);
+    _animationController.addStatusListener((status) {
+      if(status == AnimationStatus.forward || status == AnimationStatus.reverse) this.setState(() {});
+      if(status == AnimationStatus.completed) {
+        _animationController.reset();
+      }
+    });
+
+    _animation = Tween<double>(begin: 0.0, end: _maxAnimationRadius).animate(_animationController);
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -465,6 +486,7 @@ class __SubItemState extends State<_SubItem> {
       // For now, details are only for the main events
         onTap: () {
           if(_pending) return;
+          _animationController.forward();
 
           this.setState(() {
             _goingState = !_goingState;
@@ -480,122 +502,183 @@ class __SubItemState extends State<_SubItem> {
             going: _goingState,
             onConfirmed: (bool success) {
               this.setState(() {
-                if(!success) _goingState = !_goingState;
                 _pending = false;
+                if(!success) {
+                  _goingState = !_goingState;
+                  return;
+                }
+
+                // Success from here
+
+                if(!_goingState) return;
+
+                /* Notifying the user of the action */
+                Scaffold.of(context).showSnackBar(SnackBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  duration: Duration(milliseconds: 1000),
+                  content: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 3),
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+
+                    decoration: BoxDecoration(
+                      color: kPrimaryColor,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+
+                    child: Text("You're going to " + widget.event.title + " !", textAlign: TextAlign.center,style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                  ),
+                ));
+
               });
             }
           );
         },
 
-        child: Container(
-            alignment: Alignment.center,
-            padding: EdgeInsets.only(bottom: 5),
-            width: deviceSize(context).width * 0.40,
+        child: AnimatedBuilder(
+          animation: _animationController,
+          builder: (BuildContext context, _) => Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(bottom: 5),
+              width: deviceSize(context).width * 0.40,
 
-            child: Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                /* Pending indicator */
-                Align(
-                  alignment: Alignment.bottomLeft,
-                  child: _pending ? Container(
-                    margin: EdgeInsets.all(6),
-                    child: SizedBox(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
-                        strokeWidth: 2,
-                      ),
-
-                      height: 15,
-                      width: 15,
-                    ),
-                  ) : Container(),
-                ),
-
-                /* Background indicator */
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(double.infinity),
-                  )  ,
-
-                  child: Icon(Icons.directions_walk, color: Colors.black, size: 35,),
-                ),
-
-                Opacity(
-                    opacity: 0.8,
-                    child: Container( // Proper event background
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: kPrimaryColor,
-                          width: 2,
-                          style: BorderStyle.solid,
+              child: Stack(
+                fit: StackFit.expand,
+                children: <Widget>[
+                  /* Pending indicator */
+                  Align(
+                    alignment: Alignment.bottomLeft,
+                    child: _pending ? Container(
+                      margin: EdgeInsets.all(6),
+                      child: SizedBox(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                          strokeWidth: 2,
                         ),
 
-                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-
-                        color: _goingState ? Colors.green : Colors.deepOrangeAccent,
+                        height: 15,
+                        width: 15,
                       ),
-                    )
-                ),
+                    ) : Container(),
+                  ),
 
-                /* Hovering text */
-                Hero(
-                  tag: 'eventTextUnused: ${widget.event.id}', // Avoid duplicates tags !
-                  child: Container(
-                      alignment: Alignment.center,
-                      margin: EdgeInsets.symmetric(horizontal: 10),
-                      child: SingleChildScrollView( // Permits to avoid text overflowing from the square just before AutoSizeText resized it.
-                        scrollDirection: Axis.vertical, // Don't change it to horizontal : otherwise the text keeps begin scrollable
-                        physics: NeverScrollableScrollPhysics(),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            AutoSizeText(
-                                '${widget.event.title}',
-                                maxLines: 1,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                  fontSize: 8,
-                                )
-                            ),
+                  /* Background indicator */
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(double.infinity),
+                    )  ,
 
-                            Divider(
-                              height: 5,
-                              indent: 10,
-                              endIndent: 10,
-                            ),
+                    child: Icon(Icons.directions_walk, color: Colors.black, size: 35,),
+                  ),
 
-                            AutoSizeText(
-                              widget.event.location,
-                              maxLines: 1,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                fontSize: 5,
-                              )
-                            ),
+                  Opacity(
+                      opacity: 0.8,
+                      child: Container( // Proper event background
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: kPrimaryColor,
+                            width: 2,
+                            style: BorderStyle.solid,
+                          ),
 
-                            AutoSizeText(
-                                widget.event.timesToString(),
+                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                          color: _animationController.status == AnimationStatus.forward ? !_goingState ? Colors.green : Colors.deepOrange : _goingState ? Colors.green : Colors.deepOrange
+                        ),
+
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.all(Radius.circular(7.0)),
+                          child: CustomPaint(
+                            size: Size(double.infinity, double.infinity),
+                            painter: CircleWavePainter(_animation.value, _goingState ? Colors.green : Colors.deepOrange),
+                          ),
+                        )
+                      )
+                  ),
+
+                  /* Hovering text */
+                  Hero(
+                    tag: 'eventTextUnused: ${widget.event.id}', // Avoid duplicates tags !
+                    child: Container(
+                        alignment: Alignment.center,
+                        margin: EdgeInsets.symmetric(horizontal: 10),
+                        child: SingleChildScrollView( // Permits to avoid text overflowing from the square just before AutoSizeText resized it.
+                          scrollDirection: Axis.vertical, // Don't change it to horizontal : otherwise the text keeps begin scrollable
+                          physics: NeverScrollableScrollPhysics(),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              AutoSizeText(
+                                  '${widget.event.title}',
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                    fontSize: 8,
+                                  )
+                              ),
+
+                              Divider(
+                                height: 5,
+                                indent: 10,
+                                endIndent: 10,
+                              ),
+
+                              AutoSizeText(
+                                widget.event.location,
                                 maxLines: 1,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
                                   fontSize: 5,
                                 )
-                            ),
-                          ],
-                        ),
-                      )
+                              ),
 
-                  ),
-                )
-              ],
-            )
+                              AutoSizeText(
+                                  widget.event.timesToString(),
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                    fontSize: 5,
+                                  )
+                              ),
+                            ],
+                          ),
+                        )
+
+                    ),
+                  )
+                ],
+              )
+          ),
         )
     );
   }
+}
+
+class CircleWavePainter extends CustomPainter {
+  final double waveRadius;
+  final Color color;
+  var wavePaint;
+  CircleWavePainter(this.waveRadius, this.color) {
+    wavePaint = Paint()
+      ..color = this.color
+      ..style = PaintingStyle.fill
+      ..strokeWidth = 2.0
+      ..isAntiAlias = true;
+  }
+  @override
+  void paint(Canvas canvas, Size size) {
+    double centerX = size.width / 2.0;
+    double centerY = size.height / 2.0;
+
+    var currentRadius = waveRadius;
+
+    canvas.drawCircle(Offset(centerX, centerY), currentRadius, wavePaint, );
+  }
+
+  @override
+  bool shouldRepaint(CircleWavePainter oldDelegate) => false;
 }

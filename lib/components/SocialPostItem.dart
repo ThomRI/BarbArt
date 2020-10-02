@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:barbart/api/APIManager.dart';
 import 'package:barbart/api/structures.dart';
@@ -128,17 +129,18 @@ class SocialPostItemState extends State<SocialPostItem> {
 
                 // Like button
                 TextIcon(
-                  padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                  width: 120 + 10*(log(widget.socialPost.nbrLikesNotifier.value) / ln10).floorToDouble(),
+                  animate: true,
+
+                  checked: this.UIState.liked,
 
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
-                    border: Border.all(color: Colors.grey[400], width: 0.1),
+                    border: Border.all(color: Colors.grey[400], width: 0.5),
                   ),
 
-                  icon: Icon(
-                    Icons.thumb_up,
-                    color: UIState.liked ? Colors.green : Colors.grey[400]
-                  ),
+                  icon: Icon(Icons.thumb_up,),
 
                   text: Text(widget.socialPost.nbrLikesNotifier.value.toString() + ' likes'),
 

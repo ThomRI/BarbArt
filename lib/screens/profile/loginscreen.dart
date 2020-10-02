@@ -7,6 +7,7 @@ import 'package:barbart/constants.dart';
 import 'package:barbart/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
 
 import '../../main.dart';
@@ -30,7 +31,7 @@ class LoginScreen extends StatefulWidget {
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
 
   final RoundedLoadingButtonController _loginButtonController = new RoundedLoadingButtonController();
   final TextEditingController _emailFieldController = new TextEditingController();
@@ -38,6 +39,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _authFailedState = false;
   bool _autoAuthState   = false;
+
+  AnimationController _animationController;
+  Animation<double> _avatarAnimation;
+  Animation<double> _fieldsAnimation;
 
   @override
   void initState() {
@@ -60,6 +65,19 @@ class _LoginScreenState extends State<LoginScreen> {
     // Using API cached email if existing.
     _emailFieldController.text = gAPI.selfClient.email ?? widget.autoAuthEmail;
     _passwordFieldController.text = widget.autoAuthPassword;
+
+    /* Animations */
+    _animationController = new AnimationController(duration: Duration(milliseconds: 150), vsync: this);
+    _avatarAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(_animationController);
+    _fieldsAnimation = Tween<double>(begin: 0.0, end: 250).animate(_animationController);
+
+
+    KeyboardVisibilityNotification().addNewListener(
+      onChange: (bool opened) {
+        if(opened)  _animationController.forward();
+        else        _animationController.reverse();
+      }
+    );
   }
 
   @override
@@ -71,155 +89,163 @@ class _LoginScreenState extends State<LoginScreen> {
         centerTitle: true,
       ),
 
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
+      body: AnimatedBuilder(
+        animation: _animationController,
+        builder: (BuildContext context, _) => Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
 
-          /* Avatar */
-          Image.asset(
-            "assets/avatar_unknown.png",
-            fit: BoxFit.cover,
-            width: 200.0,
-          ),
 
-          /* Fields container */
-          Container(
-            margin: EdgeInsets.only(
-              right: 30.0,
-              left: 30.0,
-              top: 30.0,
+            /* Avatar */
+            Opacity(
+              opacity: _avatarAnimation.value,
+              child: Image.asset(
+                "assets/avatar_unknown.png",
+                fit: BoxFit.cover,
+                width: 200.0,
+                height: _avatarAnimation.value * 200.0,
+              ),
             ),
 
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10.0),
-              boxShadow: [
-                BoxShadow(
-                  color: kPrimaryColor.withOpacity(0.1),
-                  blurRadius: 20.0,
-                  offset: Offset(0, 10),
-                )
-              ]
-            ),
+            /* Fields container */
+            Container(
+              margin: EdgeInsets.only(
+                right: 30.0,
+                left: 30.0,
+                top: 30.0,
+              ),
 
-            child: Column(
-              children: <Widget>[
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: kPrimaryColor.withOpacity(0.1),
+                    blurRadius: 20.0,
+                    offset: Offset(0, 10),
+                  )
+                ]
+              ),
 
-                /* Email field */
-                Container(
-                  padding: EdgeInsets.all(8.0),
+              child: Column(
+                children: <Widget>[
 
-                  /* Border between the two fields */
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: Colors.grey[100])
+                  /* Email field */
+                  Container(
+                    padding: EdgeInsets.all(8.0),
+
+                    /* Border between the two fields */
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey[100])
+                      )
+                    ),
+
+                    child: TextField(
+                      controller: _emailFieldController,
+                      autofocus: true,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: _LoginScreenConstants.EmailHint,
+                        hintStyle: TextStyle(color: Colors.grey[400]),
+                      ),
                     )
                   ),
 
-                  child: TextField(
-                    controller: _emailFieldController,
-                    autofocus: true,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: _LoginScreenConstants.EmailHint,
-                      hintStyle: TextStyle(color: Colors.grey[400]),
-                    ),
+                  /* Password field */
+                  Container(
+                    padding: EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: _passwordFieldController,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: _LoginScreenConstants.PasswordHint,
+                        hintStyle: TextStyle(color: Colors.grey[400]),
+                      ),
+                      obscureText: true, // Password hidden
+                    )
                   )
-                ),
-
-                /* Password field */
-                Container(
-                  padding: EdgeInsets.all(8.0),
-                  child: TextField(
-                    controller: _passwordFieldController,
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: _LoginScreenConstants.PasswordHint,
-                      hintStyle: TextStyle(color: Colors.grey[400]),
-                    ),
-                    obscureText: true, // Password hidden
-                  )
-                )
-              ],
+                ],
+              ),
             ),
-          ),
 
-          /* Eventual auth failed message */
-          Container(
-            margin: _authFailedState ? EdgeInsets.only(top: 5.0) : null,
-            child: Text(
-              _authFailedState ? "Authentication failed" : "",
-              style: TextStyle(color: _authFailedState ? Colors.red: kPrimaryColor),
-            )
-          ),
+            /* Eventual auth failed message */
+            Container(
+              margin: _authFailedState ? EdgeInsets.only(top: 5.0) : null,
+              child: Text(
+                _authFailedState ? "Authentication failed" : "",
+                style: TextStyle(color: _authFailedState ? Colors.red: kPrimaryColor),
+              )
+            ),
 
-          /* Login & Signup buttons */
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Container(
-                child: RoundedLoadingButton(
-                  width: deviceSize(context).width * kDefaultButtonWidthRatio,
-                  controller: _loginButtonController,
-                  child: Text(_LoginScreenConstants.LoginButtonText, style: TextStyle(color: Colors.white)),
-                  onPressed: () {
-                    if(_authFailedState) this.setState(() {_authFailedState = false;}); // If we were in auth failed state, toggle it back.
+            /* Login & Signup buttons */
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  child: RoundedLoadingButton(
+                    width: deviceSize(context).width * kDefaultButtonWidthRatio,
+                    controller: _loginButtonController,
+                    child: Text(_LoginScreenConstants.LoginButtonText, style: TextStyle(color: Colors.white)),
+                    onPressed: () {
+                      if(_authFailedState) this.setState(() {_authFailedState = false;}); // If we were in auth failed state, toggle it back.
 
-                    /* ############################### */
-                    /* ###### HERE LOGIN ACTION ###### */
-                    /* ############################### */
+                      /* ############################### */
+                      /* ###### HERE LOGIN ACTION ###### */
+                      /* ############################### */
 
-                    print("Trying to authenticate...");
-                    gAPI.authenticate(
-                      email: _emailFieldController.text,
-                      password: _passwordFieldController.text,
+                      print("Trying to authenticate...");
+                      gAPI.authenticate(
+                        email: _emailFieldController.text,
+                        password: _passwordFieldController.text,
 
-                      onAuthenticated: () {
-                        print("Authenticated, uuid: " + gAPI.selfClient.uuid.toString());
-                        MainScreen.pushToApp(context);
-                      },
+                        onAuthenticated: () {
+                          print("Authenticated, uuid: " + gAPI.selfClient.uuid.toString());
+                          MainScreen.pushToApp(context);
+                        },
 
-                      onAuthenticationFailed: () {
-                        this.setState(() {
-                          // Animating the login button
-                          _loginButtonController.error();
-                          Timer(Duration(seconds: 1), () {
-                            _loginButtonController.reset();
+                        onAuthenticationFailed: () {
+                          this.setState(() {
+                            // Animating the login button
+                            _loginButtonController.error();
+                            Timer(Duration(seconds: 1), () {
+                              _loginButtonController.reset();
+                            });
+
+                            // Setting the state as authentication failed state
+                            _authFailedState = true;
                           });
-
-                          // Setting the state as authentication failed state
-                          _authFailedState = true;
-                        });
-                      }
-                    );
-                  },
-                  color: kPrimaryColor,
+                        }
+                      );
+                    },
+                    color: kPrimaryColor,
+                  ),
                 ),
-              ),
 
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 20.0),
-                child: const Text(
-                  "OR",
-                  style: TextStyle(color: kPrimaryColor, fontWeight: FontWeight.bold),
-                )
-              ),
+                Container(
+                  margin: EdgeInsets.symmetric(vertical: 20.0),
+                  child: const Text(
+                    "OR",
+                    style: TextStyle(color: kPrimaryColor, fontWeight: FontWeight.bold),
+                  )
+                ),
 
-              /* Sign up button */
-              ColoredButton(
-                text: "Signup",
-                iconData: Icons.arrow_forward,
-                iconAlignment: Alignment.centerRight,
-                enableColor: false,
-                onTap: () {
-                  Navigator.of(context).pushNamed('/signup');
-                },
-              ),
-            ],
-          )
+                /* Sign up button */
+                ColoredButton(
+                  text: "Signup",
+                  iconData: Icons.arrow_forward,
+                  iconAlignment: Alignment.centerRight,
+                  enableColor: false,
+                  onTap: () {
+                    Navigator.of(context).pushNamed('/signup');
+                  },
+                ),
+              ],
+            )
 
-        ],
+          ],
+        ),
       ),
     );
   }

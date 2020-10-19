@@ -79,10 +79,13 @@ class AEvent extends APIStructure {
             location,
             clientUUID; // Author of the event
 
-  int nbrPeopleGoing    = 0,
-      nbrPlaceAvailable = 0;
+  ValueNotifier<int> nbrPeopleGoingNotifier = ValueNotifier<int>(0); // So that it can be updated in real time
+  int nbrPlaceAvailable = 0;
 
   bool isFromClub = false;
+  bool selfClientIsGoing = false;
+
+  int iteration_number = 0; // For permanent events : is a generic iteration number from the originally created event. The information of the gap of time between two iterations is not contained here.
 
   DateTime  dateTimeBegin, dateTimeEnd;
 
@@ -95,12 +98,14 @@ class AEvent extends APIStructure {
           this.location,
           this.description,
           this.imageUrl,
-          this.nbrPeopleGoing,
+          nbrPeopleGoing,
           this.nbrPlaceAvailable,
           this.clientUUID,
-          this.isFromClub = false}) : super() {
+          this.isFromClub = false,
+          this.selfClientIsGoing = false}) : super() {
 
     image = (imageUrl != null) ? NetworkImage(imageUrl) : AssetImage("assets/event1.png");
+    this.nbrPeopleGoingNotifier.value = nbrPeopleGoing;
   }
 
   factory AEvent.clone(AEvent other) => AEvent(
@@ -111,10 +116,11 @@ class AEvent extends APIStructure {
       location: other.location,
       description: other.description,
       imageUrl: other.imageUrl,
-      nbrPeopleGoing: other.nbrPeopleGoing,
+      nbrPeopleGoing: other.nbrPeopleGoingNotifier.value,
       nbrPlaceAvailable: other.nbrPlaceAvailable,
       clientUUID: other.clientUUID,
       isFromClub: other.isFromClub,
+      selfClientIsGoing: other.selfClientIsGoing,
     );
 
   String toString() {
@@ -139,13 +145,15 @@ class AEvent extends APIStructure {
   }
 
   Future<bool> setGoing(AClient client, {going = true, Function(bool) onConfirmed}) async {
-    FetchResponse response = await APIManager.fetch(route: APIRoutes.EventsGoing + "/set/" + this.id.toString(), params: {'uuid': client.uuid, 'going': going.toString(), 'club': this.isFromClub.toString()}, token: gAPI.token);
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.EventsGoing + "/set/" + this.id.toString(), params: {'uuid': client.uuid, 'going': going.toString(), 'club': this.isFromClub.toString(), 'iteration': this.iteration_number.toString()}, token: gAPI.token);
 
     bool success = true;
     if(response.state != FetchResponseState.OK) success = false;
 
+    print(this.selfClientIsGoing);
     if(success) { // Instead of making a full update, we can just adapt the values here as we know what happened server-side. TODO : Maybe unify the API here ?
-      this.nbrPeopleGoing += going ? 1 : -1;
+      this.nbrPeopleGoingNotifier.value += going ? 1 : -1;
+      if(client.uuid == gAPI.selfClient.uuid) this.selfClientIsGoing = going; // Updating the self client state if the client is the self client
     }
 
     if(onConfirmed != null) onConfirmed(success);
@@ -177,7 +185,7 @@ class AEvent extends APIStructure {
     "description": description,
     "image_url": imageUrl,
     "nbr_place_available": nbrPlaceAvailable,
-    "nbr_people_going": nbrPeopleGoing,
+    "nbr_people_going": nbrPeopleGoingNotifier.value,
     "client_uuid": clientUUID
   };
 }
@@ -187,16 +195,20 @@ class AClub extends APIStructure {
   String  title;
   int     nbrMembers;
 
-  List<AEvent> permanentEvents = new List<AEvent>();
+  Map<int, AEvent> permanentEvents = new Map<int, AEvent>();
+  List<AClient> supervisors = new List<AClient>();
+
+  String category;
 
   //List<AClient> _clients; // Client that are subscribed to the club
 
-  AClub({this.id, this.title, this.nbrMembers});
+  AClub({this.id, this.title, this.nbrMembers, this.category, List<String> supervisorsUUID});
 
   @override
   factory AClub.fromJSON(Map<String, dynamic> json) => AClub(
     id: json['id'] ?? -1,
     title: json['title'] ?? "",
+    category: json['category'] ?? 'BDA',
   );
 
   @override

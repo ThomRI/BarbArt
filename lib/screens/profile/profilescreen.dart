@@ -117,7 +117,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   /* Avatar */
                   Container(
-                    alignment: Alignment.topCenter,
+                    alignment: Alignment.center,
                     child: Column(
                       children: <Widget>[
                         Stack(

@@ -32,6 +32,8 @@ class APIJsonKeys {
 
   static const Registrations          = "registrations";
   static const PermanentRegistrations = "permanentRegistrations";
+
+  static const SupervisorList         = "supervisors";
 }
 
 class APIRoutes {
@@ -69,12 +71,16 @@ class APIFlags {
 
   static const MUSIC_RESERVATIONS   = 1 << 4; // 0001 0000
 
+  static const EVENTS_SELF_GOING    = 1 << 5;
+
   static const UPDATE_ENDCODE       = 1 << 15; // Last code for update (this particular one is thus not available)
 
   static const EVERYTHING           = 0x1111111111111111;
 
   // ---- NON UPDATE RELATED CODES (FROM 16 to 31) ----
-  static const SOCIAL_POST_LIKES     = 1 << 16;
+  static const SOCIAL_POST_LIKES    = 1 << 16;
+
+  static const EVENT_NBR_GOING      = 1 << 17;
 
   static const NON_UPDATE_ENDCODE   = 1 << 31; // Last code for non update related codes (this particular one is thus not available)
 
@@ -141,6 +147,10 @@ class APIValues {
     switch(json['code']) {
       case APIFlags.SOCIAL_POST_LIKES: { // Number of likes on a particular post has been updated. This is update related but is not a global update of every likes and thus is here instead of in the update pipeline.
         this.socialPosts[json['post_id']].nbrLikesNotifier.value = json['nbr_likes'];
+      } break;
+
+      case APIFlags.EVENT_NBR_GOING: {
+        this.events[int.parse(json['event_id'])].nbrPeopleGoingNotifier.value = json['nbr_people_going'];
       } break;
     }
   }
@@ -317,7 +327,7 @@ class APIValues {
 
   // This list must be the only one accessed to retrieve the actual events.
   // Mapping should be done with indices of this list
-  List<AEvent> events = new List<AEvent>();
+  Map<int, AEvent> events = new Map<int, AEvent>();
   Map<DateTime, List<int>> mappedEventsIndices = new Map<DateTime, List<int>>();
 
   // Returns false iff there was an authentication error
@@ -331,11 +341,14 @@ class APIValues {
 
     // Updating the events list
     events.clear();
-    (response.body[APIJsonKeys.EventsList] as List<dynamic>).forEach((eventJSON) {events.add(new AEvent.fromJSON(eventJSON));});
+    (response.body[APIJsonKeys.EventsList] as List<dynamic>).forEach((eventJSON) {
+      AEvent event = new AEvent.fromJSON(eventJSON);
+      events.addAll({event.id: event});
+    });
 
     // Updating the DateTime mapping
     mappedEventsIndices.clear();
-    for(int i = 0;i < events.length; i++) {
+    for(int i in events.keys) {
       if(!mappedEventsIndices.containsKey(events[i].dateTimeBegin)) { // The datetime is not in the map yet
         mappedEventsIndices.addAll({events[i].dateTimeBegin: new List<int>()});
       }
@@ -345,11 +358,35 @@ class APIValues {
     return true;
   }
 
+  // Events must have been loaded first
+  Future<bool> _updateEventsGoing() async {
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.EventsGoing + "/get_all", params: {"uuid": selfClient.uuid}, token: _token);
+    if(response.state == FetchResponseState.ERROR_AUTH) return false;
+
+    // Updating the self going state of casual events
+    (response.body['events'] as List<dynamic>).forEach((eventJSON) {
+      int id = int.parse(eventJSON['event_id']);
+
+      if(!this.events.containsKey(id)) return;
+      this.events[id].selfClientIsGoing = eventJSON['is_going'] ?? false;
+    });
+
+    // Updating the self going state of clubs events
+    (response.body['clubs_events'] as List<dynamic>).forEach((clubEventJSON) {
+      int id      = int.parse(clubEventJSON['event_id']),
+          club_id = int.parse(clubEventJSON['club_id']);
+
+      if(!this.clubs.containsKey(club_id) || !this.clubs[club_id].permanentEvents.containsKey(id)) return;
+      this.clubs[club_id].permanentEvents[id].selfClientIsGoing = clubEventJSON['is_going'] ?? false;
+    });
+  }
+
   /* ############################ */
   /* ########## CLUBS ########### */
   /* ############################ */
 
   Map<int, AClub> clubs = new Map<int, AClub>(); // To store the same ids than the server
+  
 
   Future<bool> _updateClubs() async {
     // Fetching events from server
@@ -365,6 +402,15 @@ class APIValues {
       // Storing the club with the same ID than the server
       AClub club = new AClub.fromJSON(clubJSON);
 
+      // Caching supervisors
+      (clubJSON[APIJsonKeys.SupervisorList] as List<dynamic>).forEach((supervisorJSON) {
+        AClient supervisor = AClient.fromJSON(supervisorJSON);
+        cacheClient(supervisor);
+
+        // Adding the cached supervisor from its uuid : 'supervisor' will be deleted, and in the event of the uuid already cached before, won't even be referenced.
+        club.supervisors.add(this.clientFromUUID(supervisor.uuid));
+      });
+
       // Fetching events associated with the club
       (clubJSON[APIJsonKeys.EventsList] as List<dynamic>).forEach((eventJSON) {
         eventJSON['title'] = club.title;
@@ -372,7 +418,7 @@ class APIValues {
         AEvent event = new AEvent.fromJSON(eventJSON);
         event.isFromClub = true;
 
-        club.permanentEvents.add(event);
+        club.permanentEvents.addAll({event.id: event});
       });
 
       clubs.addAll({club.id: club});
@@ -516,7 +562,7 @@ class APIValues {
     for(AClient client in this.clients) json[APIJsonKeys.ClientsList].add(client.toJSON());
 
     // Events
-    for(AEvent ev in this.events) json[APIJsonKeys.EventsList].add(ev.toJSON());
+    for(AEvent ev in this.events.values) json[APIJsonKeys.EventsList].add(ev.toJSON());
 
     // Clubs
     for(AClub cl in this.clubs.values) json[APIJsonKeys.ClubsList].add(cl.toJSON());

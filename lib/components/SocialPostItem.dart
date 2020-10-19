@@ -45,9 +45,11 @@ class SocialPostItemState extends State<SocialPostItem> {
     widget.socialPost.hasLiked(
       gAPI.selfClient,
       onConfirmed: (bool liked) {
-        this.setState(() {
-          this.UIState.liked = liked;
-        });
+        if(this.mounted) {
+          this.setState(() {
+            this.UIState.liked = liked;
+          });
+        }
       }
     );
 

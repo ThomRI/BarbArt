@@ -1,5 +1,6 @@
 import 'package:barbart/api/structures.dart';
 import 'package:barbart/constants.dart';
+import 'package:barbart/pages/clubdetailsscreen.dart';
 import 'package:barbart/pages/events/detailsscreen.dart';
 import 'package:barbart/utils.dart';
 import 'package:flutter/cupertino.dart';
@@ -106,6 +107,20 @@ class _ClubCardState extends State<_ClubCard> {
                     ),
                   ),
                 ),
+
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    icon: Icon(Icons.arrow_forward_ios, color: isMember ? Colors.white : kPrimaryColor),
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ClubDetailsScreen(
+                          club: widget.club,
+                        )
+                      ));
+                    },
+                  ),
+                )
 
               ],
             ),

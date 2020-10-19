@@ -37,8 +37,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   final TextEditingController _emailFieldController = new TextEditingController();
   final TextEditingController _passwordFieldController = new TextEditingController();
 
-  bool _authFailedState = false;
-  bool _autoAuthState   = false;
+  bool _authFailedState           = false;
+  bool _attemptingAutoAuthState   = true;
 
   AnimationController _animationController;
   Animation<double> _avatarAnimation;
@@ -50,7 +50,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
     /* Auto authentication test : token validity test */
     print("Attempting to auto auth...");
+    _attemptingAutoAuthState = true;
     gAPI.attemptAutoLogin().then((success) {
+      this.setState(() {
+        _attemptingAutoAuthState = false;
+      });
+
       if(!success) {
         print("Auto auth failed.");
         return;
@@ -107,7 +112,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               ),
             ),
 
-            /* Fields container */
             Container(
               margin: EdgeInsets.only(
                 right: 30.0,
@@ -115,57 +119,98 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 top: 30.0,
               ),
 
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: kPrimaryColor.withOpacity(0.1),
-                    blurRadius: 20.0,
-                    offset: Offset(0, 10),
-                  )
-                ]
-              ),
-
               child: Column(
-                children: <Widget>[
-
-                  /* Email field */
-                  Container(
-                    padding: EdgeInsets.all(8.0),
-
-                    /* Border between the two fields */
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(color: Colors.grey[100])
-                      )
-                    ),
-
-                    child: TextField(
-                      controller: _emailFieldController,
-                      autofocus: true,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: _LoginScreenConstants.EmailHint,
-                        hintStyle: TextStyle(color: Colors.grey[400]),
+                children: [
+                  /* Auto auth notification */
+                  Opacity(
+                    opacity: (_attemptingAutoAuthState) ? 1 : 0,
+                    child: Container(
+                      margin: EdgeInsets.only(
+                        bottom: 10,
                       ),
-                    )
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 15,
+                            height: 15,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                              strokeWidth: 1,
+                            ),
+                          ),
+
+                          SizedBox(
+                            width: 5,
+                          ),
+
+                          Text(
+                            "Attempting auto login...",
+                            style: TextStyle(
+                              color: Colors.grey
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
 
-                  /* Password field */
+                  /* Fields container */
                   Container(
-                    padding: EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: _passwordFieldController,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: _LoginScreenConstants.PasswordHint,
-                        hintStyle: TextStyle(color: Colors.grey[400]),
-                      ),
-                      obscureText: true, // Password hidden
-                    )
-                  )
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: kPrimaryColor.withOpacity(0.1),
+                          blurRadius: 20.0,
+                          offset: Offset(0, 10),
+                        )
+                      ]
+                    ),
+
+                    child: Column(
+                      children: <Widget>[
+
+                        /* Email field */
+                        Container(
+                          padding: EdgeInsets.all(8.0),
+
+                          /* Border between the two fields */
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.grey[100])
+                            )
+                          ),
+
+                          child: TextField(
+                            controller: _emailFieldController,
+                            autofocus: true,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: _LoginScreenConstants.EmailHint,
+                              hintStyle: TextStyle(color: Colors.grey[400]),
+                            ),
+                          )
+                        ),
+
+                        /* Password field */
+                        Container(
+                          padding: EdgeInsets.all(8.0),
+                          child: TextField(
+                            controller: _passwordFieldController,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: _LoginScreenConstants.PasswordHint,
+                              hintStyle: TextStyle(color: Colors.grey[400]),
+                            ),
+                            obscureText: true, // Password hidden
+                          )
+                        )
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

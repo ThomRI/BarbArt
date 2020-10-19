@@ -29,7 +29,7 @@ class _ServerSplashScreenState extends State<ServerSplashScreen> {
     }
 
     /* API Authentication */
-    gAPI.update(APIFlags.EVENTS | APIFlags.PROFILE | APIFlags.SOCIAL_POSTS | APIFlags.MUSIC_RESERVATIONS | APIFlags.CLUBS, onUpdateDone: () {
+    gAPI.update(APIFlags.EVENTS | APIFlags.PROFILE | APIFlags.SOCIAL_POSTS | APIFlags.MUSIC_RESERVATIONS | APIFlags.CLUBS | APIFlags.EVENTS_SELF_GOING, onUpdateDone: () {
       gAPI.save();
       if(onDone != null) onDone();
     });

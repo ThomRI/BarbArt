@@ -35,24 +35,25 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     List<ASocialPost> posts = gAPI.socialPosts.values.toList();
-    return Container(
-      margin: EdgeInsets.only(bottom: 10),
-      child: posts.length > 0 ?
-        RefreshIndicator(
-          onRefresh: () async {
-            gAPI.update(APIFlags.SOCIAL_POSTS, onUpdateDone: () {
-              this.setState(() {});
-            });
-          },
-          child: ListView.builder(
-            padding: EdgeInsets.only(top: 10.0, bottom: 230),
-            itemCount: posts.length,
-            itemBuilder: (BuildContext context, int index) {
-              return SocialPostItem(socialPost: posts[index],);
+    return SafeArea(
+      child: Container(
+        child: posts.length > 0 ?
+          RefreshIndicator(
+            onRefresh: () async {
+              gAPI.update(APIFlags.SOCIAL_POSTS, onUpdateDone: () {
+                this.setState(() {});
+              });
             },
-          ),
-        ) : Center(
-        child: Text("Waiting for server..."),
+            child: ListView.builder(
+              padding: EdgeInsets.only(top: 10.0, bottom: 260),
+              itemCount: posts.length,
+              itemBuilder: (BuildContext context, int index) {
+                return SocialPostItem(socialPost: posts[index],);
+              },
+            ),
+          ) : Center(
+          child: Text("Waiting for server..."),
+        ),
       ),
     );
   }

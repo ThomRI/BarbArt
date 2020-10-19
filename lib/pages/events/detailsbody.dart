@@ -36,6 +36,8 @@ class _DetailsBodyState extends State<DetailsBody> {
           });
         }
     );
+
+    widget.event.nbrPeopleGoingNotifier.addListener(() {this.setState(() {});}); // rebuilding when the number of people updated!
   }
 
   @override
@@ -176,7 +178,7 @@ class _DetailsBodyState extends State<DetailsBody> {
                     /* Event number of people going */
                     TextIcon(
                       icon: Icon(Icons.check_circle, color: Colors.green),
-                      text: Text(widget.event.nbrPeopleGoing.toString(), style: TextStyle(fontSize: 20)),
+                      text: Text(widget.event.nbrPeopleGoingNotifier.value.toString(), style: TextStyle(fontSize: 20)),
                     ),
 
                     /* Event Place */

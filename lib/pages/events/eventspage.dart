@@ -33,7 +33,7 @@ class _EventsPageState extends State<EventsPage> {
   List<AEvent> generateClubEvents() {
     List<AEvent> clubEvents = new List<AEvent>();
     gAPI.selfClient.clubsIDs.forEach((int clubID) {
-      clubEvents.addAll(gAPI.clubs[clubID].permanentEvents);
+      clubEvents.addAll(gAPI.clubs[clubID].permanentEvents.values.toList());
     });
 
     return clubEvents;
@@ -46,10 +46,10 @@ class _EventsPageState extends State<EventsPage> {
 
       minimumDateTime: DateTime.now().subtract(Duration(days: 300)),
 
-      mainEventList: gAPI.events,
+      mainEventList: gAPI.events.values.toList(),
       mainText: Text("Events", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
 
-      subPermanentEventList: this.generateClubEvents(),
+      subPermanentEventList: gAPI.clubs[2].permanentEvents.values.toList(),
       subText: Text("Clubs", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))
     );
   }

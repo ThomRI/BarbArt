@@ -98,15 +98,20 @@ class _SquareDayViewState extends State<SquareDayView> {
 
       /* Adding every day of the permanent event from the minimum date up to the maximum date */
       int delta_ms = ((widget.futureSubOnly) ? extractDate(DateTime.now()).millisecondsSinceEpoch : widget.minimumDateTime.millisecondsSinceEpoch) - extractedDate.millisecondsSinceEpoch;
-      for(DateTime date = extractedDate.add(Duration(days: delta_ms.sign * 7 * (delta_ms.abs() / (7 * MS_IN_ONE_DAY)).floor()));
+      int initial_iteration = delta_ms.sign * (delta_ms.abs() / (7 * MS_IN_ONE_DAY)).floor(); // Initial number of weeks separating the virtual event corresponding to today's week from the originally created event
+
+      int delta_iteration = -1; // Must start at 0 : is the number of iteration from THE INITIAL ITERATION
+      for(DateTime date = extractedDate.add(Duration(days: 7 * initial_iteration));
       date.compareTo(widget.maximumDateTime) <= 0;
       date = date.add(Duration(days: 7))) {
+        delta_iteration++;
 
         /* Adding the event to be treated as a classic sub event */
         // No need to add the date in the date list, it will be automatically added when dealing with the sub events
         AEvent virtualEvent = AEvent.clone(event);
         virtualEvent.dateTimeBegin = DateTime(date.year, date.month, date.day, event.dateTimeBegin.hour, event.dateTimeBegin.minute, event.dateTimeBegin.second);
         virtualEvent.dateTimeEnd = virtualEvent.dateTimeBegin.add(event.dateTimeEnd.difference(event.dateTimeBegin)); // virtual.end = date + (event.end - event.begin)
+        virtualEvent.iteration_number = initial_iteration + delta_iteration;
 
         subPermEvents.add(virtualEvent);
       }
@@ -438,7 +443,6 @@ class _SubItem extends StatefulWidget {
 }
 
 class _SubItemState extends State<_SubItem> with SingleTickerProviderStateMixin {
-  bool _goingState = false;
   bool _pending = false;
 
   final double _maxAnimationRadius = 100;
@@ -449,19 +453,6 @@ class _SubItemState extends State<_SubItem> with SingleTickerProviderStateMixin 
   @override
   void initState() {
     super.initState();
-
-    _pending = true;
-
-    // Fetching whether or not the client is going to the event
-    widget.event.isGoing(
-      gAPI.selfClient,
-      onConfirmed: (bool going) {
-        this.setState(() {
-          _goingState = going;
-          _pending = false;
-        });
-      }
-    );
 
     _animationController = new AnimationController(duration: Duration(milliseconds: 300), vsync: this);
     _animationController.addStatusListener((status) {
@@ -489,7 +480,7 @@ class _SubItemState extends State<_SubItem> with SingleTickerProviderStateMixin 
           _animationController.forward();
 
           this.setState(() {
-            _goingState = !_goingState;
+            widget.event.selfClientIsGoing = !widget.event.selfClientIsGoing;
             _pending = true;
           });
 
@@ -499,18 +490,18 @@ class _SubItemState extends State<_SubItem> with SingleTickerProviderStateMixin 
 
           widget.event.setGoing(
             gAPI.selfClient,
-            going: _goingState,
+            going: widget.event.selfClientIsGoing,
             onConfirmed: (bool success) {
               this.setState(() {
                 _pending = false;
                 if(!success) {
-                  _goingState = !_goingState;
+                  widget.event.selfClientIsGoing = !widget.event.selfClientIsGoing;
                   return;
                 }
 
                 // Success from here
 
-                if(!_goingState) return;
+                if(!widget.event.selfClientIsGoing) return;
 
                 /* Notifying the user of the action */
                 Scaffold.of(context).showSnackBar(SnackBar(
@@ -583,14 +574,14 @@ class _SubItemState extends State<_SubItem> with SingleTickerProviderStateMixin 
                           ),
 
                           borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                          color: _animationController.status == AnimationStatus.forward ? !_goingState ? Colors.green : Colors.deepOrange : _goingState ? Colors.green : Colors.deepOrange
+                          color: _animationController.status == AnimationStatus.forward ? !widget.event.selfClientIsGoing ? Colors.green : Colors.deepOrange : widget.event.selfClientIsGoing ? Colors.green : Colors.deepOrange
                         ),
 
                         child: ClipRRect(
                           borderRadius: BorderRadius.all(Radius.circular(7.0)),
                           child: CustomPaint(
                             size: Size(double.infinity, double.infinity),
-                            painter: CircleWavePainter(_animation.value, _goingState ? Colors.green : Colors.deepOrange),
+                            painter: CircleWavePainter(_animation.value, widget.event.selfClientIsGoing ? Colors.green : Colors.deepOrange),
                           ),
                         )
                       )

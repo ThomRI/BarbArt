@@ -1,18 +1,16 @@
-import 'package:barbart/components/Sliver/headerpagesliver.dart';
 import 'package:barbart/constants.dart';
+import 'package:barbart/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class SettingsScreen extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => _SettingsScreenState();
-
+  _SettingsScreenState createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen>{
-
+class _SettingsScreenState extends State<SettingsScreen> {
   Map<String, Map<String, String>> _clients;
-  Map<String, Map<String, String>> _allClients = getClients();
+  Map<String, Map<String, String>> _allClients ;
   TextEditingController _searchController;
 
   static Map<String, Map<String, String>> getClients(){
@@ -71,8 +69,8 @@ class _SettingsScreenState extends State<SettingsScreen>{
   @override
   void initState(){
     _searchController = TextEditingController();
-    _clients = getClients();
-    print(_clients);
+    _allClients = getClients(); //TODO:change this line
+    _clients = getClients(); //TODO: change this line
     super.initState();
   }
 
@@ -83,22 +81,15 @@ class _SettingsScreenState extends State<SettingsScreen>{
   }
 
   void filterSearchClients(String query) {
-    print("a");
     Iterable<String> _clientsIds = _allClients.keys;
-    print(_allClients);
-    print(_clients);
-    print(_clientsIds);
-    print("h");
     if(query.isNotEmpty) {
       Map<String, Map<String, String>> _newClients = Map<String, Map<String, String>>();
       _clientsIds.forEach((item) {
-        print(item);
         if(_allClients[item.toString()]["name"].contains(query) || _allClients[item.toString()]["surname"].contains(query)) {
           _newClients.addAll({item : _allClients[item]});
         }
       });
-      print(_newClients);
-      setState(() {
+        setState(() {
         _clients.clear();
         _clients.addAll(_newClients);
       });
@@ -119,10 +110,10 @@ class _SettingsScreenState extends State<SettingsScreen>{
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
-              child: Text("Clients", textAlign: TextAlign.center,
+              child: Text("Users", textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
               padding: EdgeInsets.only(top: 20),
-              width: MediaQuery.of(context).size.width,
+              width: deviceSize(context).width,
             ),
             Padding(
               padding: EdgeInsets.all(30),
@@ -135,19 +126,16 @@ class _SettingsScreenState extends State<SettingsScreen>{
                     labelText: "Search",
                     prefixIcon: Icon(Icons.search),
                     border: OutlineInputBorder(
-                      borderSide: BorderSide(color: kPrimaryColor, style: BorderStyle.solid, width: 1),
-                      borderRadius: BorderRadius.all(Radius.circular(15)))),
+                        borderSide: BorderSide(color: kPrimaryColor, style: BorderStyle.solid, width: 1),
+                        borderRadius: BorderRadius.all(Radius.circular(15)))),
               ),
             ),
             Expanded(
               child: ListView.builder(
                   itemCount: (_clients != null) ? _clients.length : 0,
                   itemBuilder: (BuildContext context, int index){
-                    print(_clients);
                     String idClient = _clients.keys.toList()[index];
-                    print(idClient);
                     Map<String, String> map = _clients[idClient];
-                    print(map);
                     String _name = map["name"];
                     String _surname = map["surname"];
                     String _status = map["status"];
@@ -162,30 +150,31 @@ class _SettingsScreenState extends State<SettingsScreen>{
                       trailing: DropdownButton(
                         items: [
                           DropdownMenuItem(
-                            value: "client",
-                            child: Text("C",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey,)
-                            )
+                              value: "client",
+                              child: Text("C",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.grey,)
+                              )
                           ),
                           DropdownMenuItem(
-                            value: "moderator",
-                            child: Text("M",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(color: Colors.blue,)
-                            )
+                              value: "moderator",
+                              child: Text("M",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.blue,)
+                              )
                           ),
                           DropdownMenuItem(
                               value: "admin",
                               child: Text("A",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(color: Colors.deepOrangeAccent,)
-                            )
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.deepOrangeAccent,)
+                              )
                           ),
                         ],
                         onChanged: (value){
                           setState(() {
                             _clients[idClient.toString()]["status"] = value;
+                            //TODO: change value in server
                           });
                         },
                         value: _status,
@@ -201,5 +190,4 @@ class _SettingsScreenState extends State<SettingsScreen>{
     ),
     );
   }
-
 }

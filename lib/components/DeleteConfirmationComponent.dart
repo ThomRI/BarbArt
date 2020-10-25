@@ -21,9 +21,7 @@ class DeleteConfirmationComponent{
                   headerContent ?? Container(),
                   Center(
                     child: MessageLoadingButton(
-                      //key: validationKey,
                         width: 200,
-                        errorMessage: "Invalid times",
                         onPressed: () async {
                           Timer(Duration(seconds: 1), () {
                             Navigator.of(context).pop(); // Close the AlertDialog

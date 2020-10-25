@@ -86,6 +86,9 @@ class EventsPage extends AbstractPageComponent {
 
         _virtualPermanentEvents.add(virtualEvent);
       }
+
+      // Sorting virtual events by beginning hour
+      _virtualPermanentEvents.sort((a, b) => a.dateTimeBegin.hour.compareTo(b.dateTimeBegin.hour));
     }
   }
 }

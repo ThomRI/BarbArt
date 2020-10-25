@@ -169,7 +169,6 @@ class AEvent extends APIStructure {
   }
 
   Future<bool> setGoing(AClient client, {going = true, Function(bool) onConfirmed}) async {
-    print("Set going event id: " + this.id.toString() + " / iteration: " + this.global_iteration_number.toString());
     FetchResponse response = await APIManager.fetch(route: APIRoutes.EventsGoing + "/set/" + this.id.toString(), params: {'uuid': client.uuid, 'going': going.toString(), 'club': this.isFromClub.toString(), 'iteration': this.global_iteration_number.toString()}, token: gAPI.token);
 
     bool success = true;
@@ -277,6 +276,9 @@ class AClub extends APIStructure {
         else if(!client.clubsIDs.contains(this.id)) client.clubsIDs.add(this.id);
       }
     }
+
+    // Updating permanent registrations for the events page
+    gAPI.updatePermanentEvents();
 
     if(onConfirmed != null) onConfirmed(success);
     return success;

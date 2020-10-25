@@ -9,31 +9,51 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 import '../../main.dart';
 
-class ClubsSelectionScreen extends StatefulWidget {
-  @override
-  _ClubsSelectionScreenState createState() => _ClubsSelectionScreenState();
-}
-
-class _ClubsSelectionScreenState extends State<ClubsSelectionScreen> {
+class ClubsSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    List<AClub> clubList = gAPI.clubs.values.toList();
+    return DefaultTabController(
+      length: 2,
+      child: ClubsSelectionScreenWarper(),
+    );
+  }
 
+}
+
+class ClubsSelectionScreenWarper extends StatefulWidget {
+  @override
+  _ClubsSelectionScreenWarperState createState() => _ClubsSelectionScreenWarperState();
+}
+
+class _ClubsSelectionScreenWarperState extends State<ClubsSelectionScreenWarper> with SingleTickerProviderStateMixin{
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Clubs selection")
-      ),
-      body: Container(
-        color: Colors.white,
-        child: ListView.builder(
-          itemCount: gAPI.clubs.length,
-          itemExtent: 90,
-          itemBuilder: (BuildContext context, int index) {
-            return _ClubCard(
-              club: clubList[index]
-            );
-          }
+        title: const Text("Clubs selection"),
+        bottom: TabBar(
+          tabs: gAPI.getClubCategoryList.map((category) => Tab(text: category)).toList(),
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          labelStyle: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
         ),
+      ),
+      body: TabBarView(
+        children: gAPI.getClubCategoryList.map((category) => Container(
+          color: Colors.white,
+          child: ListView.builder(
+              itemCount: gAPI.getClubListByCategory(category).length,
+              itemExtent: 90,
+              itemBuilder: (BuildContext context, int index) {
+                return _ClubCard(
+                    club: gAPI.getClubListByCategory(category)[index]
+                );
+              }
+          ),
+        ),).toList(),
+
       )
     );
   }

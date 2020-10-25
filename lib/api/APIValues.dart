@@ -391,15 +391,19 @@ class APIValues {
     });
 
     /* Updating permanent events for the EventsPage */
+    updatePermanentEvents();
+
+    return true;
+  }
+
+  void updatePermanentEvents() {
     (this.pages['EventsPage'] as EventsPage).permanentEventList.clear();
-    this.clubs.forEach((clubID, club) {
-      (this.pages['EventsPage'] as EventsPage).permanentEventList.addAll(club.permanentEvents.values.toList());
+    this.selfClient.clubsIDs.forEach((clubID) {
+      (this.pages['EventsPage'] as EventsPage).permanentEventList.addAll(this.clubs[clubID].permanentEvents.values.toList());
     });
 
     /* Generating virtual events for the EventsPage */
     (this.pages['EventsPage'] as EventsPage).generateVirtualPermanentEvents();
-
-    return true;
   }
 
   /* ############################ */
@@ -407,7 +411,18 @@ class APIValues {
   /* ############################ */
 
   Map<int, AClub> clubs = new Map<int, AClub>(); // To store the same ids than the server
-  
+
+  Map<String, List<int>> _clubIDMapByCategory = new Map<String, List<int>>(); // Linking categories to club IDs
+  List<String> get getClubCategoryList => _clubIDMapByCategory.keys.toList();
+
+  List<AClub> getClubListByCategory(String category) {
+    if(!_clubIDMapByCategory.containsKey(category)) return new List<AClub>();
+
+    List<AClub> clubs = new List<AClub>();
+    _clubIDMapByCategory[category].forEach((id) {clubs.add(this.clubs[id]);});
+
+    return clubs;
+  }
 
   Future<bool> _updateClubs() async {
     // Fetching events from server
@@ -431,6 +446,10 @@ class APIValues {
         // Adding the cached supervisor from its uuid : 'supervisor' will be deleted, and in the event of the uuid already cached before, won't even be referenced.
         club.supervisors.add(this.clientFromUUID(supervisor.uuid));
       });
+
+      // Linking the club with its category
+      if(!_clubIDMapByCategory.containsKey(club.category)) _clubIDMapByCategory.addAll({club.category: new List<int>()});
+      _clubIDMapByCategory[club.category].add(club.id);
 
       // Fetching events associated with the club
       (clubJSON[APIJsonKeys.EventsList] as List<dynamic>).forEach((eventJSON) {

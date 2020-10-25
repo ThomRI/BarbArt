@@ -557,58 +557,55 @@ class _SubItemState extends State<_SubItem> with SingleTickerProviderStateMixin 
                   ),
 
                   /* Hovering text */
-                  Hero(
-                    tag: 'eventTextUnused: ${widget.event.id}', // Avoid duplicates tags !
-                    child: Container(
-                        alignment: Alignment.center,
-                        margin: EdgeInsets.symmetric(horizontal: 10),
-                        child: SingleChildScrollView( // Permits to avoid text overflowing from the square just before AutoSizeText resized it.
-                          scrollDirection: Axis.vertical, // Don't change it to horizontal : otherwise the text keeps begin scrollable
-                          physics: NeverScrollableScrollPhysics(),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              AutoSizeText(
-                                  '${widget.event.title}',
-                                  maxLines: 1,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                    fontSize: 8,
-                                  )
-                              ),
+                  Container(
+                      alignment: Alignment.center,
+                      margin: EdgeInsets.symmetric(horizontal: 10),
+                      child: SingleChildScrollView( // Permits to avoid text overflowing from the square just before AutoSizeText resized it.
+                        scrollDirection: Axis.vertical, // Don't change it to horizontal : otherwise the text keeps begin scrollable
+                        physics: NeverScrollableScrollPhysics(),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            AutoSizeText(
+                                '${widget.event.title}',
+                                maxLines: 1,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 8,
+                                )
+                            ),
 
-                              Divider(
-                                height: 5,
-                                indent: 10,
-                                endIndent: 10,
-                              ),
+                            Divider(
+                              height: 5,
+                              indent: 10,
+                              endIndent: 10,
+                            ),
 
-                              AutoSizeText(
-                                widget.event.location,
+                            AutoSizeText(
+                              widget.event.location,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 5,
+                              )
+                            ),
+
+                            AutoSizeText(
+                                widget.event.timesToString(),
                                 maxLines: 1,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
                                   fontSize: 5,
                                 )
-                              ),
+                            ),
+                          ],
+                        ),
+                      )
 
-                              AutoSizeText(
-                                  widget.event.timesToString(),
-                                  maxLines: 1,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                    fontSize: 5,
-                                  )
-                              ),
-                            ],
-                          ),
-                        )
-
-                    ),
                   )
                 ],
               )

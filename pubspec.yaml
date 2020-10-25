@@ -41,7 +41,7 @@ dependencies:
   image_picker: ^0.6.7+6          # Image Picker
   fluttertoast: ^7.1.1            # Toast messages
   clip_shadow: ^0.2.1             # Shadows behind custom clippers
-  keyboard_visibility: ^0.5.6     # Notify when keyboard opens
+  flutter_keyboard_visibility: 0.7.0     # Notify when keyboard opens
 
 
   # The following adds the Cupertino Icons font to your application.

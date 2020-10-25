@@ -83,9 +83,32 @@ class AEvent extends APIStructure {
   int nbrPlaceAvailable = 0;
 
   bool isFromClub = false;
-  bool selfClientIsGoing = false;
 
-  int iteration_number = 0; // For permanent events : is a generic iteration number from the originally created event. The information of the gap of time between two iterations is not contained here.
+  /* ITERATIONS */
+
+    // Note : those are relative iterations. To access this event, access iteration 0.
+    Map<int, bool> selfClientIsGoingToRelativeIteration = new Map<int, bool>();
+
+    void setSelfClientGoing(int iteration, bool going) {
+      if(!this.selfClientIsGoingToRelativeIteration.containsKey(iteration)) this.selfClientIsGoingToRelativeIteration.addAll({iteration: going});
+      else this.selfClientIsGoingToRelativeIteration[iteration] = going;
+    }
+
+    // Just convenient getter/setter to access iteration 0 (this event)
+    bool get selfClientIsGoing => selfClientIsGoingToRelativeIteration[0] ?? false;
+    set selfClientIsGoing(bool isGoing) {
+      if(!this.selfClientIsGoingToRelativeIteration.containsKey(0)) this.selfClientIsGoingToRelativeIteration.addAll({0: false});
+      this.selfClientIsGoingToRelativeIteration[0] = isGoing;
+    }
+
+    int global_iteration_number = 0; // For permanent events : is a generic iteration number from the originally created event. The information of the gap of time between two iterations is not contained here.
+    AEvent _iteration_zero_event = null;
+
+    // if none iteration-zero event has been specified, assume the iteration-zero is itself.
+    AEvent get iteration_zero_event => _iteration_zero_event ?? this;
+    set iteration_zero_event(AEvent other) {
+      _iteration_zero_event = other;
+    }
 
   DateTime  dateTimeBegin, dateTimeEnd;
 
@@ -101,11 +124,13 @@ class AEvent extends APIStructure {
           nbrPeopleGoing,
           this.nbrPlaceAvailable,
           this.clientUUID,
-          this.isFromClub = false,
-          this.selfClientIsGoing = false}) : super() {
+          this.isFromClub = false,}) : super() {
 
     image = (imageUrl != null) ? NetworkImage(imageUrl) : AssetImage("assets/event1.png");
     this.nbrPeopleGoingNotifier.value = nbrPeopleGoing;
+
+
+    selfClientIsGoingToRelativeIteration.addAll({0: false}); // By default
   }
 
   factory AEvent.clone(AEvent other) => AEvent(
@@ -120,7 +145,6 @@ class AEvent extends APIStructure {
       nbrPlaceAvailable: other.nbrPlaceAvailable,
       clientUUID: other.clientUUID,
       isFromClub: other.isFromClub,
-      selfClientIsGoing: other.selfClientIsGoing,
     );
 
   String toString() {
@@ -145,12 +169,12 @@ class AEvent extends APIStructure {
   }
 
   Future<bool> setGoing(AClient client, {going = true, Function(bool) onConfirmed}) async {
-    FetchResponse response = await APIManager.fetch(route: APIRoutes.EventsGoing + "/set/" + this.id.toString(), params: {'uuid': client.uuid, 'going': going.toString(), 'club': this.isFromClub.toString(), 'iteration': this.iteration_number.toString()}, token: gAPI.token);
+    print("Set going event id: " + this.id.toString() + " / iteration: " + this.global_iteration_number.toString());
+    FetchResponse response = await APIManager.fetch(route: APIRoutes.EventsGoing + "/set/" + this.id.toString(), params: {'uuid': client.uuid, 'going': going.toString(), 'club': this.isFromClub.toString(), 'iteration': this.global_iteration_number.toString()}, token: gAPI.token);
 
     bool success = true;
     if(response.state != FetchResponseState.OK) success = false;
 
-    print(this.selfClientIsGoing);
     if(success) { // Instead of making a full update, we can just adapt the values here as we know what happened server-side. TODO : Maybe unify the API here ?
       this.nbrPeopleGoingNotifier.value += going ? 1 : -1;
       if(client.uuid == gAPI.selfClient.uuid) this.selfClientIsGoing = going; // Updating the self client state if the client is the self client

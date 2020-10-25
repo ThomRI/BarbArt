@@ -26,6 +26,10 @@ const double HEADER_HEIGHT_SCREEN_RATIO = 0.3;
 /* Math constants */
 const double MS_IN_ONE_DAY = 86400000.0;
 
+/* Events page constants */
+DateTime kEventsMinimumDateTime = DateTime.now().subtract(Duration(days: 7));
+DateTime kEventsMaximumDateTime = DateTime.now().add(Duration(days: 7));
+
 /* API */
 const API_BASEHOST = "barbart.herokuapp.com";
 const API_PORT = 443;

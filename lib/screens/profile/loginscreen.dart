@@ -7,7 +7,7 @@ import 'package:barbart/constants.dart';
 import 'package:barbart/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:keyboard_visibility/keyboard_visibility.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
 
 import '../../main.dart';

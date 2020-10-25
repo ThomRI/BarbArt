@@ -100,7 +100,7 @@ class APIConfig {
 class APIValues {
   Map<String, AbstractPageComponent> pages = {
     'HomePage'  : HomePage(),
-    'EventsPage': EventsPage(),
+    'EventsPage': EventsPage(minimumDateTime: kEventsMinimumDateTime, maximumDateTime: kEventsMaximumDateTime,),
     'MusicPage' : MusicPage(),
     //'ClubsPage' : ClubsPage(),
   };
@@ -258,6 +258,7 @@ class APIValues {
     if(flag & APIFlags.PROFILE != 0)            authStillAlive &= await _updateProfile();
     if(flag & APIFlags.SOCIAL_POSTS != 0)       authStillAlive &= await _updateSocialPosts();
     if(flag & APIFlags.MUSIC_RESERVATIONS != 0) authStillAlive &= await _updateMusicReservations();
+    if(flag & APIFlags.EVENTS_SELF_GOING != 0)    authStillAlive &= await _updateEventsGoing();
 
     if(!authStillAlive && authNotAliveCallback != null) authNotAliveCallback();
     if(authStillAlive && onUpdateDone != null)          onUpdateDone(); // Calling the callback only if the auth is still alive..
@@ -365,20 +366,40 @@ class APIValues {
 
     // Updating the self going state of casual events
     (response.body['events'] as List<dynamic>).forEach((eventJSON) {
-      int id = int.parse(eventJSON['event_id']);
+      int id = eventJSON['event_id'];
 
       if(!this.events.containsKey(id)) return;
       this.events[id].selfClientIsGoing = eventJSON['is_going'] ?? false;
     });
 
     // Updating the self going state of clubs events
-    (response.body['clubs_events'] as List<dynamic>).forEach((clubEventJSON) {
-      int id      = int.parse(clubEventJSON['event_id']),
-          club_id = int.parse(clubEventJSON['club_id']);
+    (response.body['clubs_events'] as List<dynamic>).forEach((clubJSON) {
+      int club_id = clubJSON['club_id'];
 
-      if(!this.clubs.containsKey(club_id) || !this.clubs[club_id].permanentEvents.containsKey(id)) return;
-      this.clubs[club_id].permanentEvents[id].selfClientIsGoing = clubEventJSON['is_going'] ?? false;
+      if(!this.clubs.containsKey(club_id)) return;
+
+      (clubJSON['events'] as List<dynamic>).forEach((eventJSON) {
+        int event_id = eventJSON['event_id'];
+
+        if(!this.clubs[club_id].permanentEvents.containsKey(event_id)) return;
+
+        (eventJSON['is_going_iterations'] as List<dynamic>).forEach((iterationJSON) {
+          int iterationNumber = iterationJSON['iteration'];
+          this.clubs[club_id].permanentEvents[event_id].setSelfClientGoing(iterationNumber, iterationJSON['is_going']);
+        });
+      });
     });
+
+    /* Updating permanent events for the EventsPage */
+    (this.pages['EventsPage'] as EventsPage).permanentEventList.clear();
+    this.clubs.forEach((clubID, club) {
+      (this.pages['EventsPage'] as EventsPage).permanentEventList.addAll(club.permanentEvents.values.toList());
+    });
+
+    /* Generating virtual events for the EventsPage */
+    (this.pages['EventsPage'] as EventsPage).generateVirtualPermanentEvents();
+
+    return true;
   }
 
   /* ############################ */

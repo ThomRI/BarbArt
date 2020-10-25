@@ -27,7 +27,6 @@ class SquareDayView extends StatefulWidget {
 
   List<AEvent> mainEventList; // Rendered as a big clickable square
   List<AEvent> subEventList;  // Rendered as a little rectangle below the squares PERMANENT FOR NOW
-  List<AEvent> subPermanentEventList;
 
   final Text mainText;
   final Text subText;
@@ -35,9 +34,9 @@ class SquareDayView extends StatefulWidget {
   final bool futureSubOnly;
 
 
-  SquareDayView({Key key, this.minimumDateTime, this.maximumDateTime, this.sortingMode = SortingMode.DECREASING, this.weekDistinction = true, this.mainEventList, this.subEventList, this.subPermanentEventList, this.mainText, this.subText, this.futureSubOnly = true}) : super(key: key) {
+  SquareDayView({Key key, this.minimumDateTime, this.maximumDateTime, this.sortingMode = SortingMode.DECREASING, this.weekDistinction = true, this.mainEventList, this.subEventList, this.mainText, this.subText, this.futureSubOnly = true}) : super(key: key) {
     minimumDateTime ??= DateTime.now().subtract(Duration(days: 7));
-    maximumDateTime ??= DateTime.now().add(Duration(days: 7));
+    maximumDateTime ??= DateTime.now().add(Duration(days: 7*4));
 
     minimumDateTime = extractDate(minimumDateTime);
     maximumDateTime = extractDate(maximumDateTime);
@@ -45,7 +44,6 @@ class SquareDayView extends StatefulWidget {
     // Dealing with null parameters
     mainEventList ??= new List<AEvent>();
     subEventList ??= new List<AEvent>();
-    subPermanentEventList ??= new List<AEvent>();
   }
 
   @override
@@ -57,7 +55,6 @@ class _SquareDayViewState extends State<SquareDayView> {
 
   Map<DateTime, List<AEvent>> _mainEventMap     = new Map<DateTime, List<AEvent>>(); // Map of the events with DateTime from which we only kept the date and not the time.
   Map<DateTime, List<AEvent>> _subEventMap      = new Map<DateTime, List<AEvent>>(); // Same for the sub events
-  List<AEvent> subPermEvents = new List<AEvent>(); // Permanent events. Do not put them in the subEventList otherwise when refreshing it is not possible to differentiate them from the real sub events.
 
   List<DateTime> dates = new List<DateTime>(); // List of rendered dates
 
@@ -76,7 +73,6 @@ class _SquareDayViewState extends State<SquareDayView> {
 
     _mainEventMap.clear();
     _subEventMap.clear();
-    subPermEvents.clear();
     dates.clear(); // Stores the relevant dates to render
 
     // Dealing with main events
@@ -91,35 +87,8 @@ class _SquareDayViewState extends State<SquareDayView> {
       _mainEventMap[extractedDate].add(event);
     }
 
-
-    // Dealing with PERMANENT sub events
-    for(AEvent event in widget.subPermanentEventList) {
-      DateTime extractedDate = extractDate(event.dateTimeBegin);
-
-      /* Adding every day of the permanent event from the minimum date up to the maximum date */
-      int delta_ms = ((widget.futureSubOnly) ? extractDate(DateTime.now()).millisecondsSinceEpoch : widget.minimumDateTime.millisecondsSinceEpoch) - extractedDate.millisecondsSinceEpoch;
-      int initial_iteration = delta_ms.sign * (delta_ms.abs() / (7 * MS_IN_ONE_DAY)).floor(); // Initial number of weeks separating the virtual event corresponding to today's week from the originally created event
-
-      int delta_iteration = -1; // Must start at 0 : is the number of iteration from THE INITIAL ITERATION
-      for(DateTime date = extractedDate.add(Duration(days: 7 * initial_iteration));
-      date.compareTo(widget.maximumDateTime) <= 0;
-      date = date.add(Duration(days: 7))) {
-        delta_iteration++;
-
-        /* Adding the event to be treated as a classic sub event */
-        // No need to add the date in the date list, it will be automatically added when dealing with the sub events
-        AEvent virtualEvent = AEvent.clone(event);
-        virtualEvent.dateTimeBegin = DateTime(date.year, date.month, date.day, event.dateTimeBegin.hour, event.dateTimeBegin.minute, event.dateTimeBegin.second);
-        virtualEvent.dateTimeEnd = virtualEvent.dateTimeBegin.add(event.dateTimeEnd.difference(event.dateTimeBegin)); // virtual.end = date + (event.end - event.begin)
-        virtualEvent.iteration_number = initial_iteration + delta_iteration;
-
-        subPermEvents.add(virtualEvent);
-      }
-    }
-
-
     // Dealing with sub events
-    for(AEvent event in List.from(widget.subEventList)..addAll(subPermEvents)) {
+    for(AEvent event in widget.subEventList) {
       // We check the interval of date only if the event isn't a permanent
       if(event.dateTimeBegin.isBefore(widget.futureSubOnly ? extractDate(DateTime.now()) : widget.minimumDateTime) || event.dateTimeEnd.isAfter(widget.maximumDateTime))
         continue;
@@ -145,7 +114,7 @@ class _SquareDayViewState extends State<SquareDayView> {
 
       child: RefreshIndicator(
         onRefresh: () async {
-          gAPI.update(APIFlags.EVENTS | APIFlags.CLUBS, onUpdateDone: () {
+          gAPI.update(APIFlags.EVENTS | APIFlags.CLUBS | APIFlags.EVENTS_SELF_GOING, onUpdateDone: () {
             this.setState(() {
               refresh();
             });

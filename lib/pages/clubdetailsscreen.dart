@@ -69,7 +69,7 @@ class _ClubDetailsScreenState extends State<ClubDetailsScreen> {
 
               /* Club events dates */
               Column(
-                children: List.generate(widget.club.permanentEvents.length, (index) => Row(
+                children: widget.club.permanentEvents.values.toList().map((event) => Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
@@ -77,25 +77,25 @@ class _ClubDetailsScreenState extends State<ClubDetailsScreen> {
                       child: Icon(Icons.calendar_today, color: Colors.black),
                     ),
                     RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                            text: DateFormat("EEEE").format(widget.club.permanentEvents[index].dateTimeBegin) + " - " + timeToString(widget.club.permanentEvents[index].dateTimeBegin) + '\n',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                          text: DateFormat("EEEE").format(event.dateTimeBegin) + " - " + timeToString(event.dateTimeBegin) + '\n',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
 
                           children: <InlineSpan>[
                             TextSpan(
-                              text: widget.club.permanentEvents[index].location,
+                              text: event.location,
                               style: TextStyle(fontSize: 15),
                             )
                           ]
-                        ),
+                      ),
                     )
                   ],
-                )),
+                )).toList(),
               ),
 
               /* Club supervisors */

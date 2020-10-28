@@ -86,6 +86,11 @@ class APIFlags {
 
 }
 
+// Privilege levels required to make each actions
+class APIPrivilege {
+  static const EDIT_POST = 1;
+}
+
 class APIConfig {
   static const String SQL_ARRAY_SEPARATOR = ",";
 
@@ -391,12 +396,12 @@ class APIValues {
     });
 
     /* Updating permanent events for the EventsPage */
-    updatePermanentEvents();
+    setupPermanentEvents();
 
     return true;
   }
 
-  void updatePermanentEvents() {
+  void setupPermanentEvents() {
     (this.pages['EventsPage'] as EventsPage).permanentEventList.clear();
     this.selfClient.clubsIDs.forEach((clubID) {
       (this.pages['EventsPage'] as EventsPage).permanentEventList.addAll(this.clubs[clubID].permanentEvents.values.toList());

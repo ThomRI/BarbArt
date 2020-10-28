@@ -24,6 +24,8 @@ class AClient extends APIStructure {
           firstname,
           lastname;
 
+  int privilegeLevel;
+
   dynamic avatar = new AssetImage("assets/profile_generic.png");
   String avatar_route;
 
@@ -31,13 +33,15 @@ class AClient extends APIStructure {
   bool isClubMember(AClub club) => this.clubsIDs.contains(club.id);
 
   // ignore: non_constant_identifier_names
-  AClient({this.uuid = "", this.email = "", this.avatar_route = "", this.firstname, this.lastname, String clubsArrayStr = ""}) {
+  AClient({this.uuid = "", this.email = "", this.avatar_route = "", this.firstname, this.lastname, String clubsArrayStr = "", this.privilegeLevel = 0}) {
     // Populating clubs IDs
     if(clubsArrayStr.length == 0) return;
     clubsArrayStr.split(",").forEach((clubIDstr) {
       clubsIDs.add(int.parse(clubIDstr));
     });
   }
+
+  bool hasPrivilege(int privilege) => (this.privilegeLevel >= privilege);
 
   // Set this client as a generic non-authenticated client
   void genericify() {
@@ -57,7 +61,8 @@ class AClient extends APIStructure {
     lastname: json['lastname'] ?? "",
     email: json['email'] ?? "",
     avatar_route: json['avatar_route'] ?? "",
-    clubsArrayStr: json['clubs_ids'] ?? ""
+    clubsArrayStr: json['clubs_ids'] ?? "",
+    privilegeLevel: json['privilege_level'] ?? 0,
   );
 
   @override
@@ -278,7 +283,7 @@ class AClub extends APIStructure {
     }
 
     // Updating permanent registrations for the events page
-    gAPI.updatePermanentEvents();
+    gAPI.setupPermanentEvents();
 
     if(onConfirmed != null) onConfirmed(success);
     return success;

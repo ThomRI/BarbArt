@@ -111,11 +111,12 @@ class _MusicPageState extends State<MusicPage> {
 
                       startingDayOfWeek: StartingDayOfWeek.monday,
 
+
+
                       /* Header day selection callback */
-                      onDaySelected: (date, eventsList) {
-                        // Refreshing
-                        refresh(); // Async
-                      }
+                      onDaySelected: (day, events, holidays) {
+                        refresh();
+                      },
                   ),
 
                   /* Actual calendar (day view) */

@@ -41,11 +41,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        backgroundColor: kBackgroundColor,
-        //appBar: _buildAppBar(),
-        body: LoginScreen(),
-      ),
+      child: LoginScreen(),
     );
   }
 }

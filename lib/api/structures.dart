@@ -303,6 +303,8 @@ class ASocialPost extends APIStructure {
   DateTime datetime;
   List<String> tags;
 
+  dynamic image = AssetImage("assets/header_background_sd.png");
+
   ValueNotifier<int>  nbrLikesNotifier    = ValueNotifier<int>(0), // Should notify UI when changed
                       nbrCommentsNotifier = ValueNotifier<int>(0);
 

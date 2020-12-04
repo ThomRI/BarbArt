@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:barbart/api/APIValues.dart';
 import 'package:barbart/api/structures.dart';
 import 'package:barbart/constants.dart';
+import 'package:expandable/expandable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tags/flutter_tags.dart';
@@ -42,8 +43,8 @@ class _SocialPostItemUIState {
 
 class SocialPostItem extends StatefulWidget {
   final ASocialPost socialPost;
-  final Function onEdit;
-  final bool editMode;
+  final Function onEdit; // Called when the edit button is pressed, not when the actual text is edited TODO: Change that ?
+  final bool editMode; // Editing by clicking the body text
 
   const SocialPostItem({Key key, this.socialPost, this.onEdit, this.editMode = false}) : super(key: key);
 
@@ -56,7 +57,9 @@ class SocialPostItemState extends State<SocialPostItem> {
 
   TextEditingController _tagController;
   TextEditingController _mainTextController;
+  ExpandableController _expandableController;
 
+  Container bodyTextContainer;
 
   @override
   void initState() {
@@ -81,15 +84,71 @@ class SocialPostItemState extends State<SocialPostItem> {
 
     _tagController = TextEditingController(text: '');
     _mainTextController = TextEditingController(text: widget.socialPost.body);
+    _expandableController = ExpandableController(initialExpanded: false,);
   }
 
   @override
   Widget build(BuildContext context) {
 
+    AClient author = gAPI.clientFromUUID(widget.socialPost.clientUUID);
+
+    /* Initiating body text container */
     GlobalKey<_EditPostItemState> editBodyItemKey = new GlobalKey<_EditPostItemState>();
     GlobalKey<_ClickToEditTextState> clickToEditKey = new GlobalKey<_ClickToEditTextState>();
+    bodyTextContainer = Container(
+      padding: EdgeInsets.all(10.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          widget.editMode ? ClickToEditText(privilegeLevel: APIPrivilege.EDIT_POST, clickToEditKey: clickToEditKey, editingMainText: UIState.editingMainText,) : Container(),
+          TextField(
+              controller: _mainTextController,
+              readOnly: !widget.editMode || !gAPI.selfClient.hasPrivilege(APIPrivilege.EDIT_POST),
+              enabled: widget.editMode && gAPI.selfClient.hasPrivilege(APIPrivilege.EDIT_POST), // Enabled only in live edit mode and if the user has necessary privileges. Must be specified on top of readOnly in order for the ExpandableButton to work correctly.
+              minLines: 5,
+              maxLines: widget.editMode ? 10 : 1000,
+              scrollPhysics: BouncingScrollPhysics(),
+              style: TextStyle(fontSize: 13.5),
 
-    AClient author = gAPI.clientFromUUID(widget.socialPost.clientUUID);
+              onTap: () {
+                if(!widget.editMode) return;
+
+                clickToEditKey.currentState.setState(() {clickToEditKey.currentState._editingMainText = true;});
+                editBodyItemKey.currentState.setState(() {editBodyItemKey.currentState._editingMainText = true;});
+              },
+
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                contentPadding: EdgeInsets.all(0),
+              )
+          ),
+
+          EditPostItem(
+            editBodyItemKey: editBodyItemKey,
+            editingMainText: UIState.editingMainText,
+            onCancel: (){
+              setState(() {
+                _mainTextController.clear();
+                _mainTextController.text = widget.socialPost.body;
+                UIState.editingMainText = false;
+              });},
+
+            onSubmit: () {
+              setState(() {
+                // TODO: change text in server
+                _mainTextController.clear();
+                _mainTextController.text = widget.socialPost.body;
+                UIState.editingMainText = false;
+              });
+            },
+          ),
+        ],
+      ),// TEXT
+    );
 
     return Container(
         margin: EdgeInsets.symmetric(horizontal: 20.0),
@@ -120,6 +179,8 @@ class SocialPostItemState extends State<SocialPostItem> {
                     ),
                   ],
                 ),
+
+                /* Popup Menu */
                 /*! _admin ? Container() : PopupMenuButton(
                 icon: Icon(Icons.more_horiz), //TODO: Implements onPressed or delete the widget
                 itemBuilder: (BuildContext context){
@@ -148,6 +209,7 @@ class SocialPostItemState extends State<SocialPostItem> {
                   }
                 },
               )*/
+
 
                 /* Edit & Delete buttons */
                 Align(
@@ -225,7 +287,7 @@ class SocialPostItemState extends State<SocialPostItem> {
                           return true;
                         },
                       ) : null,
-                      onPressed: (item){
+                      onPressed: (item) {
 
                         /* Here onPressed for editing tags */
 
@@ -242,55 +304,37 @@ class SocialPostItemState extends State<SocialPostItem> {
             ),
 
             /* Post body (main text) */
-            Container(
-              width: deviceSize(context).width,
-              padding: EdgeInsets.all(10.0),
-              child: Column(
-                children: <Widget>[
-                  widget.editMode ? ClickToEditText(privilegeLevel: APIPrivilege.EDIT_POST, clickToEditKey: clickToEditKey, editingMainText: UIState.editingMainText,) : Container(),
-                  TextField(
-                      controller: _mainTextController,
-                      readOnly: !widget.editMode || !gAPI.selfClient.hasPrivilege(APIPrivilege.EDIT_POST),
-                      minLines: 1,
-                      maxLines: widget.editMode ? 10 : 1000,
-                      scrollPhysics: BouncingScrollPhysics(),
-                      style: TextStyle(fontSize: 13.5),
+            !widget.editMode ? ExpandableNotifier(
+              controller: _expandableController,
 
-                      onTap: () {
-                        if(!widget.editMode) return;
-
-                        clickToEditKey.currentState.setState(() {clickToEditKey.currentState._editingMainText = true;});
-                        editBodyItemKey.currentState.setState(() {editBodyItemKey.currentState._editingMainText = true;});
-                      },
-
-                      decoration:new InputDecoration(
-                        border: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,)
-                  ),
-                  EditPostItem(
-                    editBodyItemKey: editBodyItemKey,
-                    editingMainText: UIState.editingMainText,
-                    onCancel: (){
-                      setState(() {
-                        _mainTextController.clear();
-                        _mainTextController = TextEditingController(text: widget.socialPost.body);
-                        UIState.editingMainText = false;
-                      });},
-                    onSubmit: (){
-                      setState(() {
-                        // TODO: change text in server
-                        _mainTextController.clear();
-                        _mainTextController = TextEditingController(text: widget.socialPost.body);
-                        UIState.editingMainText = false;
-                      });
-                    },
+              child: Expandable(
+                collapsed: ExpandableButton(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Container(
+                          width: deviceSize(context).width,
+                          padding: EdgeInsets.all(10.0),
+                          child: Text(widget.socialPost.body, style: TextStyle(fontSize: 13.5), maxLines: 5, overflow: TextOverflow.ellipsis)
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: const Text("Click to see more", style: const TextStyle(color: Colors.grey)),
+                      ),
+                    ],
                   )
-                ],
-              ),// TEXT
-            ),
+                ),
+
+                expanded: ExpandableButton(
+                  child: bodyTextContainer,
+                ),
+              ),
+            ) : bodyTextContainer,
+
+            /* Post Image */
+            widget.socialPost.image != null ? Image(
+              image: widget.socialPost.image,
+            ) : Container(),
 
             /* Interactions bar bellow the post body (Likes, Comments, ...) */
             Container(
@@ -300,8 +344,8 @@ class SocialPostItemState extends State<SocialPostItem> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
 
-                  // Like button
-                  TextIcon(
+                  /* Like button */
+                  !widget.editMode ? TextIcon( // Do not show the like button in edit mode !
                     padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                     width: 120 + 10*(log(widget.socialPost.nbrLikesNotifier.value) / ln10).floorToDouble(),
                     animate: true,
@@ -345,7 +389,7 @@ class SocialPostItemState extends State<SocialPostItem> {
                       });
 
                     },
-                  ),
+                  ) : Container(),
 
                   // Comments button
                   /*TextIcon(
@@ -378,10 +422,10 @@ class EditPostItem extends StatefulWidget{
 
   final bool editingMainText;
   final int privilegeLevel;
-  
+
   final void Function() onSubmit;// TODO:  will be a Future<bool>
   final void Function() onCancel; // TODO:  will be a Future<bool>
-  
+
 
   final GlobalKey<_EditPostItemState> editBodyItemKey;
 

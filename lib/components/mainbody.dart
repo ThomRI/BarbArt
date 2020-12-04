@@ -1,8 +1,4 @@
 import 'package:barbart/components/Sliver/headerpagesliver.dart';
-import 'package:barbart/pages/clubs/clubspage.dart';
-import 'package:barbart/pages/events/eventspage.dart';
-import 'package:barbart/pages/home/homepage.dart';
-import 'package:barbart/pages/music/musicpage.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';

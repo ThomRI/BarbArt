@@ -1,18 +1,16 @@
 import 'dart:async';
 
-import 'package:barbart/api/APIManager.dart';
 import 'package:barbart/components/ColoredButton.dart';
-import 'package:barbart/components/mainbody.dart';
 import 'package:barbart/constants.dart';
 import 'package:barbart/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:keyboard_visibility/keyboard_visibility.dart';
+import 'package:keyboard_utils/keyboard_listener.dart';
+import 'package:keyboard_utils/keyboard_utils.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
 
 import '../../main.dart';
 import '../mainscreen.dart';
-import '../serversplashscreen.dart';
 
 class _LoginScreenConstants {
   static final EmailHint = "Email address";
@@ -43,6 +41,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   AnimationController _animationController;
   Animation<double> _avatarAnimation;
   Animation<double> _fieldsAnimation;
+
+  KeyboardUtils _keyboardUtils = new KeyboardUtils();
+  int _idKeyboardListener;
 
   @override
   void initState() {
@@ -77,17 +78,26 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     _fieldsAnimation = Tween<double>(begin: 0.0, end: 250).animate(_animationController);
 
 
-    KeyboardVisibilityNotification().addNewListener(
-      onChange: (bool opened) {
-        if(opened)  _animationController.forward();
-        else        _animationController.reverse();
-      }
+    _idKeyboardListener = _keyboardUtils.add(
+      listener: KeyboardListener(
+        willShowKeyboard: (_) {
+          _animationController.forward();
+        },
+
+        willHideKeyboard: (_) {
+          _animationController.reverse();
+        }
+      )
     );
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    
+    _keyboardUtils.unsubscribeListener(subscribingId: _idKeyboardListener);
+    if(_keyboardUtils.canCallDispose()) _keyboardUtils.dispose();
+    
     super.dispose();
   }
 

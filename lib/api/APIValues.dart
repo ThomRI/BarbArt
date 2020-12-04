@@ -34,6 +34,8 @@ class APIJsonKeys {
   static const PermanentRegistrations = "permanentRegistrations";
 
   static const SupervisorList         = "supervisors";
+
+  static const HasImage               = "hasImage";
 }
 
 class APIRoutes {
@@ -49,6 +51,7 @@ class APIRoutes {
 
   static const Posts          = "posts";
   static const PostsLikes     = "posts/likes";
+  static const Images         = "images";
 
   static const Music          = "music";
 
@@ -488,6 +491,12 @@ class APIValues {
     socialPosts.clear();
     (response.body[APIJsonKeys.PostsList] as List<dynamic>).forEach((socialPostJSON) {
       ASocialPost post = new ASocialPost.fromJSON(socialPostJSON);
+
+      /* Downloading image if any */
+      if(socialPostJSON[APIJsonKeys.HasImage] as bool) {
+        post.image = APIManager.fetchImage(route: APIRoutes.Posts + "/" + APIRoutes.Images, token: _token);
+      }
+
       socialPosts.addAll({post.id: post});
     });
 
